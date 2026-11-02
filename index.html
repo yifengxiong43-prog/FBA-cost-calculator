@@ -168,6 +168,8 @@
     .sticker-bar { margin-bottom:8px; flex-wrap:wrap; }
     .sticker-bar span { color:#656d76; }
     .sticker { width:30px; height:28px; flex:none; border-radius:5px; font-size:16px; }
+    .character-art { width:26px; height:26px; display:block; }
+    .sticker-message .character-art { width:96px; height:96px; }
     .send-row { gap:7px; }
     .send-btn { padding:0 14px; border-radius:6px; background:#1f883d; font-size:13px; }
     .game-head { gap:8px; }
@@ -220,7 +222,7 @@
         <div class="panel-header"><div class="chat-title"><div class="bubble">▱</div><div><h2>Team discussion</h2><small id="chatHint">连接协作区后查看讨论</small></div></div><span>凭链接加入</span></div>
         <div class="message-list" id="messageList"><div class="empty"><div><div class="big">▤</div><div>暂无讨论记录<br/>连接协作区后开始同步</div></div></div></div>
         <div class="composer">
-          <div class="sticker-bar" aria-label="快捷表情"><button class="sticker" data-sticker="🐻" title="小熊">🐻</button><button class="sticker" data-sticker="🐰" title="小兔">🐰</button><button class="sticker" data-sticker="🐴" title="小马">🐴</button><button class="sticker" data-sticker="🐑" title="小羊">🐑</button><button class="sticker" data-sticker="🌈" title="彩虹">🌈</button><button class="sticker" data-sticker="🎉" title="庆祝">🎉</button><button class="sticker" data-sticker="🐲 奶龙" title="奶龙">🐲</button><button class="sticker" data-sticker="👶 奶娃" title="奶娃">👶</button><button class="sticker" data-sticker="🍼" title="奶瓶">🍼</button><button class="sticker" data-sticker="💛" title="黄心">💛</button><button class="sticker" data-sticker="🧸" title="玩偶">🧸</button><button class="sticker" data-sticker="🌺" title="扶桑花">🌺</button><button class="sticker" data-sticker="🍍" title="菠萝">🍍</button><button class="sticker" data-sticker="🥥" title="椰子">🥥</button><button class="sticker" data-sticker="🥭" title="芒果">🥭</button></div>
+          <div class="sticker-bar" aria-label="快捷表情"><button class="sticker" data-sticker="🐻" title="小熊">🐻</button><button class="sticker" data-sticker="🐰" title="小兔">🐰</button><button class="sticker" data-sticker="🐴" title="小马">🐴</button><button class="sticker" data-sticker="🐑" title="小羊">🐑</button><button class="sticker" data-sticker="🌈" title="彩虹">🌈</button><button class="sticker" data-sticker="🎉" title="庆祝">🎉</button><button class="sticker" data-sticker="🐲 奶龙" title="奶龙" aria-label="奶龙"></button><button class="sticker" data-sticker="👶 奶娃" title="奶娃" aria-label="奶娃"></button><button class="sticker" data-sticker="🍼" title="奶瓶">🍼</button><button class="sticker" data-sticker="💛" title="黄心">💛</button><button class="sticker" data-sticker="🧸" title="玩偶">🧸</button><button class="sticker" data-sticker="🌺" title="扶桑花">🌺</button><button class="sticker" data-sticker="🍍" title="菠萝">🍍</button><button class="sticker" data-sticker="🥥" title="椰子">🥥</button><button class="sticker" data-sticker="🥭" title="芒果">🥭</button></div>
           <div class="send-row"><input id="messageInput" maxlength="200" placeholder="Write a comment…" disabled /><button class="send-btn" id="sendBtn" disabled>Comment</button></div>
         </div>
       </section>
@@ -256,6 +258,16 @@
     const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7'];
     const ANIMALS = ['🐻', '🐰', '🐴', '🐑'];
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
+    const CHARACTER_STICKERS = {
+      '🐲 奶龙': { name:'奶龙', svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe56f"/><stop offset=".6" stop-color="#ffc63f"/><stop offset="1" stop-color="#f29434"/></linearGradient><radialGradient id="belly"><stop stop-color="#fffefa"/><stop offset="1" stop-color="#f7e9d3"/></radialGradient></defs><path d="M69 65c12-4 18-1 17 6-2 6-10 8-18 6" fill="#ef9738" stroke="#d57b2f" stroke-width="1.5"/><ellipse cx="35" cy="84" rx="10" ry="6" fill="#e58b37"/><ellipse cx="66" cy="84" rx="10" ry="6" fill="#e58b37"/><ellipse cx="53" cy="63" rx="29" ry="27" fill="url(#gold)"/><ellipse cx="53" cy="66" rx="18" ry="21" fill="url(#belly)"/><path d="M28 53c-10 2-13 14-5 18 5 2 10-3 14-7m42-12c9 2 10 12 4 16-4 3-9-1-13-5" fill="url(#gold)" stroke="#e9a13b" stroke-width="1.5"/><ellipse cx="50" cy="34" rx="32" ry="27" fill="url(#gold)"/><ellipse cx="29" cy="46" rx="17" ry="11" fill="#ffd057"/><ellipse cx="41" cy="31" rx="6" ry="8" fill="#32302f"/><ellipse cx="66" cy="30" rx="6" ry="8" fill="#32302f"/><circle cx="43" cy="28" r="2.3" fill="#fff"/><circle cx="68" cy="27" r="2.3" fill="#fff"/><path d="M24 49c11 7 24 7 35 2" fill="none" stroke="#e9ad4b" stroke-width="1.8" stroke-linecap="round"/><path d="M34 86l-2 3m7-2-1 3m25-2-1 3m7-4 1 3" stroke="#9d6034" stroke-width="2" stroke-linecap="round"/></svg>` },
+      '👶 奶娃': { name:'奶娃', svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe667"/><stop offset=".65" stop-color="#ffce45"/><stop offset="1" stop-color="#ecab38"/></linearGradient><radialGradient id="eye"><stop stop-color="#9dd779"/><stop offset=".7" stop-color="#68ac65"/><stop offset="1" stop-color="#365d42"/></radialGradient></defs><path d="M58 6c20 1 32 19 33 41v31c0 9-8 14-20 14H38c-16 0-23-11-19-24 2-8 8-14 11-21-7-19 7-40 28-41Z" fill="url(#yellow)" stroke="#e6ae39" stroke-width="1.5"/><path d="M29 45c-5 1-10 2-15 5 5 2 12 2 18 0" fill="#d99b34" stroke="#9b6830" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="42" cy="32" rx="13" ry="15" fill="#3f4b37"/><ellipse cx="43" cy="32" rx="10.5" ry="12.5" fill="url(#eye)"/><ellipse cx="44" cy="32" rx="6" ry="9" fill="#1f2b29"/><ellipse cx="47" cy="27" rx="3" ry="3.5" fill="#fff"/><path d="M29 54c-4 10-10 16-10 26 0 7 5 11 11 11" fill="none" stroke="#f4b844" stroke-width="2"/><path d="M76 16c8 9 12 20 12 35" fill="none" stroke="#ffe980" stroke-width="3" stroke-linecap="round" opacity=".65"/></svg>` }
+    };
+    function characterImage(kind, alt) {
+      const image = document.createElement('img');
+      image.className = 'character-art'; image.alt = alt;
+      image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(CHARACTER_STICKERS[kind].svg);
+      return image;
+    }
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'}, running:false,
@@ -284,7 +296,9 @@
         const meta = document.createElement('div'); meta.className = 'message-meta';
         const name = document.createElement('span'); name.textContent = msg.name; const time = document.createElement('span'); time.textContent = msg.time || '';
         meta.append(name,time);
-        const bubble = document.createElement('div'); bubble.className = 'message-bubble' + (msg.sticker ? ' sticker-message' : ''); bubble.textContent = msg.text;
+        const bubble = document.createElement('div'); bubble.className = 'message-bubble' + (msg.sticker ? ' sticker-message' : '');
+        if (msg.sticker && Object.hasOwn(CHARACTER_STICKERS,msg.text)) bubble.append(characterImage(msg.text, CHARACTER_STICKERS[msg.text].name));
+        else bubble.textContent = msg.text;
         body.append(meta,bubble); row.append(avatar,body); box.append(row);
       });
       box.scrollTop = box.scrollHeight;
@@ -320,19 +334,36 @@
     }
     function serialState(){ return {players:playerArray(),snakes:[...app.snakes.entries()],food:app.food,running:app.running}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
-    function drawMarker(ctx, x, y, dir, color, head) {
-      const angle = {right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2}[dir];
-      ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
-      ctx.fillStyle='#34414a'; roundRect(ctx,-9,-6,18,12,3);
-      ctx.fillStyle='#fffdf8'; roundRect(ctx,-7,-5,14,10,2);
-      ctx.fillStyle=color; roundRect(ctx,-9,-6,4,12,2);
-      ctx.fillStyle='#34414a'; ctx.fillRect(-5,-5,1.5,10);
-      ctx.fillStyle=color; ctx.fillRect(5,-5,2,10);
-      if (head) {
-        ctx.fillStyle='#34414a'; ctx.beginPath(); ctx.moveTo(7,-4); ctx.lineTo(10,0); ctx.lineTo(7,4); ctx.closePath(); ctx.fill();
-      }
-      ctx.fillStyle='#34414a'; ctx.font='bold 4.5px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Ohuhu',0,0);
+    function drawMarkerSnake(ctx, snake, color, cell) {
+      const body = [...snake.body].reverse();
+      const angleFor = dir => ({right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2})[dir];
+      const center = part => [(part.x+.5)*cell,(part.y+.5)*cell];
+      ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.beginPath(); body.forEach((part,i)=>{const [x,y]=center(part); if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});
+      ctx.strokeStyle=color;ctx.lineWidth=18;ctx.stroke();
+      ctx.strokeStyle='#39444b';ctx.lineWidth=16;ctx.stroke();
+      ctx.strokeStyle='#fffdf8';ctx.lineWidth=13;ctx.stroke();
+
+      const tail=snake.body.at(-1),next=snake.body.at(-2);
+      const tailDir=next.x>tail.x?'right':next.x<tail.x?'left':next.y>tail.y?'down':'up';
+      ctx.save();ctx.translate(...center(tail));ctx.rotate(angleFor(tailDir));
+      ctx.fillStyle=color;roundRect(ctx,-10,-7,11,14,3);
+      ctx.fillStyle='#39444b';ctx.fillRect(0,-7,2,14);
+      ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect(-8,-5,1,10);
       ctx.restore();
+
+      const head=snake.body[0];
+      ctx.save();ctx.translate(...center(head));ctx.rotate(angleFor(snake.dir));
+      ctx.fillStyle='#fffdf8';roundRect(ctx,-6,-7,12,14,3);
+      ctx.fillStyle=color;ctx.fillRect(5,-6,2,12);
+      ctx.fillStyle='#39444b';ctx.beginPath();ctx.moveTo(7,-4);ctx.lineTo(12,0);ctx.lineTo(7,4);ctx.closePath();ctx.fill();
+      ctx.restore();
+
+      const label=snake.body[1]||head;
+      const labelDir=head.x>label.x?'right':head.x<label.x?'left':head.y>label.y?'down':'up';
+      ctx.save();ctx.translate(...center(label));ctx.rotate(angleFor(labelDir));
+      ctx.fillStyle='#354049';ctx.font='italic bold 7px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Ohuhu',0,0);
+      ctx.restore();ctx.restore();
     }
     function renderCanvas(){
       const canvas=$('gameCanvas'),ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID;
@@ -340,9 +371,13 @@
       ctx.strokeStyle='#dcebe5';ctx.lineWidth=1;
       for(let i=1;i<GRID;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cell);ctx.lineTo(size,i*cell);ctx.stroke();}
       const f=app.food,fx=(f.x+.5)*cell,fy=(f.y+.5)*cell;
-      if (f.kind==='fabric') { ctx.fillStyle='#39a49d'; roundRect(ctx,f.x*cell+2,f.y*cell+2,cell-4,cell-4,3); }
-      ctx.font='16px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.kind==='fabric'?'🌺':(f.kind||'🍍'),fx,fy+1);
-      app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(!p||!s.alive)return;s.body.forEach((b,i)=>{const toward=i===0?null:s.body[i-1];const dir=i===0?s.dir:toward.x>b.x?'right':toward.x<b.x?'left':toward.y>b.y?'down':'up';drawMarker(ctx,(b.x+.5)*cell,(b.y+.5)*cell,dir,p.color,i===0);});});
+      if (f.kind==='fabric') {
+        ctx.fillStyle='#176f70'; roundRect(ctx,f.x*cell+1,f.y*cell+1,cell-2,cell-2,2);
+        ctx.fillStyle='#39a49d'; roundRect(ctx,f.x*cell+2,f.y*cell+2,cell-4,cell-4,2);
+        ctx.fillStyle='#fff4d8'; ctx.beginPath(); ctx.moveTo(f.x*cell+13,f.y*cell+2); ctx.lineTo(f.x*cell+18,f.y*cell+7); ctx.lineTo(f.x*cell+18,f.y*cell+2); ctx.closePath(); ctx.fill();
+      }
+      ctx.font=(f.kind==='fabric'?'12px':'16px')+' "Segoe UI Emoji", "Apple Color Emoji", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.kind==='fabric'?'🌺':(f.kind||'🍍'),fx,fy+1);
+      app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p&&s.alive)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
     function renderAll(){ renderMembers();renderScores();renderCanvas(); if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
@@ -431,7 +466,7 @@
 
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
-    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true))); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCanvas();
+    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCanvas();
   </script>
 </body>
 </html>
