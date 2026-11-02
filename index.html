@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fff9f0" />
+  <title>项目协作台 · 工作区</title>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    :root {
+      --ink: #3f3831;
+      --muted: #8e8176;
+      --line: #eadfd3;
+      --paper: #fffdf8;
+      --cream: #fff7ea;
+      --peach: #ff9a76;
+      --peach-dark: #e87c5b;
+      --yellow: #ffd66b;
+      --mint: #9dd9c8;
+      --lavender: #c6b4ef;
+      --shadow: 0 18px 45px rgba(112, 76, 39, .11);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: ui-rounded, "SF Pro Rounded", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 12% 5%, rgba(255, 214, 107, .35), transparent 23rem),
+        radial-gradient(circle at 88% 10%, rgba(198, 180, 239, .28), transparent 22rem),
+        #fff9f0;
+      min-height: 100vh;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    .app-shell { max-width: 1480px; margin: 0 auto; padding: 22px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap: 18px; margin-bottom: 18px; }
+    .brand { display:flex; align-items:center; gap: 13px; }
+    .brand-mark { width: 52px; height:52px; display:grid; place-items:center; border-radius: 18px; background: linear-gradient(135deg,#ffcf6e,#ff9879); font-size: 30px; box-shadow: 0 8px 20px rgba(226,129,77,.22); }
+    .brand h1 { margin:0; font-size: clamp(20px, 3vw, 28px); letter-spacing: -.03em; }
+    .brand p { margin:4px 0 0; color: var(--muted); font-size: 13px; }
+    .online-pill { display:flex; align-items:center; gap: 8px; padding: 10px 14px; border:1px solid var(--line); background: rgba(255,255,255,.7); border-radius: 999px; font-size: 13px; }
+    .dot { width:9px; height:9px; border-radius:50%; background:#c5b9af; box-shadow: 0 0 0 4px rgba(197,185,175,.14); }
+    .dot.live { background:#4fc699; box-shadow:0 0 0 4px rgba(79,198,153,.15); }
+    .layout { display:grid; grid-template-columns: 250px minmax(360px, 1fr) 360px; gap: 18px; align-items:start; }
+    .panel { border:1px solid rgba(224,207,190,.85); background: rgba(255,253,248,.9); border-radius: 26px; box-shadow: var(--shadow); overflow:hidden; }
+    .panel-header { display:flex; align-items:center; justify-content:space-between; padding: 18px 20px 14px; border-bottom:1px solid var(--line); }
+    .panel-header h2 { margin:0; font-size:16px; }
+    .panel-header small { color:var(--muted); }
+    .sidebar { min-height: 690px; }
+    .profile { padding: 20px; background: linear-gradient(135deg,#fff7e7,#fffdf8); }
+    .profile label { display:block; font-size:12px; color:var(--muted); margin-bottom:7px; }
+    .name-row { display:flex; gap:8px; }
+    .name-row input { min-width:0; flex:1; }
+    input { width:100%; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:13px; padding: 11px 12px; outline: none; transition: .2s; }
+    input:focus { border-color: var(--peach); box-shadow: 0 0 0 4px rgba(255,154,118,.15); }
+    .primary { width:100%; margin-top: 11px; color:#fff; background: linear-gradient(135deg,var(--peach),var(--peach-dark)); border-radius:14px; padding: 12px; font-weight:700; box-shadow: 0 9px 18px rgba(232,124,91,.2); transition: transform .2s, filter .2s; }
+    .primary:hover { transform: translateY(-1px); filter:brightness(1.03); }
+    .primary:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+    .lobby-note { margin-top: 13px; padding: 11px 12px; border-radius: 14px; background:rgba(255,255,255,.68); color:var(--muted); font-size:12px; line-height:1.55; }
+    .room-status { padding: 18px 20px; }
+    .room-card { background: #fff; border:1px solid var(--line); border-radius: 16px; padding: 13px; }
+    .room-card strong { display:block; font-size:14px; }
+    .room-card span { display:block; color:var(--muted); font-size:12px; margin-top:4px; line-height:1.45; }
+    .copy-link { margin-top:9px; width:100%; text-align:left; }
+    .members { padding: 0 20px 20px; }
+    .members h3 { font-size:12px; color:var(--muted); font-weight:600; margin:0 0 10px; }
+    .member-list { display:flex; flex-direction:column; gap:9px; }
+    .member { display:flex; align-items:center; gap:10px; font-size:13px; }
+    .avatar { width:30px; height:30px; display:grid; place-items:center; border-radius:11px; font-size:17px; background: #fff2c9; }
+    .member .you { margin-left:auto; color:var(--peach-dark); font-size:11px; }
+    .chat { min-height: 690px; display:flex; flex-direction:column; }
+    .chat-title { display:flex; align-items:center; gap:10px; }
+    .chat-title .bubble { width:34px; height:34px; display:grid; place-items:center; background:#fff0e5; border-radius:12px; }
+    .message-list { flex:1; padding: 18px 20px; overflow:auto; max-height: 535px; min-height: 465px; }
+    .empty { height:100%; min-height:350px; display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .empty .big { font-size:46px; margin-bottom:8px; }
+    .message { display:flex; gap:10px; margin-bottom: 15px; animation:rise .18s ease-out; }
+    @keyframes rise { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+    .message.mine { flex-direction:row-reverse; }
+    .message-body { max-width:75%; }
+    .message-meta { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); margin:0 3px 4px; }
+    .mine .message-meta { justify-content:flex-end; }
+    .message-bubble { padding: 10px 12px; border-radius: 16px 16px 16px 5px; background:#fff; border:1px solid var(--line); line-height:1.5; white-space:pre-wrap; word-break:break-word; font-size:14px; }
+    .mine .message-bubble { background:#fff0e5; border-color:#ffd3bf; border-radius:16px 16px 5px 16px; }
+    .sticker-message { font-size: 39px; line-height:1; padding: 8px 12px; }
+    .composer { border-top:1px solid var(--line); padding: 13px 16px 15px; background:rgba(255,250,242,.75); }
+    .sticker-bar { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+    .sticker-bar span { font-size:11px; color:var(--muted); margin-right:3px; }
+    .sticker { width:35px; height:32px; display:grid; place-items:center; border-radius:10px; background:#fff; border:1px solid var(--line); font-size:19px; transition:.16s; }
+    .sticker:hover { transform:translateY(-2px); border-color:var(--peach); }
+    .send-row { display:flex; gap:9px; }
+    .send-row input { flex:1; }
+    .send-btn { padding:0 18px; border-radius:13px; background:var(--ink); color:#fff; font-weight:700; }
+    .game { min-height:690px; }
+    .game-head { display:flex; align-items:center; gap:10px; }
+    .game-icon { width:35px; height:35px; display:grid; place-items:center; border-radius:12px; background:#e8f7ef; font-size:20px; }
+    .game-actions { display:flex; gap:6px; }
+    .tiny-btn { padding:7px 10px; border-radius:10px; background:#fff; color:var(--ink); border:1px solid var(--line); font-size:12px; }
+    .tiny-btn:hover { border-color:var(--peach); }
+    .game-inner { padding: 16px 18px 20px; }
+    .game-info { display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; }
+    .game-info .state { color:var(--muted); font-size:12px; }
+    .score-list { display:flex; gap:6px; overflow:auto; }
+    .score-chip { display:flex; align-items:center; gap:5px; padding:5px 8px; background:#fff; border:1px solid var(--line); border-radius:999px; font-size:11px; white-space:nowrap; }
+    #gameCanvas { width:100%; aspect-ratio:1/1; display:block; border-radius:20px; background:#fcf5e9; border:1px solid var(--line); image-rendering:pixelated; }
+    .controls { display:grid; grid-template-columns:repeat(3, 42px); justify-content:center; gap:6px; margin:15px 0 8px; }
+    .control-btn { height:36px; border-radius:11px; background:#fff; border:1px solid var(--line); color:var(--ink); font-weight:700; }
+    .control-btn:hover { border-color:var(--peach); background:#fff8f0; }
+    .control-btn:nth-child(1){grid-column:2}.control-btn:nth-child(2){grid-column:1;grid-row:2}.control-btn:nth-child(3){grid-column:2;grid-row:2}.control-btn:nth-child(4){grid-column:3;grid-row:2}
+    .game-tip { color:var(--muted); font-size:11px; line-height:1.55; padding: 10px 12px; border-radius:13px; background:#fffaf2; }
+    .toast { position:fixed; left:50%; bottom:25px; transform:translate(-50%, 18px); opacity:0; pointer-events:none; padding:10px 15px; background:rgba(63,56,49,.94); color:#fff; border-radius:999px; font-size:13px; transition:.25s; z-index:5; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .footer-note { color:var(--muted); text-align:center; font-size:11px; margin-top:15px; }
+    @media (max-width: 1100px) { .layout { grid-template-columns: 220px minmax(340px,1fr); } .game { grid-column:1/-1; min-height:0; } .game-inner { max-width:470px; margin:0 auto; } }
+    @media (max-width: 720px) { .app-shell{padding:12px}.topbar{align-items:flex-start}.online-pill{font-size:11px;padding:8px 10px}.layout{display:flex;flex-direction:column}.panel{width:100%}.sidebar,.chat{min-height:0}.message-list{min-height:400px}.game{min-height:0}.game-inner{max-width:none}.brand-mark{width:44px;height:44px;font-size:25px} }
+
+    /* GitHub-like workbench skin */
+    :root { --ink:#1f2328; --muted:#656d76; --line:#d0d7de; --paper:#fff; --cream:#f6f8fa; --peach:#1f883d; --peach-dark:#1a7f37; --shadow:none; }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif; background:#f6f8fa; color:var(--ink); }
+    .app-shell { max-width:1500px; padding:0 28px 24px; }
+    .topbar { margin:0 -28px; padding:14px 28px; background:#25292f; color:#fff; border-bottom:1px solid #57606a; }
+    .brand { gap:10px; }
+    .brand-mark { width:32px; height:32px; border-radius:50%; background:#f0f6fc; color:#25292f; box-shadow:none; font-size:17px; }
+    .brand h1 { color:#fff; font-size:16px; letter-spacing:0; font-weight:600; }
+    .brand p { color:#8b949e; font-size:12px; }
+    .online-pill { padding:6px 10px; color:#c9d1d9; background:#2d333b; border-color:#57606a; border-radius:6px; font-size:12px; }
+    .dot { width:8px; height:8px; box-shadow:none; }
+    .dot.live { background:#3fb950; box-shadow:none; }
+    .repo-nav { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0 12px; border-bottom:1px solid var(--line); }
+    .repo-crumb { color:#24292f; font-size:14px; font-weight:600; }
+    .repo-crumb span { color:#656d76; font-weight:400; }
+    .repo-tabs { display:flex; gap:4px; color:#656d76; font-size:13px; }
+    .repo-tabs span { padding:6px 9px; border-radius:6px; }
+    .repo-tabs span:first-child { color:#1f2328; background:#eaeef2; font-weight:600; }
+    .layout { grid-template-columns:240px minmax(420px,1fr) 300px; gap:20px; margin-top:20px; }
+    .panel { background:#fff; border:1px solid var(--line); border-radius:6px; box-shadow:none; }
+    .panel-header { padding:14px 16px; border-bottom:1px solid var(--line); }
+    .panel-header h2 { font-size:14px; font-weight:600; }
+    .panel-header small { font-size:12px; }
+    .sidebar,.chat,.game { min-height:740px; }
+    .profile { padding:16px; background:#f6f8fa; border-bottom:1px solid var(--line); }
+    .profile label { color:#656d76; font-size:12px; }
+    input { border-radius:6px; border-color:var(--line); padding:8px 10px; font-size:13px; }
+    input:focus { border-color:#0969da; box-shadow:0 0 0 3px rgba(9,105,218,.15); }
+    .primary { margin-top:10px; border-radius:6px; padding:8px 12px; background:#1f883d; box-shadow:none; font-size:13px; }
+    .primary:hover { transform:none; filter:brightness(1.04); }
+    .lobby-note { margin-top:10px; padding:9px 10px; border-radius:6px; background:#fff; border:1px solid var(--line); color:#656d76; font-size:11px; }
+    .room-status { padding:16px; }
+    .room-card { border-radius:6px; padding:11px; }
+    .room-card strong { font-size:13px; }
+    .members { padding:0 16px 16px; }
+    .members h3 { font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+    .member-list { gap:7px; }
+    .member { font-size:12px; }
+    .avatar { width:26px; height:26px; border-radius:50%; font-size:14px; }
+    .chat-title .bubble { width:28px; height:28px; border-radius:6px; background:#eaeef2; color:#57606a; font-size:14px; }
+    .message-list { padding:18px 16px; max-height:580px; min-height:520px; }
+    .empty { min-height:390px; font-size:12px; }
+    .empty .big { font-size:27px; }
+    .message { gap:9px; margin-bottom:16px; }
+    .message-body { max-width:82%; }
+    .message-meta { font-size:11px; }
+    .message-bubble { padding:8px 10px; border-radius:6px; background:#f6f8fa; border-color:var(--line); font-size:13px; }
+    .mine .message-bubble { background:#ddf4e4; border-color:#b7dfc2; border-radius:6px; }
+    .sticker-message { font-size:30px; background:#fff !important; border-style:dashed; }
+    .composer { padding:12px 16px; background:#f6f8fa; border-top:1px solid var(--line); }
+    .sticker-bar { margin-bottom:8px; }
+    .sticker-bar span { color:#656d76; }
+    .sticker { width:30px; height:28px; border-radius:5px; font-size:16px; }
+    .send-row { gap:7px; }
+    .send-btn { padding:0 14px; border-radius:6px; background:#1f883d; font-size:13px; }
+    .game-head { gap:8px; }
+    .game-icon { width:28px; height:28px; border-radius:6px; background:#eaeef2; font-size:15px; color:#57606a; }
+    .game-actions { gap:4px; }
+    .tiny-btn { padding:6px 9px; border-radius:6px; font-size:11px; }
+    .game-inner { padding:14px 16px 18px; }
+    .game-info { margin-bottom:10px; }
+    .game-info .state { font-size:11px; }
+    .score-chip { padding:4px 7px; border-radius:6px; font-size:10px; }
+    #gameCanvas { border-radius:6px; background:#f6f8fa; }
+    .controls { margin:12px 0 8px; }
+    .control-btn { height:32px; border-radius:6px; font-size:12px; }
+    .game-tip { padding:9px 10px; border-radius:6px; background:#f6f8fa; border:1px solid var(--line); font-size:10px; }
+    .footer-note { color:#8b949e; font-size:10px; }
+    @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } }
+    @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">🐻</div>
+        <div><h1>项目协作台</h1><p>团队工作区 · 内部协作</p></div>
+      </div>
+      <div class="online-pill"><i class="dot" id="connectionDot"></i><span id="connectionText">未连接</span></div>
+    </header>
+
+    <nav class="repo-nav" aria-label="项目导航">
+      <div class="repo-crumb">workspace <span>/</span> daily-sync <span>·</span> main</div>
+      <div class="repo-tabs"><span>Overview</span><span>Files</span><span>Activity</span><span>Settings</span></div>
+    </nav>
+
+    <section class="layout">
+      <aside class="panel sidebar">
+        <div class="profile">
+          <label for="nickname">协作者名称</label>
+          <div class="name-row"><input id="nickname" maxlength="12" value="小熊玩家" placeholder="输入昵称" /><div class="avatar" id="previewAvatar">🐻</div></div>
+          <button class="primary" id="enterBtn">↗ 连接协作区</button>
+          <div class="lobby-note" id="linkHint">连接后可查看团队讨论和实时预览。请分享浏览器地址栏中的完整链接（包含末尾标识），并使用公网 HTTPS 页面。</div>
+        </div>
+        <div class="room-status">
+          <div class="room-card"><strong id="roomTitle">daily-sync</strong><span id="roomSub">等待连接协作区…</span><button class="tiny-btn copy-link" id="copyLinkBtn">复制协作链接</button></div>
+        </div>
+        <div class="members"><h3>协作者 · <span id="memberCount">0</span>/4</h3><div class="member-list" id="memberList"><div class="member"><div class="avatar">🌱</div><span>等待协作者连接</span></div></div></div>
+      </aside>
+
+      <section class="panel chat">
+        <div class="panel-header"><div class="chat-title"><div class="bubble">▱</div><div><h2>Team discussion</h2><small id="chatHint">连接协作区后查看讨论</small></div></div><span>private</span></div>
+        <div class="message-list" id="messageList"><div class="empty"><div><div class="big">▤</div><div>暂无讨论记录<br/>连接协作区后开始同步</div></div></div></div>
+        <div class="composer">
+          <div class="sticker-bar"><span>Quick reactions</span><button class="sticker" data-sticker="🐻" title="小熊">🐻</button><button class="sticker" data-sticker="🐰" title="小兔">🐰</button><button class="sticker" data-sticker="🐴" title="小马">🐴</button><button class="sticker" data-sticker="🐑" title="小羊">🐑</button><button class="sticker" data-sticker="🌈" title="彩虹">🌈</button><button class="sticker" data-sticker="🎉" title="庆祝">🎉</button></div>
+          <div class="send-row"><input id="messageInput" maxlength="200" placeholder="Write a comment…" disabled /><button class="send-btn" id="sendBtn" disabled>Comment</button></div>
+        </div>
+      </section>
+
+      <section class="panel game">
+        <div class="panel-header"><div class="game-head"><div class="game-icon">▦</div><div><h2>Live preview</h2><small>interactive canvas</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>Run</button><button class="tiny-btn" id="resetBtn" disabled>Reset</button></div></div>
+        <div class="game-inner">
+          <div class="game-info"><span class="state" id="gameState">Connect to run preview</span><div class="score-list" id="scoreList"></div></div>
+          <canvas id="gameCanvas" width="420" height="420" aria-label="实时预览画布"></canvas>
+          <div class="controls" aria-label="方向控制"><button class="control-btn" data-dir="up">↑</button><button class="control-btn" data-dir="left">←</button><button class="control-btn" data-dir="down">↓</button><button class="control-btn" data-dir="right">→</button></div>
+          <div class="game-tip">Preview controls: Arrow keys / WASD. State is synchronized with the collaboration node.</div>
+        </div>
+      </section>
+    </section>
+    <div class="footer-note">workspace status · synced via WebRTC · recommended: HTTPS or localhost</div>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const GRID = 21;
+    const LOBBY_PREFIX = 'workspace-sync-';
+    const makeLobbyId = () => {
+      const current = decodeURIComponent(location.hash.replace(/^#/, ''));
+      if (/^workspace-sync-[a-z0-9]{8,20}$/.test(current)) return current;
+      const id = LOBBY_PREFIX + 'default1';
+      history.replaceState(null, '', `${location.pathname}${location.search}#${id}`);
+      return id;
+    };
+    const LOBBY_ID = makeLobbyId();
+    const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7'];
+    const ANIMALS = ['🐻', '🐰', '🐴', '🐑'];
+    const app = {
+      peer: null, hostConn: null, connections: new Map(), isHost: false, connected: false,
+      myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10}, running:false,
+      messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
+    };
+
+    function toast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(app.toastTimer); app.toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2300); }
+    function setStatus(text, live=false) { $('connectionText').textContent=text; $('connectionDot').classList.toggle('live', live); }
+    function cleanName(value) { return (value || '小熊玩家').replace(/[<>]/g,'').trim().slice(0,12) || '小熊玩家'; }
+    function randomAnimal() { return ANIMALS[app.players.size % ANIMALS.length]; }
+    function animalFor(player) { return player.animal || '🐻'; }
+    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled; $('nickname').disabled = enabled; }
+    function playerArray() { return [...app.players.values()]; }
+
+    function showEmptyIfNeeded() {
+      if (app.messages.length) return;
+      $('messageList').innerHTML = '<div class="empty"><div><div class="big">▤</div><div>当前没有评论<br/>用下方快捷反应开始同步</div></div></div>';
+    }
+    function renderMessages() {
+      const box = $('messageList'); box.innerHTML = '';
+      if (!app.messages.length) { showEmptyIfNeeded(); return; }
+      app.messages.forEach(msg => {
+        const row = document.createElement('div'); row.className = 'message' + (msg.id === app.myId ? ' mine' : '');
+        const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = msg.animal || '🐻';
+        const body = document.createElement('div'); body.className = 'message-body';
+        const meta = document.createElement('div'); meta.className = 'message-meta';
+        const name = document.createElement('span'); name.textContent = msg.name; const time = document.createElement('span'); time.textContent = msg.time || '';
+        meta.append(name,time);
+        const bubble = document.createElement('div'); bubble.className = 'message-bubble' + (msg.sticker ? ' sticker-message' : ''); bubble.textContent = msg.text;
+        body.append(meta,bubble); row.append(avatar,body); box.append(row);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+    function renderMembers() {
+      const list = $('memberList'); list.innerHTML = ''; $('memberCount').textContent = app.players.size;
+      playerArray().forEach(p => { const row=document.createElement('div'); row.className='member'; const av=document.createElement('div'); av.className='avatar'; av.style.background=p.color+'22'; av.textContent=animalFor(p); const name=document.createElement('span'); name.textContent=p.name; row.append(av,name); if(p.id===app.myId){const you=document.createElement('span');you.className='you';you.textContent='你';row.append(you)} list.append(row); });
+      if (!app.players.size) list.innerHTML='<div class="member"><div class="avatar">🌱</div><span>还没有人，来坐坐吧</span></div>';
+      $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/4 位协作者在线` : '等待连接协作区…';
+    }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';chip.innerHTML=`<span>${animalFor(p)}</span><b>${p.score||0}</b>`;box.append(chip)}); }
+
+    function addMessage(text, sticker=false, source={id:app.myId,name:app.nickname,animal: animalFor(app.players.get(app.myId)||{})}) {
+      const msg={id:source.id,name:source.name,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
+      app.messages.push(msg); if(app.messages.length>80) app.messages.shift(); renderMessages(); return msg;
+    }
+    function broadcast(packet, except) { app.connections.forEach((conn,id)=>{ if(id!==except && conn.open) conn.send(packet); }); }
+
+    function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true,score:0,respawnAt:0}; }
+    function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID)}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
+    function resetGame() { if(!app.isHost)return; app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;p.alive=true;app.snakes.set(p.id,spawnSnake(i));}); app.running=false; resetFood(); broadcastState(); renderAll(); }
+    function startGame() { if(!app.isHost || !app.players.size)return; if(!app.snakes.size) { app.snakes.clear(); playerArray().forEach((p,i)=>app.snakes.set(p.id,spawnSnake(i))); resetFood(); } app.running=true; $('gameState').textContent='Preview running · live sync'; clearInterval(app.gameTimer); app.gameTimer=setInterval(tick,170); broadcastState(); renderAll(); }
+    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { const s=app.snakes.get(app.myId); if(s && !opposite(dir,s.dir))s.nextDir=dir; } else if(app.hostConn && app.hostConn.open) app.hostConn.send({type:'input',dir}); }
+    function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
+    function stepHead(head,dir){ return {x:head.x+(dir==='left'?-1:dir==='right'?1:0),y:head.y+(dir==='up'?-1:dir==='down'?1:0)}; }
+    function tick() {
+      if(!app.isHost || !app.running)return;
+      const occupied = new Set(); app.snakes.forEach(s=>s.body.forEach(b=>occupied.add(`${b.x},${b.y}`)));
+      const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ if(Date.now()>s.respawnAt){const idx=playerArray().findIndex(p=>p.id===id); next.set(id,spawnSnake(idx<0?0:idx));} else next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;s.respawnAt=Date.now()+1200;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;resetFood();}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; broadcastState(); renderAll();
+    }
+    function serialState(){ return {players:playerArray(),snakes:[...app.snakes.entries()],food:app.food,running:app.running}; }
+    function broadcastState(){ broadcast({type:'state',state:serialState()}); }
+    function renderCanvas(){ const canvas=$('gameCanvas'),ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID; ctx.clearRect(0,0,size,size); ctx.fillStyle='#fcf5e9';ctx.fillRect(0,0,size,size); ctx.strokeStyle='rgba(234,223,211,.55)';ctx.lineWidth=1;for(let i=1;i<GRID;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cell);ctx.lineTo(size,i*cell);ctx.stroke();} const f=app.food;ctx.fillStyle='#ff9a58';ctx.beginPath();ctx.arc((f.x+.5)*cell,(f.y+.5)*cell,cell*.28,0,Math.PI*2);ctx.fill(); ctx.fillStyle='#fff';ctx.beginPath();ctx.arc((f.x+.42)*cell,(f.y+.42)*cell,cell*.08,0,Math.PI*2);ctx.fill(); [...app.snakes.entries()].forEach(([id,s])=>{const p=app.players.get(id);if(!p||!s.alive)return; s.body.forEach((b,i)=>{ctx.fillStyle=p.color;const pad=i?cell*.12:cell*.07;roundRect(ctx,b.x*cell+pad,b.y*cell+pad,cell-pad*2,cell-pad*2,cell*.24);if(i===0){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc((b.x+.37)*cell,(b.y+.34)*cell,cell*.09,0,Math.PI*2);ctx.arc((b.x+.68)*cell,(b.y+.34)*cell,cell*.09,0,Math.PI*2);ctx.fill();ctx.fillStyle='#55453b';ctx.beginPath();ctx.arc((b.x+.37)*cell,(b.y+.34)*cell,cell*.035,0,Math.PI*2);ctx.arc((b.x+.68)*cell,(b.y+.34)*cell,cell*.035,0,Math.PI*2);ctx.fill();}});}); }
+    function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
+    function renderAll(){ renderMembers();renderScores();renderCanvas(); if(app.connected){ $('gameState').textContent=app.running?'Preview running · live sync':(app.isHost?'Click Run to start preview':'Waiting for workspace owner'); } else $('gameState').textContent='Connect to run preview'; }
+
+    function handleHostData(conn,data){ if(data.type==='hello'){ if(app.connections.size>=3){conn.send({type:'error',message:'当前协作区已满，最多 4 位协作者'});conn.close();return;} const id=conn.peer; const player={id,name:cleanName(data.name),animal:ANIMALS[app.players.size%ANIMALS.length],color:COLORS[app.players.size%COLORS.length],score:0};app.connections.set(id,conn);app.players.set(id,player); if(app.running)app.snakes.set(id,spawnSnake(app.players.size-1)); conn.send({type:'welcome',me:id,players:playerArray(),messages:app.messages,state:serialState()}); broadcast({type:'room',players:playerArray()},id); renderAll(); toast(`${player.name} 已加入协作区`); } else if(data.type==='chat'){const msg=addMessage(data.text,data.sticker,{id:conn.peer,name:app.players.get(conn.peer)?.name||'协作者',animal:app.players.get(conn.peer)?.animal||'🐻'});broadcast({type:'chat',message:msg});} else if(data.type==='input'){const s=app.snakes.get(conn.peer);if(s&&data.dir&&!opposite(data.dir,s.dir))s.nextDir=data.dir;} }
+    function handleGuestData(data){ if(data.type==='welcome'){app.myId=data.me;app.players=new Map(data.players.map(p=>[p.id,p]));app.messages=data.messages||[];applyState(data.state);setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';renderMessages();renderAll();toast('已连接到协作区');}else if(data.type==='state'){applyState(data.state);renderAll();}else if(data.type==='room'){app.players=new Map(data.players.map(p=>[p.id,p]));renderAll();}else if(data.type==='chat'){app.messages.push(data.message);if(app.messages.length>80)app.messages.shift();renderMessages();}else if(data.type==='error'){toast(data.message||'连接失败');} }
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.snakes=new Map(state.snakes||[]);app.food=state.food||app.food;app.running=!!state.running;}
+
+    function createHost(){ app.isHost=true; app.peer=new Peer(LOBBY_ID,{debug:1}); app.peer.on('open',id=>{app.myId=id;app.nickname=cleanName($('nickname').value);app.players.set(id,{id,name:app.nickname,animal:'🐻',color:COLORS[0],score:0});setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';$('roomTitle').textContent='daily-sync';renderAll();toast('协作区已建立');}); app.peer.on('connection',conn=>{conn.on('data',d=>handleHostData(conn,d));conn.on('close',()=>{const id=conn.peer;const p=app.players.get(id);app.players.delete(id);app.connections.delete(id);app.snakes.delete(id);broadcast({type:'room',players:playerArray()});renderAll();if(p)toast(`${p.name} 已离开协作区`);});}); app.peer.on('error',err=>{ if(err.type==='unavailable-id'){ app.isHost=false; app.peer.destroy(); connectAsGuest(); } else {toast('网络连接遇到一点问题，请再试一次');setStatus('连接失败');console.error(err);} }); }
+    function connectAsGuest(){ app.isHost=false; app.peer=new Peer({debug:1}); app.peer.on('open',id=>{app.myId=id;const conn=app.peer.connect(LOBBY_ID,{reliable:true});app.hostConn=conn;conn.on('open',()=>{conn.send({type:'hello',name:cleanName($('nickname').value)});setStatus('正在连接协作区…');});conn.on('data',handleGuestData);conn.on('close',()=>{setConnected(false);setStatus('连接已断开');$('enterBtn').disabled=false;toast('协作区连接已关闭');});});app.peer.on('error',err=>{if(err.type==='peer-unavailable'){toast('暂时找不到协作节点，请确认房主已连接');setStatus('等待节点');$('enterBtn').disabled=false;}else{toast('网络连接失败，请检查 HTTPS / WebRTC');setStatus('连接失败');$('enterBtn').disabled=false;console.error(err);}}); }
+    function enterLobby(){ if(app.connected)return; app.nickname=cleanName($('nickname').value);setStatus('正在连接…');$('enterBtn').disabled=true; clearTimeout(app.connectTimer); app.connectTimer=setTimeout(()=>{if(!app.connected){setStatus('连接超时');$('enterBtn').disabled=false;toast('连接超时：请确认链接是公网 HTTPS，并让房主先进入工作区');}},12000); const probe=new Peer(LOBBY_ID,{debug:1}); let decided=false; probe.on('open',()=>{if(decided)return;decided=true;app.peer=probe;createHostFromPeer(probe);});probe.on('error',err=>{if(decided)return; if(err.type==='unavailable-id'){decided=true;probe.destroy();connectAsGuest();}else{decided=true;probe.destroy();toast('连接失败：当前页面可能不是公网 HTTPS');setStatus('连接失败');$('enterBtn').disabled=false;}}); }
+    function createHostFromPeer(peer){ app.isHost=true;app.peer=peer; const finish=(id)=>{app.myId=id;app.players.set(id,{id,name:app.nickname,animal:'🐻',color:COLORS[0],score:0});setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';renderAll();toast('协作区已建立');}; if(peer.open) finish(peer.id); else peer.on('open',finish); peer.on('connection',conn=>{conn.on('data',d=>handleHostData(conn,d));conn.on('close',()=>{const id=conn.peer;const p=app.players.get(id);app.players.delete(id);app.connections.delete(id);app.snakes.delete(id);broadcast({type:'room',players:playerArray()});renderAll();if(p)toast(`${p.name} 已离开协作区`);});});peer.on('error',err=>{if(err.type!=='unavailable-id')toast('网络连接遇到一点问题');}); }
+    function sendChat(text,sticker=false){ if(!app.connected)return toast('请先连接协作区'); const value=String(text||'').trim();if(!value)return; if(Date.now()-app.lastChatAt<350)return;app.lastChatAt=Date.now();if(app.isHost){const msg=addMessage(value,sticker);broadcast({type:'chat',message:msg});}else if(app.hostConn?.open)app.hostConn.send({type:'chat',text:value,sticker});$('messageInput').value=''; }
+
+    if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
+    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true))); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCanvas();
+  </script>
+</body>
+</html>
