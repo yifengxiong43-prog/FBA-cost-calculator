@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#fff9f0" />
   <title>项目协作台 · 工作区</title>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
   <style>
     :root {
       --ink: #3f3831;
@@ -217,7 +217,7 @@
       </aside>
 
       <section class="panel chat">
-        <div class="panel-header"><div class="chat-title"><div class="bubble">▱</div><div><h2>Team discussion</h2><small id="chatHint">连接协作区后查看讨论</small></div></div><span>private</span></div>
+        <div class="panel-header"><div class="chat-title"><div class="bubble">▱</div><div><h2>Team discussion</h2><small id="chatHint">连接协作区后查看讨论</small></div></div><span>凭链接加入</span></div>
         <div class="message-list" id="messageList"><div class="empty"><div><div class="big">▤</div><div>暂无讨论记录<br/>连接协作区后开始同步</div></div></div></div>
         <div class="composer">
           <div class="sticker-bar"><span>Quick reactions</span><button class="sticker" data-sticker="🐻" title="小熊">🐻</button><button class="sticker" data-sticker="🐰" title="小兔">🐰</button><button class="sticker" data-sticker="🐴" title="小马">🐴</button><button class="sticker" data-sticker="🐑" title="小羊">🐑</button><button class="sticker" data-sticker="🌈" title="彩虹">🌈</button><button class="sticker" data-sticker="🎉" title="庆祝">🎉</button></div>
@@ -235,18 +235,20 @@
         </div>
       </section>
     </section>
-    <div class="footer-note">workspace status · synced via WebRTC · recommended: HTTPS or localhost</div>
+    <div class="footer-note">workspace status · live sync</div>
   </main>
   <div class="toast" id="toast"></div>
 
   <script>
     const $ = (id) => document.getElementById(id);
     const GRID = 21;
+    const SUPABASE_URL = 'https://gvvurtnuvngkszngvhms.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KP6L4tEyyFj7DmNXC1lQnw_wyLRrvyZ';
     const LOBBY_PREFIX = 'workspace-sync-';
     const makeLobbyId = () => {
       const current = decodeURIComponent(location.hash.replace(/^#/, ''));
       if (/^workspace-sync-[a-z0-9]{8,20}$/.test(current)) return current;
-      const id = LOBBY_PREFIX + 'default1';
+      const id = LOBBY_PREFIX + [...crypto.getRandomValues(new Uint8Array(8))].map(byte => byte.toString(16).padStart(2, '0')).join('');
       history.replaceState(null, '', `${location.pathname}${location.search}#${id}`);
       return id;
     };
@@ -254,7 +256,7 @@
     const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7'];
     const ANIMALS = ['🐻', '🐰', '🐴', '🐑'];
     const app = {
-      peer: null, hostConn: null, connections: new Map(), isHost: false, connected: false,
+      client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10}, running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
@@ -292,19 +294,22 @@
       if (!app.players.size) list.innerHTML='<div class="member"><div class="avatar">🌱</div><span>还没有人，来坐坐吧</span></div>';
       $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/4 位协作者在线` : '等待连接协作区…';
     }
-    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';chip.innerHTML=`<span>${animalFor(p)}</span><b>${p.score||0}</b>`;box.append(chip)}); }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const animal=document.createElement('span');animal.textContent=animalFor(p);const score=document.createElement('b');score.textContent=p.score||0;chip.append(animal,score);box.append(chip)}); }
 
     function addMessage(text, sticker=false, source={id:app.myId,name:app.nickname,animal: animalFor(app.players.get(app.myId)||{})}) {
       const msg={id:source.id,name:source.name,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
       app.messages.push(msg); if(app.messages.length>80) app.messages.shift(); renderMessages(); return msg;
     }
-    function broadcast(packet, except) { app.connections.forEach((conn,id)=>{ if(id!==except && conn.open) conn.send(packet); }); }
+    function broadcast(packet) {
+      if (!app.channel) return Promise.resolve('error');
+      return app.channel.send({type:'broadcast',event:'packet',payload:{...packet,from:app.myId}}).catch(()=>'error');
+    }
 
     function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true,score:0,respawnAt:0}; }
     function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID)}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
     function resetGame() { if(!app.isHost)return; app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;p.alive=true;app.snakes.set(p.id,spawnSnake(i));}); app.running=false; resetFood(); broadcastState(); renderAll(); }
     function startGame() { if(!app.isHost || !app.players.size)return; if(!app.snakes.size) { app.snakes.clear(); playerArray().forEach((p,i)=>app.snakes.set(p.id,spawnSnake(i))); resetFood(); } app.running=true; $('gameState').textContent='Preview running · live sync'; clearInterval(app.gameTimer); app.gameTimer=setInterval(tick,170); broadcastState(); renderAll(); }
-    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { const s=app.snakes.get(app.myId); if(s && !opposite(dir,s.dir))s.nextDir=dir; } else if(app.hostConn && app.hostConn.open) app.hostConn.send({type:'input',dir}); }
+    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { const s=app.snakes.get(app.myId); if(s && !opposite(dir,s.dir))s.nextDir=dir; } else broadcast({type:'input',dir,to:app.hostId}); }
     function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
     function stepHead(head,dir){ return {x:head.x+(dir==='left'?-1:dir==='right'?1:0),y:head.y+(dir==='up'?-1:dir==='down'?1:0)}; }
     function tick() {
@@ -318,17 +323,90 @@
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
     function renderAll(){ renderMembers();renderScores();renderCanvas(); if(app.connected){ $('gameState').textContent=app.running?'Preview running · live sync':(app.isHost?'Click Run to start preview':'Waiting for workspace owner'); } else $('gameState').textContent='Connect to run preview'; }
 
-    function handleHostData(conn,data){ if(data.type==='hello'){ if(app.connections.size>=3){conn.send({type:'error',message:'当前协作区已满，最多 4 位协作者'});conn.close();return;} const id=conn.peer; const player={id,name:cleanName(data.name),animal:ANIMALS[app.players.size%ANIMALS.length],color:COLORS[app.players.size%COLORS.length],score:0};app.connections.set(id,conn);app.players.set(id,player); if(app.running)app.snakes.set(id,spawnSnake(app.players.size-1)); conn.send({type:'welcome',me:id,players:playerArray(),messages:app.messages,state:serialState()}); broadcast({type:'room',players:playerArray()},id); renderAll(); toast(`${player.name} 已加入协作区`); } else if(data.type==='chat'){const msg=addMessage(data.text,data.sticker,{id:conn.peer,name:app.players.get(conn.peer)?.name||'协作者',animal:app.players.get(conn.peer)?.animal||'🐻'});broadcast({type:'chat',message:msg});} else if(data.type==='input'){const s=app.snakes.get(conn.peer);if(s&&data.dir&&!opposite(data.dir,s.dir))s.nextDir=data.dir;} }
-    function handleGuestData(data){ if(data.type==='welcome'){app.myId=data.me;app.players=new Map(data.players.map(p=>[p.id,p]));app.messages=data.messages||[];applyState(data.state);setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';renderMessages();renderAll();toast('已连接到协作区');}else if(data.type==='state'){applyState(data.state);renderAll();}else if(data.type==='room'){app.players=new Map(data.players.map(p=>[p.id,p]));renderAll();}else if(data.type==='chat'){app.messages.push(data.message);if(app.messages.length>80)app.messages.shift();renderMessages();}else if(data.type==='error'){toast(data.message||'连接失败');} }
+    function handlePacket(data) {
+      if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
+      if (data.type === 'chat' && typeof data.text === 'string') {
+        addMessage(data.text, data.sticker === true, app.players.get(data.from));
+      } else if (data.type === 'input' && app.isHost && ['up','down','left','right'].includes(data.dir)) {
+        const snake = app.snakes.get(data.from);
+        if (snake && !opposite(data.dir, snake.dir)) snake.nextDir = data.dir;
+      } else if (data.type === 'state' && data.from === app.hostId && !app.isHost) {
+        applyState(data.state); renderAll();
+      } else if (data.type === 'sync-request' && app.isHost) {
+        broadcast({type:'sync',to:data.from,messages:app.messages,state:serialState()});
+      } else if (data.type === 'sync' && data.from === app.hostId && !app.isHost) {
+        app.messages = Array.isArray(data.messages) ? data.messages.slice(-80) : [];
+        app.synced = true; applyState(data.state); renderMessages(); renderAll();
+      }
+    }
     function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.snakes=new Map(state.snakes||[]);app.food=state.food||app.food;app.running=!!state.running;}
 
-    function createHost(){ app.isHost=true; app.peer=new Peer(LOBBY_ID,{debug:1}); app.peer.on('open',id=>{app.myId=id;app.nickname=cleanName($('nickname').value);app.players.set(id,{id,name:app.nickname,animal:'🐻',color:COLORS[0],score:0});setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';$('roomTitle').textContent='daily-sync';renderAll();toast('协作区已建立');}); app.peer.on('connection',conn=>{conn.on('data',d=>handleHostData(conn,d));conn.on('close',()=>{const id=conn.peer;const p=app.players.get(id);app.players.delete(id);app.connections.delete(id);app.snakes.delete(id);broadcast({type:'room',players:playerArray()});renderAll();if(p)toast(`${p.name} 已离开协作区`);});}); app.peer.on('error',err=>{ if(err.type==='unavailable-id'){ app.isHost=false; app.peer.destroy(); connectAsGuest(); } else {toast('网络连接遇到一点问题，请再试一次');setStatus('连接失败');console.error(err);} }); }
-    function connectAsGuest(){ app.isHost=false; app.peer=new Peer({debug:1}); app.peer.on('open',id=>{app.myId=id;const conn=app.peer.connect(LOBBY_ID,{reliable:true});app.hostConn=conn;conn.on('open',()=>{conn.send({type:'hello',name:cleanName($('nickname').value)});setStatus('正在连接协作区…');});conn.on('data',handleGuestData);conn.on('close',()=>{setConnected(false);setStatus('连接已断开');$('enterBtn').disabled=false;toast('协作区连接已关闭');});});app.peer.on('error',err=>{if(err.type==='peer-unavailable'){toast('暂时找不到协作节点，请确认房主已连接');setStatus('等待节点');$('enterBtn').disabled=false;}else{toast('网络连接失败，请检查 HTTPS / WebRTC');setStatus('连接失败');$('enterBtn').disabled=false;console.error(err);}}); }
-    function enterLobby(){ if(app.connected)return; app.nickname=cleanName($('nickname').value);setStatus('正在连接…');$('enterBtn').disabled=true; clearTimeout(app.connectTimer); app.connectTimer=setTimeout(()=>{if(!app.connected){setStatus('连接超时');$('enterBtn').disabled=false;toast('连接超时：请确认链接是公网 HTTPS，并让房主先进入工作区');}},12000); const probe=new Peer(LOBBY_ID,{debug:1}); let decided=false; probe.on('open',()=>{if(decided)return;decided=true;app.peer=probe;createHostFromPeer(probe);});probe.on('error',err=>{if(decided)return; if(err.type==='unavailable-id'){decided=true;probe.destroy();connectAsGuest();}else{decided=true;probe.destroy();toast('连接失败：当前页面可能不是公网 HTTPS');setStatus('连接失败');$('enterBtn').disabled=false;}}); }
-    function createHostFromPeer(peer){ app.isHost=true;app.peer=peer; const finish=(id)=>{app.myId=id;app.players.set(id,{id,name:app.nickname,animal:'🐻',color:COLORS[0],score:0});setConnected(true);setStatus('已连接',true);$('chatHint').textContent='Live comments enabled';renderAll();toast('协作区已建立');}; if(peer.open) finish(peer.id); else peer.on('open',finish); peer.on('connection',conn=>{conn.on('data',d=>handleHostData(conn,d));conn.on('close',()=>{const id=conn.peer;const p=app.players.get(id);app.players.delete(id);app.connections.delete(id);app.snakes.delete(id);broadcast({type:'room',players:playerArray()});renderAll();if(p)toast(`${p.name} 已离开协作区`);});});peer.on('error',err=>{if(err.type!=='unavailable-id')toast('网络连接遇到一点问题');}); }
-    function sendChat(text,sticker=false){ if(!app.connected)return toast('请先连接协作区'); const value=String(text||'').trim();if(!value)return; if(Date.now()-app.lastChatAt<350)return;app.lastChatAt=Date.now();if(app.isHost){const msg=addMessage(value,sticker);broadcast({type:'chat',message:msg});}else if(app.hostConn?.open)app.hostConn.send({type:'chat',text:value,sticker});$('messageInput').value=''; }
+    function leaveRoom(message) {
+      const channel = app.channel;
+      app.channel = null;
+      if (channel) app.client.removeChannel(channel);
+      clearTimeout(app.connectTimer); clearInterval(app.gameTimer);
+      app.players.clear(); app.snakes.clear(); app.running = false;
+      app.messages = []; renderMessages();
+      app.isHost = false; app.hostId = ''; app.synced = false;
+      setConnected(false); setStatus(message); renderAll(); toast(message);
+    }
+    function syncPresence() {
+      const members = Object.values(app.channel.presenceState()).flat()
+        .filter(p => p && typeof p.id === 'string' && typeof p.name === 'string')
+        .sort((a,b) => a.joinedAt - b.joinedAt || a.id.localeCompare(b.id));
+      const active = members.slice(0,4);
+      if (!members.some(p => p.id === app.myId)) return;
+      if (!active.some(p => p.id === app.myId)) return leaveRoom('协作区已满，最多 4 人');
+      const nextHost = active[0].id;
+      if (app.hostId && app.hostId !== nextHost) return leaveRoom('房主已离开，请重新加入');
+      const previous = app.players;
+      app.hostId = nextHost; app.isHost = nextHost === app.myId;
+      app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
+      if (app.isHost) {
+        for (const id of previous.keys()) if (!app.players.has(id)) app.snakes.delete(id);
+        for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
+          if (app.running) app.snakes.set(p.id,spawnSnake(active.indexOf(p)));
+          broadcast({type:'sync',to:p.id,messages:app.messages,state:serialState()});
+        }
+      } else if (!app.synced) broadcast({type:'sync-request',to:app.hostId});
+      setConnected(true); setStatus('已连接',true);
+      $('chatHint').textContent = 'Live comments enabled';
+      renderAll();
+    }
+    function enterLobby() {
+      if (app.connected || app.channel) return;
+      if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return toast('请先配置 Supabase 项目地址和公开密钥');
+      if (!window.supabase?.createClient) return toast('云端组件加载失败，请检查网络');
+      app.nickname = cleanName($('nickname').value);
+      app.myId = crypto.randomUUID(); app.joinedAt = Date.now(); app.synced = false;
+      app.client = window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+      const channel = app.client.channel(LOBBY_ID,{config:{broadcast:{self:false},presence:{key:app.myId}}});
+      app.channel = channel;
+      channel.on('broadcast',{event:'packet'},({payload}) => handlePacket(payload))
+        .on('presence',{event:'sync'},syncPresence)
+        .subscribe(async status => {
+          if (app.channel !== channel) return;
+          if (status === 'SUBSCRIBED') {
+            let result;
+            try { result = await channel.track({id:app.myId,name:app.nickname,joinedAt:app.joinedAt}); }
+            catch { result = 'error'; }
+            if (app.channel === channel && result !== 'ok') leaveRoom('加入协作区失败');
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') leaveRoom('云端连接失败，请检查网络');
+        });
+      setStatus('正在连接…'); $('enterBtn').disabled = true;
+      app.connectTimer = setTimeout(() => {if (!app.connected) leaveRoom('连接云端超时，请重试');},15000);
+    }
+    async function sendChat(text,sticker=false) {
+      if (!app.connected) return toast('请先连接协作区');
+      const value=String(text||'').trim(); if(!value || Date.now()-app.lastChatAt<350)return;
+      app.lastChatAt=Date.now();
+      if (await broadcast({type:'chat',text:value,sticker}) !== 'ok') return toast('消息发送失败，请检查网络连接');
+      addMessage(value,sticker); $('messageInput').value='';
+    }
 
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
+    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
     $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true))); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCanvas();
   </script>
 </body>
