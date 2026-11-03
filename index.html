@@ -130,9 +130,18 @@
     .repo-nav { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0 12px; border-bottom:1px solid var(--line); }
     .repo-crumb { color:#24292f; font-size:14px; font-weight:600; }
     .repo-crumb span { color:#656d76; font-weight:400; }
-    .repo-tabs { display:flex; gap:4px; color:#656d76; font-size:13px; }
-    .repo-tabs span { padding:6px 9px; border-radius:6px; }
-    .repo-tabs span:first-child { color:#1f2328; background:#eaeef2; font-weight:600; }
+    .work-clock { display:flex; align-items:center; gap:12px; color:#656d76; font-size:13px; }
+    .work-clock output { min-width:78px; color:#1f2328; font-variant-numeric:tabular-nums; font-weight:600; }
+    .work-clock label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    .work-clock input { width:94px; padding:5px 6px; background:#fff; }
+    .repo-tools { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .fortune-open { padding:7px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#1f2328; font-size:12px; white-space:nowrap; }
+    .fortune-open:hover { border-color:#1f883d; }
+    .fortune-dialog { width:min(1040px,calc(100vw - 24px)); height:min(88vh,900px); padding:0; border:1px solid var(--line); border-radius:6px; background:#fff; box-shadow:0 16px 48px rgba(31,35,40,.2); }
+    .fortune-dialog::backdrop { background:rgba(31,35,40,.55); }
+    .fortune-head { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; border-bottom:1px solid var(--line); font-size:13px; }
+    .fortune-head button { width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; font-size:20px; }
+    .fortune-dialog iframe { display:block; width:100%; height:calc(100% - 48px); border:0; }
     .layout { grid-template-columns:240px minmax(380px,1fr) 420px; gap:20px; margin-top:20px; }
     .layout.tetris-layout .game { grid-column:1/-1; min-height:0; }
     .layout.tetris-layout .game-inner { max-width:none; overflow-x:auto; }
@@ -210,19 +219,20 @@
     .flight-pieces { display:flex; gap:5px; flex-wrap:wrap; }
     .footer-note { color:#8b949e; font-size:10px; }
     .game-toggle { display:none; }
+    .game-drag-handle { display:none; }
     @media (min-width:1101px) {
       .game { position:relative; }
+      .game.game-floating { position:fixed; z-index:10; max-height:calc(100vh - 8px); overflow:auto; }
       .game-toggle { display:grid; place-items:center; position:absolute; top:16px; right:16px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:17px; }
-      .game-actions { margin-right:38px; }
+      .game-drag-handle { display:grid; place-items:center; position:absolute; top:16px; right:52px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:20px; cursor:grab; touch-action:none; }
+      .game-drag-handle:active { cursor:grabbing; }
+      .game-actions { margin-right:74px; }
+      .layout.game-floating-layout { grid-template-columns:240px minmax(380px,1fr); }
       .layout.game-collapsed { grid-template-columns:240px minmax(380px,1fr) 42px; }
       .layout.game-collapsed .game { grid-column:auto; width:42px; min-height:42px; border:0; background:transparent; overflow:visible; }
-      .layout.game-collapsed .game > :not(.game-toggle):not(.quick-links) { display:none; }
+      .layout.game-collapsed .game > :not(.game-toggle) { display:none; }
       .layout.game-collapsed .game-toggle { top:0; right:0; width:42px; height:42px; }
-      .layout.game-collapsed .quick-links { display:flex; position:absolute; top:50px; left:0; flex-direction:column; gap:8px; }
-      .quick-links a { display:grid; place-items:center; width:42px; height:42px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:17px; text-decoration:none; }
-      .quick-links a:hover { border-color:#1f883d; color:#1f883d; }
     }
-    .quick-links { display:none; }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
     @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
     .avatar { overflow:hidden; flex:none; }
@@ -279,7 +289,7 @@
 
     <nav class="repo-nav" aria-label="项目导航">
       <div class="repo-crumb">workspace <span>/</span> daily-sync <span>·</span> main</div>
-      <div class="repo-tabs"><span>Overview</span><span>Files</span><span>Activity</span><span>Settings</span></div>
+      <div class="repo-tools"><button class="fortune-open" id="fortuneOpen" type="button">八字 · 姻缘</button><div class="work-clock"><span>下班倒计时</span><output id="workCountdown" role="timer">--:--:--</output><label for="workEndTime">下班时间 <input id="workEndTime" type="time" value="17:30" /></label></div></div>
     </nav>
 
     <section class="layout" id="workspaceLayout">
@@ -305,9 +315,9 @@
         </div>
       </section>
 
-      <section class="panel game">
+      <section class="panel game" id="gamePanel">
         <button class="game-toggle" id="gameToggle" type="button" aria-label="展开游戏" aria-expanded="false" title="展开面板">▤</button>
-        <nav class="quick-links" aria-label="其他工具"><a href="https://github.com/jinchenma94/bazi-skill" target="_blank" rel="noopener noreferrer" title="赛博算命" aria-label="打开赛博算命项目">卜</a><a href="https://github.com/Ming-H/yinyuan-skills" target="_blank" rel="noopener noreferrer" title="月老 · 姻缘测算" aria-label="打开姻缘测算项目">缘</a><a href="https://github.com/1liye/bazi-chart" target="_blank" rel="noopener noreferrer" title="八字排盘" aria-label="打开八字排盘项目">盘</a></nav>
+        <button class="game-drag-handle" id="gameDragHandle" type="button" aria-label="拖动游戏面板" title="拖动游戏面板">⠿</button>
         <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
         <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeFlight" aria-pressed="false" disabled>飞行棋</button></div>
         <div class="game-membership"><button id="joinGameBtn" hidden>加入游戏</button><button id="leaveGameBtn" hidden>退出游戏</button></div>
@@ -322,6 +332,7 @@
     </section>
     <div class="footer-note">workspace status · live sync</div>
   </main>
+  <dialog class="fortune-dialog" id="fortuneDialog" aria-label="八字与姻缘测算"><div class="fortune-head"><strong>八字 · 姻缘</strong><button id="fortuneClose" type="button" aria-label="关闭测算">×</button></div><iframe id="fortuneFrame" title="八字与姻缘测算" loading="lazy"></iframe></dialog>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -410,7 +421,8 @@
     };
 
     function toast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(app.toastTimer); app.toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2300); }
-    function setGameCollapsed(collapsed) { app.gameCollapsed=window.innerWidth>1100&&!!collapsed;$('workspaceLayout').classList.toggle('game-collapsed',app.gameCollapsed);const button=$('gameToggle');button.setAttribute('aria-expanded',String(!app.gameCollapsed));button.setAttribute('aria-label',app.gameCollapsed?'展开游戏':'收起游戏');button.title=app.gameCollapsed?'展开面板':'收起面板';button.textContent=app.gameCollapsed?'▤':'×'; }
+    function resetGamePosition() { const game=$('gamePanel');game.classList.remove('game-floating');game.style.left='';game.style.top='';game.style.width='';$('workspaceLayout').classList.remove('game-floating-layout'); }
+    function setGameCollapsed(collapsed) { app.gameCollapsed=window.innerWidth>1100&&!!collapsed;if(app.gameCollapsed||window.innerWidth<=1100)resetGamePosition();$('workspaceLayout').classList.toggle('game-collapsed',app.gameCollapsed);const button=$('gameToggle');button.setAttribute('aria-expanded',String(!app.gameCollapsed));button.setAttribute('aria-label',app.gameCollapsed?'展开游戏':'收起游戏');button.title=app.gameCollapsed?'展开面板':'收起面板';button.textContent=app.gameCollapsed?'▤':'×'; }
     function setStatus(text, live=false) { $('connectionText').textContent=text; $('connectionDot').classList.toggle('live', live); }
     function cleanName(value) { return String(value || '').replace(/[<>]/g,'').trim().slice(0,12); }
     function randomAnimal() { return ANIMALS[app.players.size % ANIMALS.length]; }
@@ -768,6 +780,28 @@
       addMessage(value,sticker); $('messageInput').value='';
     }
 
+    const WORK_END_KEY = 'cy-chat-work-end-time';
+    function validWorkTime(value) { return typeof value==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value); }
+    function countdownText(now,time) {
+      const [hour,minute]=time.split(':').map(Number),end=new Date(now);
+      end.setHours(hour,minute,0,0);
+      const seconds=Math.max(0,Math.ceil((end-now)/1000));
+      if(!seconds)return '已下班';
+      return [Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60].map(n=>String(n).padStart(2,'0')).join(':');
+    }
+    function updateWorkCountdown() { $('workCountdown').textContent=countdownText(new Date(),workEndTime); }
+    let savedWorkTime;
+    try { savedWorkTime=localStorage.getItem(WORK_END_KEY); } catch {}
+    let workEndTime=validWorkTime(savedWorkTime)?savedWorkTime:'17:30';
+    $('workEndTime').value=workEndTime;
+    $('workEndTime').addEventListener('change',()=>{
+      if(!validWorkTime($('workEndTime').value))$('workEndTime').value=workEndTime;
+      else workEndTime=$('workEndTime').value;
+      try { localStorage.setItem(WORK_END_KEY,workEndTime); } catch {}
+      updateWorkCountdown();
+    });
+    updateWorkCountdown();
+    setInterval(updateWorkCountdown,1000);
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
     $('enterBtn').addEventListener('click',enterLobby);
@@ -787,9 +821,28 @@
     $('resetBtn').addEventListener('click',resetGame);
     $('joinGameBtn').addEventListener('click',joinGame);
     $('leaveGameBtn').addEventListener('click',leaveGame);
+    $('fortuneOpen').addEventListener('click',()=>{const frame=$('fortuneFrame');if(!frame.src)frame.src='bazi.html';$('fortuneDialog').showModal();});
+    $('fortuneClose').addEventListener('click',()=>$('fortuneDialog').close());
+    $('fortuneDialog').addEventListener('click',e=>{if(e.target===$('fortuneDialog'))$('fortuneDialog').close();});
+    let gameDrag=null;
+    $('gameDragHandle').addEventListener('pointerdown',e=>{
+      if(app.gameCollapsed||window.innerWidth<=1100||e.pointerType==='mouse'&&e.button!==0)return;
+      const game=$('gamePanel'),rect=game.getBoundingClientRect();
+      gameDrag={id:e.pointerId,x:e.clientX,y:e.clientY,left:rect.left,top:rect.top,width:rect.width};
+      game.style.left=`${rect.left}px`;game.style.top=`${rect.top}px`;game.style.width=`${rect.width}px`;
+      game.classList.add('game-floating');$('workspaceLayout').classList.add('game-floating-layout');
+      e.currentTarget.setPointerCapture(e.pointerId);e.preventDefault();
+    });
+    $('gameDragHandle').addEventListener('pointermove',e=>{
+      if(!gameDrag||e.pointerId!==gameDrag.id)return;
+      const left=Math.max(0,Math.min(window.innerWidth-gameDrag.width,gameDrag.left+e.clientX-gameDrag.x));
+      const top=Math.max(0,Math.min(window.innerHeight-48,gameDrag.top+e.clientY-gameDrag.y));
+      $('gamePanel').style.left=`${left}px`;$('gamePanel').style.top=`${top}px`;
+    });
+    for(const event of ['pointerup','pointercancel'])$('gameDragHandle').addEventListener(event,()=>{gameDrag=null;});
     $('gameToggle').addEventListener('click',()=>setGameCollapsed(!app.gameCollapsed));
     [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>$(id).addEventListener('click',()=>setGameMode(mode)));
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&window.innerWidth>1100&&!app.gameCollapsed&&$('characterGate').hidden){e.preventDefault();setGameCollapsed(true);$('gameToggle').focus();return;}if(app.gameCollapsed||e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
+    window.addEventListener('keydown',e=>{if($('fortuneDialog').open)return;if(e.key==='Escape'&&window.innerWidth>1100&&!app.gameCollapsed&&$('characterGate').hidden){e.preventDefault();setGameCollapsed(true);$('gameToggle').focus();return;}if(app.gameCollapsed||e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
     let wideGameLayout=window.innerWidth>1100;
     window.addEventListener('resize',()=>{const wide=window.innerWidth>1100;if(wide!==wideGameLayout){wideGameLayout=wide;setGameCollapsed(wide);}});
     setGameCollapsed(wideGameLayout);
