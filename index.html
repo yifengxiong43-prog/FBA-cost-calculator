@@ -205,6 +205,16 @@
     @keyframes dice-roll { 0%{transform:rotate(0) scale(1)} 25%{transform:rotate(-22deg) scale(1.18)} 50%{transform:rotate(25deg) scale(.9)} 75%{transform:rotate(-14deg) scale(1.12)} 100%{transform:rotate(360deg) scale(1)} }
     .flight-pieces { display:flex; gap:5px; flex-wrap:wrap; }
     .footer-note { color:#8b949e; font-size:10px; }
+    .game-toggle { display:none; }
+    @media (min-width:1101px) {
+      .game { position:relative; }
+      .game-toggle { display:grid; place-items:center; position:absolute; top:16px; right:16px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:17px; }
+      .game-actions { margin-right:38px; }
+      .layout.game-collapsed { grid-template-columns:240px minmax(380px,1fr) 42px; }
+      .layout.game-collapsed .game { grid-column:auto; width:42px; min-height:42px; border:0; background:transparent; overflow:visible; }
+      .layout.game-collapsed .game > :not(.game-toggle) { display:none; }
+      .layout.game-collapsed .game-toggle { top:0; right:0; width:42px; height:42px; }
+    }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
     @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
     .avatar { overflow:hidden; flex:none; }
@@ -288,6 +298,7 @@
       </section>
 
       <section class="panel game">
+        <button class="game-toggle" id="gameToggle" type="button" aria-label="展开游戏" aria-expanded="false" title="展开面板">▤</button>
         <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
         <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeFlight" aria-pressed="false" disabled>飞行棋</button></div>
         <div class="game-inner">
@@ -383,11 +394,12 @@
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '', autoName:true, characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
-      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false,
+      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false, gameCollapsed:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
     function toast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(app.toastTimer); app.toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2300); }
+    function setGameCollapsed(collapsed) { app.gameCollapsed=window.innerWidth>1100&&!!collapsed;$('workspaceLayout').classList.toggle('game-collapsed',app.gameCollapsed);const button=$('gameToggle');button.setAttribute('aria-expanded',String(!app.gameCollapsed));button.setAttribute('aria-label',app.gameCollapsed?'展开游戏':'收起游戏');button.title=app.gameCollapsed?'展开面板':'收起面板';button.textContent=app.gameCollapsed?'▤':'×'; }
     function setStatus(text, live=false) { $('connectionText').textContent=text; $('connectionDot').classList.toggle('live', live); }
     function cleanName(value) { return String(value || '').replace(/[<>]/g,'').trim().slice(0,12); }
     function randomAnimal() { return ANIMALS[app.players.size % ANIMALS.length]; }
@@ -742,8 +754,12 @@
     $('rollBtn').addEventListener('click',()=>setDirection('roll'));
     $('startBtn').addEventListener('click',startGame);
     $('resetBtn').addEventListener('click',resetGame);
+    $('gameToggle').addEventListener('click',()=>setGameCollapsed(!app.gameCollapsed));
     [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>$(id).addEventListener('click',()=>setGameMode(mode)));
-    window.addEventListener('keydown',e=>{if(e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&window.innerWidth>1100&&!app.gameCollapsed&&$('characterGate').hidden){e.preventDefault();setGameCollapsed(true);$('gameToggle').focus();return;}if(app.gameCollapsed||e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
+    let wideGameLayout=window.innerWidth>1100;
+    window.addEventListener('resize',()=>{const wide=window.innerWidth>1100;if(wide!==wideGameLayout){wideGameLayout=wide;setGameCollapsed(wide);}});
+    setGameCollapsed(wideGameLayout);
     renderGameMode(); renderCanvas();
   </script>
 </body>
