@@ -183,6 +183,7 @@
     .game-info { margin-bottom:10px; }
     .game-info .state { font-size:11px; }
     .score-chip { padding:4px 7px; border-radius:6px; font-size:10px; }
+    .score-chip .avatar { width:20px; height:20px; border-radius:3px; }
     #gameCanvas { border-radius:6px; background:#f6f8fa; aspect-ratio:auto; }
     #gameCanvas.tetris-canvas { width:auto; max-width:100%; margin:auto; }
     .layout.tetris-layout #gameCanvas.tetris-canvas { max-width:none; }
@@ -192,9 +193,36 @@
     .footer-note { color:#8b949e; font-size:10px; }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
     @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
+    .avatar { overflow:hidden; flex:none; }
+    .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .character-gate { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:16px; background:rgba(31,35,40,.66); }
+    .character-gate[hidden], .unlock-panel[hidden] { display:none; }
+    .character-dialog { width:min(880px,100%); max-height:min(90vh,900px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:8px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.22); }
+    .character-dialog h2 { margin:0 0 5px; font-size:20px; }
+    .character-dialog p { margin:0 0 18px; color:var(--muted); font-size:13px; }
+    .character-group { margin:16px 0 8px; color:var(--muted); font-size:12px; font-weight:700; }
+    .character-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+    .character-option { display:flex; flex-direction:column; align-items:center; gap:7px; min-width:0; padding:8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); font-size:12px; }
+    .character-option:hover, .character-option:focus-visible { border-color:#1f883d; outline:none; box-shadow:0 0 0 2px rgba(31,136,61,.12); }
+    .character-option img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; }
+    .character-option span { white-space:nowrap; }
+    .unlock-panel { display:flex; gap:8px; align-items:center; margin-top:16px; padding:12px; border:1px solid var(--line); border-radius:6px; background:#f6f8fa; }
+    .unlock-panel label { flex:none; font-size:12px; }
+    .unlock-panel input { max-width:120px; }
+    .unlock-panel button { flex:none; border-radius:6px; padding:8px 12px; color:#fff; background:#1f883d; }
+    .unlock-error { color:#cf222e; font-size:12px; }
+    @media (max-width:620px) { .character-dialog{padding:16px}.character-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.unlock-panel{flex-wrap:wrap} }
   </style>
 </head>
 <body>
+  <div class="character-gate" id="characterGate" role="dialog" aria-modal="true" aria-labelledby="characterTitle">
+    <div class="character-dialog">
+      <h2 id="characterTitle">选择人物</h2><p>选择后进入协作区</p>
+      <div class="character-group">Ohuhu 美术产品部</div><div class="character-options" id="productCharacters"></div>
+      <div class="character-group">Ohuhu 美术研发部</div><div class="character-options" id="researchCharacters"></div>
+      <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">熊毅锋 · 密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
+    </div>
+  </div>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand">
@@ -212,9 +240,9 @@
     <section class="layout" id="workspaceLayout">
       <aside class="panel sidebar">
         <div class="profile">
-          <label for="nickname">协作者名称</label>
-          <div class="name-row"><input id="nickname" maxlength="12" value="小熊玩家" placeholder="输入昵称" /><div class="avatar" id="previewAvatar">🐻</div></div>
-          <button class="primary" id="enterBtn">↗ 连接协作区</button>
+          <label for="nickname">已选人物</label>
+          <div class="name-row"><input id="nickname" value="未选择人物" readonly /><div class="avatar" id="previewAvatar">?</div></div>
+          <button class="primary" id="enterBtn" disabled>↗ 连接协作区</button>
           <div class="lobby-note" id="linkHint">连接后可查看团队讨论和实时预览。请分享浏览器地址栏中的完整链接（包含末尾标识），并使用公网 HTTPS 页面。</div>
         </div>
         <div class="room-status">
@@ -263,6 +291,17 @@
     const MAX_PLAYERS = 10;
     const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7', '#f3b562', '#e889b5', '#68c5c0', '#9a9de8', '#d58b63', '#75b85b'];
     const ANIMALS = ['🐻', '🐰', '🐴', '🐑', '🦊', '🐼', '🐸', '🐯', '🐨', '🦁'];
+    const CHARACTERS = [
+      {id:'01',name:'金千龙',group:'product'}, {id:'02',name:'田可忻',group:'product'},
+      {id:'03',name:'张爽',group:'product'}, {id:'04',name:'朱子杰',group:'product'},
+      {id:'05',name:'熊毅锋',group:'product',locked:true},
+      {id:'06',name:'陈静川',group:'research'}, {id:'07',name:'陈彦欢',group:'research'},
+      {id:'08',name:'陈颖',group:'research'}, {id:'09',name:'贾俊楠',group:'research'},
+      {id:'10',name:'雷婉君',group:'research'}, {id:'11',name:'骆明辉',group:'research'},
+      {id:'12',name:'邵伟开',group:'research'}, {id:'13',name:'王超',group:'research'},
+      {id:'14',name:'项辉',group:'research'}, {id:'15',name:'张麒康',group:'research'}
+    ];
+    const CHARACTER_PASSWORD = '0206';
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
     const TETRIS_W = 10, TETRIS_H = 20;
     const TETRIS_SHAPES = [
@@ -286,17 +325,23 @@
     }
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
-      myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
+      myId: '', nickname: '', characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
       gameMode: 'snake', tetris: new Map(), running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
     function toast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(app.toastTimer); app.toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2300); }
     function setStatus(text, live=false) { $('connectionText').textContent=text; $('connectionDot').classList.toggle('live', live); }
-    function cleanName(value) { return (value || '小熊玩家').replace(/[<>]/g,'').trim().slice(0,12) || '小熊玩家'; }
+    function cleanName(value) { return String(value || '').replace(/[<>]/g,'').trim().slice(0,12); }
     function randomAnimal() { return ANIMALS[app.players.size % ANIMALS.length]; }
     function animalFor(player) { return player.animal || '🐻'; }
-    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('modeBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled; $('nickname').disabled = enabled; }
+    function avatarImage(id) { const image=document.createElement('img');image.src=`avatars/${id}.jpg`;image.alt='';return image; }
+    function setAvatar(element,player) { element.innerHTML='';if(CHARACTERS.some(c=>c.id===player.avatar))element.append(avatarImage(player.avatar));else element.textContent=animalFor(player); }
+    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));const name=document.createElement('span');name.textContent=character.name+(character.locked?' 🔒':'');button.append(name);button.addEventListener('click',()=>chooseCharacter(character.id));$(character.group==='product'?'productCharacters':'researchCharacters').append(button);}); }
+    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
+    function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
+    function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
+    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('modeBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled || !app.characterId; }
     function playerArray() { return [...app.players.values()]; }
 
     function showEmptyIfNeeded() {
@@ -308,7 +353,7 @@
       if (!app.messages.length) { showEmptyIfNeeded(); return; }
       app.messages.forEach(msg => {
         const row = document.createElement('div'); row.className = 'message' + (msg.id === app.myId ? ' mine' : '');
-        const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = msg.animal || '🐻';
+        const avatar = document.createElement('div'); avatar.className = 'avatar'; setAvatar(avatar,msg);
         const body = document.createElement('div'); body.className = 'message-body';
         const meta = document.createElement('div'); meta.className = 'message-meta';
         const name = document.createElement('span'); name.textContent = msg.name; const time = document.createElement('span'); time.textContent = msg.time || '';
@@ -322,11 +367,11 @@
     }
     function renderMembers() {
       const list = $('memberList'); list.innerHTML = ''; $('memberCount').textContent = app.players.size;
-      playerArray().forEach(p => { const row=document.createElement('div'); row.className='member'; const av=document.createElement('div'); av.className='avatar'; av.style.background=p.color+'22'; av.textContent=animalFor(p); const name=document.createElement('span'); name.textContent=p.name; row.append(av,name); if(p.id===app.myId){const you=document.createElement('span');you.className='you';you.textContent='你';row.append(you)} list.append(row); });
+      playerArray().forEach(p => { const row=document.createElement('div'); row.className='member'; const av=document.createElement('div'); av.className='avatar'; av.style.background=p.color+'22'; setAvatar(av,p); const name=document.createElement('span'); name.textContent=p.name; row.append(av,name); if(p.id===app.myId){const you=document.createElement('span');you.className='you';you.textContent='你';row.append(you)} list.append(row); });
       if (!app.players.size) list.innerHTML='<div class="member"><div class="avatar">🌱</div><span>还没有人，来坐坐吧</span></div>';
       $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/${MAX_PLAYERS} 位协作者在线` : '等待连接协作区…';
     }
-    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const animal=document.createElement('span');animal.textContent=animalFor(p);const score=document.createElement('b');const gameState=app.gameMode==='tetris'?app.tetris.get(p.id):app.snakes.get(p.id);score.textContent=(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(animal,score);box.append(chip)}); }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const avatar=document.createElement('span');avatar.className='avatar';setAvatar(avatar,p);const score=document.createElement('b');const gameState=app.gameMode==='tetris'?app.tetris.get(p.id):app.snakes.get(p.id);score.textContent=(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(avatar,score);box.append(chip)}); }
     function renderGameMode() {
       const tetris = app.gameMode === 'tetris';
       $('gameIcon').textContent = tetris ? '▦' : '🖍️';
@@ -337,8 +382,8 @@
       $('gameCanvas').setAttribute('aria-label', tetris ? '火拼俄罗斯游戏' : '马克笔贪吃蛇游戏');
     }
 
-    function addMessage(text, sticker=false, source={id:app.myId,name:app.nickname,animal: animalFor(app.players.get(app.myId)||{})}) {
-      const msg={id:source.id,name:source.name,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
+    function addMessage(text, sticker=false, source=app.players.get(app.myId)||{id:app.myId,name:app.nickname,avatar:app.characterId}) {
+      const msg={id:source.id,name:source.name,avatar:source.avatar,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
       app.messages.push(msg); if(app.messages.length>80) app.messages.shift(); renderMessages(); return msg;
     }
     function broadcast(packet) {
@@ -408,7 +453,7 @@
       ctx.fillStyle='#f4f8f7';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#cbd8d3';ctx.strokeRect(x,y,w,h);
       game.board.forEach((row,ry)=>row.forEach((color,cx)=>{if(color){ctx.fillStyle=color;ctx.fillRect(x+cx*cell+1,y+ry*cell+1,cell-2,cell-2);}}));
       if(game.alive) tetrisCells(game.piece).forEach(([cx,cy])=>{if(game.piece.y+cy>=0){ctx.fillStyle=game.piece.color;ctx.fillRect(x+(game.piece.x+cx)*cell+1,y+(game.piece.y+cy)*cell+1,cell-2,cell-2);}});
-      ctx.fillStyle='#354049';ctx.font=`${Math.max(9,Math.min(13,cell))}px Arial`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(`${animalFor(p)} ${p.name}${game.alive?'':' · 淘汰'}`,x,y-3);
+      ctx.fillStyle='#354049';ctx.font=`${Math.max(9,Math.min(13,cell))}px Arial`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(`${p.name}${game.alive?'':' · 淘汰'}`,x,y-3);
     }
     function renderTetris(ctx) {
       const people=playerArray(),count=Math.max(1,people.length),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols),gap=12,cell=18;
@@ -474,7 +519,7 @@
       if (app.hostId && app.hostId !== nextHost) return leaveRoom('房主已离开，请重新加入');
       const previous = app.players;
       app.hostId = nextHost; app.isHost = nextHost === app.myId;
-      app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
+      app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),avatar:p.avatar,animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
       if (app.isHost) {
         for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id); }
         for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
@@ -489,9 +534,10 @@
     }
     function enterLobby() {
       if (app.connected || app.channel) return;
+      if (!app.characterId) return toast('请先选择人物');
       if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return toast('请先配置 Supabase 项目地址和公开密钥');
       if (!window.supabase?.createClient) return toast('云端组件加载失败，请检查网络');
-      app.nickname = cleanName($('nickname').value);
+      app.nickname = CHARACTERS.find(c=>c.id===app.characterId).name;
       app.myId = crypto.randomUUID(); app.joinedAt = Date.now(); app.synced = false;
       app.client = window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
       const channel = app.client.channel(LOBBY_ID,{config:{broadcast:{self:false},presence:{key:app.myId}}});
@@ -502,7 +548,7 @@
           if (app.channel !== channel) return;
           if (status === 'SUBSCRIBED') {
             let result;
-            try { result = await channel.track({id:app.myId,name:app.nickname,joinedAt:app.joinedAt}); }
+            try { result = await channel.track({id:app.myId,name:app.nickname,avatar:app.characterId,joinedAt:app.joinedAt}); }
             catch { result = 'error'; }
             if (app.channel === channel && result !== 'ok') leaveRoom('加入协作区失败');
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') leaveRoom('云端连接失败，请检查网络');
@@ -520,7 +566,7 @@
 
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
-    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('modeBtn').addEventListener('click',toggleGameMode); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderGameMode(); renderCanvas();
+    $('enterBtn').addEventListener('click',enterLobby); $('unlockBtn').addEventListener('click',unlockCharacter); $('characterPassword').addEventListener('keydown',e=>{if(e.key==='Enter')unlockCharacter();}); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('modeBtn').addEventListener('click',toggleGameMode); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCharacterOptions(); renderGameMode(); renderCanvas();
   </script>
 </body>
 </html>
