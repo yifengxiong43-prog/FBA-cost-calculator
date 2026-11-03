@@ -210,11 +210,10 @@
     .avatar { overflow:hidden; flex:none; }
     .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
     .character-gate { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:16px; background:rgba(31,35,40,.66); }
-    .character-gate[hidden], .unlock-panel[hidden] { display:none; }
+    .character-gate[hidden], .unlock-panel[hidden], #characterPicker[hidden], .name-panel[hidden] { display:none; }
     .character-dialog { width:min(880px,100%); max-height:min(90vh,900px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:8px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.22); }
+    .character-dialog.naming { width:min(380px,100%); }
     .character-dialog h2 { margin:0 0 5px; font-size:20px; }
-    .character-dialog p { margin:0 0 18px; color:var(--muted); font-size:13px; }
-    .character-group { margin:16px 0 8px; color:var(--muted); font-size:12px; font-weight:700; }
     .character-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
     .character-option { position:relative; display:block; min-width:0; padding:6px; border:1px solid var(--line); border-radius:6px; background:#fff; }
     .character-option:hover, .character-option:focus-visible { border-color:#1f883d; outline:none; box-shadow:0 0 0 2px rgba(31,136,61,.12); }
@@ -225,17 +224,30 @@
     .unlock-panel input { max-width:120px; }
     .unlock-panel button { flex:none; border-radius:6px; padding:8px 12px; color:#fff; background:#1f883d; }
     .unlock-error { color:#cf222e; font-size:12px; }
+    .name-panel { display:grid; gap:14px; margin-top:16px; }
+    .name-panel .avatar { width:72px; height:72px; justify-self:center; }
+    .name-panel label { font-size:12px; color:var(--muted); }
+    .name-panel input { display:block; width:100%; margin-top:6px; }
+    .name-actions { display:flex; gap:8px; }
+    .name-actions button { border-radius:6px; padding:9px 12px; }
+    .name-actions .name-back { border:1px solid var(--line); background:#fff; }
+    .name-actions .name-confirm { flex:1; background:#1f883d; color:#fff; }
     @media (max-width:620px) { .character-dialog{padding:16px}.character-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.unlock-panel{flex-wrap:wrap} }
   </style>
 </head>
 <body>
   <div class="character-gate" id="characterGate" role="dialog" aria-modal="true" aria-labelledby="characterTitle">
-    <div class="character-dialog">
-      <h2 id="characterTitle">选择人物</h2><p>选择后进入协作区</p>
-      <div class="character-group">Ohuhu 美术产品部</div><div class="character-options" id="productCharacters"></div>
-      <div class="character-group">Ohuhu 美术研发部</div><div class="character-options" id="researchCharacters"></div>
-      <div class="character-group">更多照片</div><div class="character-options" id="extraCharacters"></div>
-      <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">请输入密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
+    <div class="character-dialog" id="characterDialog">
+      <h2 id="characterTitle">选择人物</h2>
+      <div id="characterPicker">
+        <div class="character-options" id="characterOptions"></div>
+        <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">请输入密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
+      </div>
+      <form class="name-panel" id="namePanel" hidden>
+        <div class="avatar" id="chosenAvatar"></div>
+        <label for="chosenName">昵称<input id="chosenName" maxlength="12" autocomplete="nickname" placeholder="留空按进入顺序编号" /></label>
+        <div class="name-actions"><button class="name-back" type="button" id="nameBack" aria-label="重新选择照片" title="重新选择照片">←</button><button class="name-confirm" type="submit">确认进入</button></div>
+      </form>
     </div>
   </div>
   <main class="app-shell">
@@ -309,21 +321,21 @@
     const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7', '#f3b562', '#e889b5', '#68c5c0', '#9a9de8', '#d58b63', '#75b85b'];
     const ANIMALS = ['🐻', '🐰', '🐴', '🐑', '🦊', '🐼', '🐸', '🐯', '🐨', '🦁'];
     const CHARACTERS = [
-      {id:'01',name:'金千龙',group:'product'}, {id:'02',name:'田可忻',group:'product'},
-      {id:'03',name:'张爽',group:'product'}, {id:'04',name:'朱子杰',group:'product'},
-      {id:'05',name:'熊毅锋',group:'product',locked:true},
-      {id:'06',name:'陈静川',group:'research'}, {id:'07',name:'陈彦欢',group:'research'},
-      {id:'08',name:'陈颖',group:'research'}, {id:'09',name:'贾俊楠',group:'research'},
-      {id:'10',name:'雷婉君',group:'research'}, {id:'11',name:'骆明辉',group:'research'},
-      {id:'12',name:'邵伟开',group:'research'}, {id:'13',name:'王超',group:'research'},
-      {id:'14',name:'项辉',group:'research'}, {id:'15',name:'张麒康',group:'research'},
-      {id:'16',name:'吴亦凡',group:'extra'}, {id:'17',name:'李易峰',group:'extra'},
-      {id:'18',name:'贾乃亮',group:'extra'}, {id:'19',name:'握拳橘猫',group:'extra'},
-      {id:'20',name:'惊讶猴',group:'extra'}, {id:'21',name:'派大星',group:'extra'},
-      {id:'22',name:'紧张橘猫',group:'extra'}, {id:'23',name:'白帽橘猫',group:'extra'},
-      {id:'24',name:'火焰橘猫',group:'extra'}, {id:'25',name:'棕色小狗',group:'extra'},
-      {id:'26',name:'草帽猴',group:'extra'}, {id:'27',name:'蝴蝶结小狗',group:'extra'},
-      {id:'28',name:'眼镜橘猫',group:'extra'}
+      {id:'01',name:'金千龙'}, {id:'02',name:'田可忻'},
+      {id:'03',name:'张爽'}, {id:'04',name:'朱子杰'},
+      {id:'05',name:'熊毅锋',locked:true},
+      {id:'06',name:'陈静川'}, {id:'07',name:'陈彦欢'},
+      {id:'08',name:'陈颖'}, {id:'09',name:'贾俊楠'},
+      {id:'10',name:'雷婉君'}, {id:'11',name:'骆明辉'},
+      {id:'12',name:'邵伟开'}, {id:'13',name:'王超'},
+      {id:'14',name:'项辉'}, {id:'15',name:'张麒康'},
+      {id:'16',name:'吴亦凡'}, {id:'17',name:'李易峰'},
+      {id:'18',name:'贾乃亮'}, {id:'19',name:'握拳橘猫'},
+      {id:'20',name:'惊讶猴'}, {id:'21',name:'派大星'},
+      {id:'22',name:'紧张橘猫'}, {id:'23',name:'白帽橘猫'},
+      {id:'24',name:'火焰橘猫'}, {id:'25',name:'棕色小狗'},
+      {id:'26',name:'草帽猴'}, {id:'27',name:'蝴蝶结小狗'},
+      {id:'28',name:'眼镜橘猫'}
     ];
     const CHARACTER_PASSWORD = '0206';
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
@@ -382,10 +394,17 @@
     function animalFor(player) { return player.animal || '🐻'; }
     function avatarImage(id) { const image=document.createElement('img');image.src=`avatars/${id}.jpg`;image.alt='';return image; }
     function setAvatar(element,player) { element.innerHTML='';if(CHARACTERS.some(c=>c.id===player.avatar))element.append(avatarImage(player.avatar));else element.textContent=animalFor(player); }
-    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));if(character.locked){const lock=document.createElement('span');lock.className='character-lock';lock.setAttribute('aria-hidden','true');lock.textContent='🔒';button.append(lock);}button.addEventListener('click',()=>chooseCharacter(character.id));$(({product:'productCharacters',research:'researchCharacters',extra:'extraCharacters'})[character.group]).append(button);}); }
-    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname='1';app.autoName=true;$('nickname').value='1';$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
-    function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
-    function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
+    function renderCharacterOptions() {
+      const shuffled=[...CHARACTERS];
+      for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+      shuffled.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));if(character.locked){const lock=document.createElement('span');lock.className='character-lock';lock.setAttribute('aria-hidden','true');lock.textContent='🔒';button.append(lock);}button.addEventListener('click',()=>chooseCharacter(character.id));$('characterOptions').append(button);});
+    }
+    let pendingCharacter=null;
+    function showNamePrompt(character) { pendingCharacter=character;$('unlockPanel').hidden=true;$('characterPicker').hidden=true;$('namePanel').hidden=false;$('characterDialog').classList.add('naming');$('characterTitle').textContent='输入昵称';$('chosenName').value='';setAvatar($('chosenAvatar'),{avatar:character.id});$('chosenName').focus(); }
+    function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}showNamePrompt(character); }
+    function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';showNamePrompt(CHARACTERS.find(c=>c.locked)); }
+    function backToCharacters() { pendingCharacter=null;$('namePanel').hidden=true;$('characterPicker').hidden=false;$('characterDialog').classList.remove('naming');$('characterTitle').textContent='选择人物'; }
+    function confirmName() { if(!pendingCharacter)return;const name=cleanName($('chosenName').value);app.characterId=pendingCharacter.id;app.nickname=name||'1';app.autoName=!name;$('nickname').value=app.nickname;$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:app.characterId});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
     renderCharacterOptions();
     async function updateNickname() {
       const name=cleanName($('nickname').value),previous=app.nickname,previousAutoName=app.autoName;
@@ -713,6 +732,8 @@
     $('nickname').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickname').blur();});
     $('unlockBtn').addEventListener('click',unlockCharacter);
     $('characterPassword').addEventListener('keydown',e=>{if(e.key==='Enter')unlockCharacter();});
+    $('namePanel').addEventListener('submit',e=>{e.preventDefault();confirmName();});
+    $('nameBack').addEventListener('click',backToCharacters);
     $('copyLinkBtn').addEventListener('click',async()=>{try{const link=new URL(location.href);link.searchParams.set('refresh',Date.now());await navigator.clipboard.writeText(link.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}});
     $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value));
     $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)});
