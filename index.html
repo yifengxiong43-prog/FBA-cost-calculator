@@ -218,10 +218,10 @@
     .character-dialog p { margin:0 0 18px; color:var(--muted); font-size:13px; }
     .character-group { margin:16px 0 8px; color:var(--muted); font-size:12px; font-weight:700; }
     .character-options { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
-    .character-option { display:flex; flex-direction:column; align-items:center; gap:7px; min-width:0; padding:8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); font-size:12px; }
+    .character-option { position:relative; display:block; min-width:0; padding:6px; border:1px solid var(--line); border-radius:6px; background:#fff; }
     .character-option:hover, .character-option:focus-visible { border-color:#1f883d; outline:none; box-shadow:0 0 0 2px rgba(31,136,61,.12); }
     .character-option img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; }
-    .character-option span { white-space:nowrap; }
+    .character-lock { position:absolute; right:9px; bottom:9px; display:grid; place-items:center; width:25px; height:25px; border-radius:4px; background:rgba(255,255,255,.94); font-size:15px; }
     .unlock-panel { display:flex; gap:8px; align-items:center; margin-top:16px; padding:12px; border:1px solid var(--line); border-radius:6px; background:#f6f8fa; }
     .unlock-panel label { flex:none; font-size:12px; }
     .unlock-panel input { max-width:120px; }
@@ -236,7 +236,7 @@
       <h2 id="characterTitle">选择人物</h2><p>选择后进入协作区</p>
       <div class="character-group">Ohuhu 美术产品部</div><div class="character-options" id="productCharacters"></div>
       <div class="character-group">Ohuhu 美术研发部</div><div class="character-options" id="researchCharacters"></div>
-      <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">熊毅锋 · 密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
+      <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">请输入密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
     </div>
   </div>
   <main class="app-shell">
@@ -367,7 +367,7 @@
     function animalFor(player) { return player.animal || '🐻'; }
     function avatarImage(id) { const image=document.createElement('img');image.src=`avatars/${id}.jpg`;image.alt='';return image; }
     function setAvatar(element,player) { element.innerHTML='';if(CHARACTERS.some(c=>c.id===player.avatar))element.append(avatarImage(player.avatar));else element.textContent=animalFor(player); }
-    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));const name=document.createElement('span');name.textContent=character.name+(character.locked?' 🔒':'');button.append(name);button.addEventListener('click',()=>chooseCharacter(character.id));$(character.group==='product'?'productCharacters':'researchCharacters').append(button);}); }
+    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));if(character.locked){const lock=document.createElement('span');lock.className='character-lock';lock.setAttribute('aria-hidden','true');lock.textContent='🔒';button.append(lock);}button.addEventListener('click',()=>chooseCharacter(character.id));$(character.group==='product'?'productCharacters':'researchCharacters').append(button);}); }
     function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
     function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
     function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
