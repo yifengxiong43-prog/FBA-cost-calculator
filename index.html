@@ -184,6 +184,8 @@
     .game-info .state { font-size:11px; }
     .score-chip { padding:4px 7px; border-radius:6px; font-size:10px; }
     #gameCanvas { border-radius:6px; background:#f6f8fa; aspect-ratio:auto; }
+    #gameCanvas.tetris-canvas { width:auto; max-width:100%; margin:auto; }
+    .layout.tetris-layout #gameCanvas.tetris-canvas { max-width:none; }
     .controls { margin:12px 0 8px; }
     .control-btn { height:32px; border-radius:6px; font-size:12px; }
     .game-tip { padding:9px 10px; border-radius:6px; background:#f6f8fa; border:1px solid var(--line); font-size:10px; }
@@ -414,7 +416,7 @@
       people.forEach((p,i)=>{const col=i%cols,row=Math.floor(i/cols);const x=gap+col*(boardW+gap),y=gap+row*(boardH+24+gap);const game=app.tetris.get(p.id);if(game)drawTetrisBoard(ctx,game,p,i,x,y+18,cell);});
     }
     function renderCanvas(){
-      const canvas=$('gameCanvas');
+      const canvas=$('gameCanvas');canvas.classList.toggle('tetris-canvas',app.gameMode==='tetris');
       if(app.gameMode==='tetris'){const count=Math.max(1,app.players.size),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols);canvas.width=cols*180+(cols+1)*12;canvas.height=rows*(360+24+12)+12;}
       else {canvas.width=420;canvas.height=420;}
       const ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID;
@@ -432,7 +434,7 @@
       app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
-    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris');renderCanvas(); const game=app.gameMode==='tetris'?app.tetris:app.snakes;const ended=game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
+    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&app.players.size>2);renderCanvas(); const game=app.gameMode==='tetris'?app.tetris:app.snakes;const ended=game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
