@@ -339,7 +339,7 @@
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '', characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
-      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),turnId:'',dice:0,winner:''}, running:false,
+      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),turnId:'',dice:0,lastRoll:0,winner:''}, running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
@@ -397,7 +397,7 @@
     }
     function renderFlightControls() {
       const turn=app.players.get(app.flight.turnId),mine=app.flight.turnId===app.myId;
-      $('flightDice').textContent=app.flight.dice?`🎲 ${app.flight.dice}`:'🎲';
+      $('flightDice').textContent=app.flight.lastRoll?`🎲 ${app.flight.lastRoll}`:'🎲';
       $('rollBtn').disabled=!app.connected||!app.running||!mine||!!app.flight.dice;
       const box=$('flightPieces');box.innerHTML='';
       (app.flight.pieces.get(app.myId)||[-1,-1,-1,-1]).forEach((position,i)=>{const button=document.createElement('button');button.textContent=`${i+1}号 ${position===66?'✓':position<0?'基地':position>=60?'终点路':'棋子'}`;button.disabled=!app.running||!mine||!app.flight.dice||!flightCanMove(position,app.flight.dice);button.addEventListener('click',()=>setDirection(`piece-${i}`));box.append(button);});
@@ -414,12 +414,12 @@
     }
 
     function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true}; }
-    function resetFlight() { app.flight={pieces:new Map(),turnId:playerArray()[0]?.id||'',dice:0,winner:''};playerArray().forEach(p=>{p.score=0;app.flight.pieces.set(p.id,[-1,-1,-1,-1]);}); }
+    function resetFlight() { app.flight={pieces:new Map(),turnId:playerArray()[0]?.id||'',dice:0,lastRoll:0,winner:''};playerArray().forEach(p=>{p.score=0;app.flight.pieces.set(p.id,[-1,-1,-1,-1]);}); }
     function flightCanMove(position,dice) { return position===-1?dice===6:position>=0&&position<66&&position+dice<=66; }
     function nextFlightTurn() { const ids=playerArray().map(p=>p.id);app.flight.turnId=ids[(ids.indexOf(app.flight.turnId)+1)%ids.length]||'';app.flight.dice=0; }
     function flightAction(id,action) {
       const game=app.flight;if(!app.running||game.winner||id!==game.turnId)return;
-      if(action==='roll'&&!game.dice){game.dice=1+Math.floor(Math.random()*6);if(!game.pieces.get(id)?.some(n=>flightCanMove(n,game.dice)))nextFlightTurn();return;}
+      if(action==='roll'&&!game.dice){game.dice=1+Math.floor(Math.random()*6);game.lastRoll=game.dice;if(!game.pieces.get(id)?.some(n=>flightCanMove(n,game.dice)))nextFlightTurn();return;}
       if(!action.startsWith('piece-')||!game.dice)return;
       const index=Number(action.slice(6)),pieces=game.pieces.get(id),old=pieces?.[index];if(!Number.isInteger(index)||index<0||index>3||!flightCanMove(old,game.dice))return;
       const rolled=game.dice;pieces[index]=old<0?0:old+rolled;
@@ -451,7 +451,7 @@
       let ateFood = false;
       const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood();if([...app.snakes.values()].every(s=>!s.alive))app.running=false; broadcastState(); renderAll();
     }
-    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],turnId:app.flight.turnId,dice:app.flight.dice,winner:app.flight.winner},food:app.food,running:app.running}; }
+    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],turnId:app.flight.turnId,dice:app.flight.dice,lastRoll:app.flight.lastRoll,winner:app.flight.winner},food:app.food,running:app.running}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
     function drawMarkerSnake(ctx, snake, color, cell) {
       const body = [...snake.body].reverse();
@@ -508,6 +508,7 @@
       ctx.fillStyle='#f8fafb';ctx.fillRect(0,0,700,700);
       const people=playerArray();
       for(let i=0;i<60;i++){const a=-Math.PI/2+Math.PI*2*i/60,x=350+205*Math.cos(a),y=350+205*Math.sin(a);ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5ddd9';ctx.stroke();}
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(350,350,27,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a9b8af';ctx.stroke();ctx.font='24px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('★',350,352);
       people.forEach((p,seat)=>{
         const base=flightPoint(seat,-1),start=flightPoint(seat,0),angle=-Math.PI/2+Math.PI*2*seat/10;
         ctx.fillStyle=p.color+'33';ctx.beginPath();ctx.arc(base.x,base.y,31,0,Math.PI*2);ctx.fill();
@@ -520,7 +521,6 @@
           ctx.beginPath();ctx.arc(point.x+offset[0],point.y+offset[1],9,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#34404b';ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 10px Arial, sans-serif';ctx.fillText(String(i+1),point.x+offset[0],point.y+offset[1]+1);
         });
       });
-      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(350,350,27,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a9b8af';ctx.stroke();ctx.font='24px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('★',350,352);
     }
     function renderCanvas(){
       const canvas=$('gameCanvas');canvas.classList.toggle('tetris-canvas',app.gameMode==='tetris');
@@ -560,14 +560,14 @@
         app.synced = true; applyState(data.state); renderMessages(); renderAll();
       }
     }
-    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),turnId:state.flight?.turnId||'',dice:state.flight?.dice||0,winner:state.flight?.winner||''};app.food=state.food||app.food;app.running=!!state.running;}
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),turnId:state.flight?.turnId||'',dice:state.flight?.dice||0,lastRoll:state.flight?.lastRoll||0,winner:state.flight?.winner||''};app.food=state.food||app.food;app.running=!!state.running;}
 
     function leaveRoom(message) {
       const channel = app.channel;
       app.channel = null;
       if (channel) app.client.removeChannel(channel);
       clearTimeout(app.connectTimer); clearInterval(app.gameTimer);
-      app.players.clear(); app.snakes.clear(); app.tetris.clear();app.flight={pieces:new Map(),turnId:'',dice:0,winner:''};app.running = false;
+      app.players.clear(); app.snakes.clear(); app.tetris.clear();app.flight={pieces:new Map(),turnId:'',dice:0,lastRoll:0,winner:''};app.running = false;
       app.messages = []; renderMessages();
       app.isHost = false; app.hostId = ''; app.synced = false;
       setConnected(false); setStatus(message); renderAll(); toast(message);
