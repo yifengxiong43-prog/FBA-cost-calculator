@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#fff9f0" />
   <title>项目协作台 · 工作区</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+  <script defer src="https://js.puter.com/v2/"></script>
   <style>
     :root {
       --ink: #3f3831;
@@ -90,7 +91,8 @@
     .sticker { width:35px; height:32px; display:grid; place-items:center; border-radius:10px; background:#fff; border:1px solid var(--line); font-size:19px; transition:.16s; }
     .sticker:hover { transform:translateY(-2px); border-color:var(--peach); }
     .send-row { display:flex; gap:9px; }
-    .send-row input { flex:1; }
+    .send-row input { flex:1; min-width:0; }
+    .ask-bot-btn { white-space:nowrap; }
     .send-btn { padding:0 18px; border-radius:13px; background:var(--ink); color:#fff; font-weight:700; }
     .game { min-height:690px; }
     .game-head { display:flex; align-items:center; gap:10px; }
@@ -185,6 +187,8 @@
     .sticker-message .character-art { width:96px; height:96px; }
     .send-row { gap:7px; }
     .send-btn { padding:0 14px; border-radius:6px; background:#1f883d; font-size:13px; }
+    .ask-bot-btn { padding:0 11px; border:1px solid var(--line); border-radius:6px; background:#f6f8fa; color:var(--ink); font-size:12px; }
+    .ask-bot-btn:disabled { opacity:.55; cursor:not-allowed; }
     .game-head { gap:8px; }
     .game-icon { width:28px; height:28px; border-radius:6px; background:#eaeef2; font-size:15px; color:#57606a; }
     .game-actions { gap:4px; }
@@ -236,7 +240,7 @@
       .layout.game-collapsed .game-toggle { top:0; right:0; width:42px; height:42px; }
     }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
-    @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
+    @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0}.send-row{flex-wrap:wrap}.send-row input{flex:1 0 100%}.send-row button{height:34px} }
     .avatar { overflow:hidden; flex:none; }
     .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
     .character-gate { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:16px; background:rgba(31,35,40,.66); }
@@ -313,7 +317,7 @@
         <div class="message-list" id="messageList"><div class="empty"><div><div class="big">▤</div><div>暂无讨论记录<br/>连接协作区后开始同步</div></div></div></div>
         <div class="composer">
           <div class="sticker-bar" aria-label="快捷表情"><button class="sticker" data-sticker="🐻" title="小熊">🐻</button><button class="sticker" data-sticker="🐰" title="小兔">🐰</button><button class="sticker" data-sticker="🐴" title="小马">🐴</button><button class="sticker" data-sticker="🐑" title="小羊">🐑</button><button class="sticker" data-sticker="🌈" title="彩虹">🌈</button><button class="sticker" data-sticker="🎉" title="庆祝">🎉</button><button class="sticker" data-sticker="🐲 奶龙" title="奶龙" aria-label="奶龙"></button><button class="sticker" data-sticker="👶 奶娃" title="奶娃" aria-label="奶娃"></button><button class="sticker" data-sticker="🍼" title="奶瓶">🍼</button><button class="sticker" data-sticker="💛" title="黄心">💛</button><button class="sticker" data-sticker="🧸" title="玩偶">🧸</button><button class="sticker" data-sticker="🌺" title="扶桑花">🌺</button><button class="sticker" data-sticker="🍍" title="菠萝">🍍</button><button class="sticker" data-sticker="🥥" title="椰子">🥥</button><button class="sticker" data-sticker="🥭" title="芒果">🥭</button></div>
-          <div class="send-row"><input id="messageInput" maxlength="200" placeholder="Write a comment…" disabled /><button class="send-btn" id="sendBtn" disabled>Comment</button></div>
+          <div class="send-row"><input id="messageInput" maxlength="200" placeholder="Write a comment…" disabled /><button class="ask-bot-btn" id="askBotBtn" type="button" title="问题会发送给 Puter AI，问答也会显示在聊天室；首次使用需要登录 Puter" disabled>问机器人</button><button class="send-btn" id="sendBtn" disabled>Comment</button></div>
         </div>
       </section>
 
@@ -419,7 +423,7 @@
       myId: '', nickname: '', autoName:true, characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
       gameMode: 'snake', memberships:new Map(), runningModes:{snake:false,tetris:false,flight:false}, snakeEliminated:new Set(),
       tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false, gameCollapsed:false,
-      messages: [], gameTimers:{snake:null,tetris:null}, lastChatAt: 0, toastTimer: null, connectTimer: null
+      messages: [], gameTimers:{snake:null,tetris:null}, lastChatAt: 0, botBusy:false, botHistory:[], toastTimer: null, connectTimer: null
     };
 
     function toast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(app.toastTimer); app.toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2300); }
@@ -456,7 +460,7 @@
       const player=app.players.get(app.myId);if(player)player.name=name;
       renderAll();
     }
-    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; ['modeSnake','modeTetris','modeFlight'].forEach(id=>$(id).disabled=!enabled); $('enterBtn').disabled = enabled || !app.characterId; }
+    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('askBotBtn').disabled = !enabled || app.botBusy; ['modeSnake','modeTetris','modeFlight'].forEach(id=>$(id).disabled=!enabled); $('enterBtn').disabled = enabled || !app.characterId; }
     function playerArray() { return [...app.players.values()]; }
 
     function showEmptyIfNeeded() {
@@ -515,7 +519,7 @@
     }
 
     function addMessage(text, sticker=false, source=app.players.get(app.myId)||{id:app.myId,name:app.nickname,avatar:app.characterId}) {
-      const msg={id:source.id,name:source.name,avatar:source.avatar,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
+      const msg={id:source.id,name:source.name,avatar:source.avatar,animal:source.animal,text:String(text).slice(0,source.id==='room-bot'?600:200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
       app.messages.push(msg); if(app.messages.length>80) app.messages.shift(); renderMessages(); return msg;
     }
     function broadcast(packet) {
@@ -695,7 +699,9 @@
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
-      if (data.type === 'chat' && typeof data.text === 'string') {
+      if (data.type === 'bot' && typeof data.text === 'string') {
+        addMessage(data.text,false,{id:'room-bot',name:'小助手',animal:'✦'});
+      } else if (data.type === 'chat' && typeof data.text === 'string') {
         addMessage(data.text, data.sticker === true, app.players.get(data.from));
       } else if (data.type === 'join-game' && app.isHost) {
         applyJoinGame(data.from,data.mode);broadcastState();renderAll();
@@ -724,7 +730,7 @@
       if (channel) app.client.removeChannel(channel);
       clearTimeout(app.connectTimer);Object.values(app.gameTimers).forEach(clearInterval);app.gameTimers={snake:null,tetris:null};
       app.players.clear();app.memberships.clear();app.snakeEliminated.clear();app.snakes.clear();app.tetris.clear();app.flight={pieces:new Map(),tables:[]};app.runningModes={snake:false,tetris:false,flight:false};app.running=false;
-      app.messages = []; renderMessages();
+      app.messages = []; app.botHistory = []; app.botBusy = false; renderMessages();
       app.isHost = false; app.hostId = ''; app.synced = false;
       setConnected(false); setStatus(message); renderAll(); toast(message);
     }
@@ -775,11 +781,36 @@
       app.connectTimer = setTimeout(() => {if (!app.connected) leaveRoom('连接云端超时，请重试');},15000);
     }
     async function sendChat(text,sticker=false) {
-      if (!app.connected) return toast('请先连接协作区');
-      const value=String(text||'').trim(); if(!value || Date.now()-app.lastChatAt<350)return;
+      if (!app.connected) { toast('请先连接协作区'); return false; }
+      const value=String(text||'').trim(); if(!value || Date.now()-app.lastChatAt<350)return false;
       app.lastChatAt=Date.now();
-      if (await broadcast({type:'chat',text:value,sticker}) !== 'ok') return toast('消息发送失败，请检查网络连接');
-      addMessage(value,sticker); $('messageInput').value='';
+      if (await broadcast({type:'chat',text:value,sticker}) !== 'ok') { toast('消息发送失败，请检查网络连接'); return false; }
+      addMessage(value,sticker); $('messageInput').value=''; return true;
+    }
+    async function askBot() {
+      if (app.botBusy) return;
+      const question=$('messageInput').value.trim();
+      if (!question) return toast('先输入想问的问题');
+      if (!window.puter?.ai?.chat) return toast('机器人组件未加载，请检查网络后刷新');
+      app.botBusy=true; $('askBotBtn').disabled=true; $('askBotBtn').textContent='思考中';
+      let botTimer;
+      try {
+        if (window.puter.auth?.isSignedIn && !window.puter.auth.isSignedIn()) await window.puter.auth.signIn();
+        if (!await sendChat(question)) return;
+        const channel=app.channel;
+        const history=app.botHistory.slice(-6);
+        const messages=[{role:'system',content:'你是朋友聊天室里的小助手。用中文自然、简短地回答，最多120字。不要编造自己知道的聊天室信息。'},...history,{role:'user',content:question}];
+        const reply=await Promise.race([window.puter.ai.chat(messages),new Promise((_,reject)=>{botTimer=setTimeout(()=>reject(Error('timeout')),30000);})]);
+        const content=reply?.message?.content ?? reply?.text ?? reply;
+        const answer=(typeof content==='string'?content:Array.isArray(content)?content.map(part=>part.text||'').join(''):'').trim().slice(0,600);
+        if (!answer) throw Error('empty reply');
+        if (!app.connected || app.channel!==channel) return;
+        if (await broadcast({type:'bot',text:answer}) !== 'ok') throw Error('send failed');
+        addMessage(answer,false,{id:'room-bot',name:'小助手',animal:'✦'});
+        app.botHistory.push({role:'user',content:question},{role:'assistant',content:answer});
+        app.botHistory=app.botHistory.slice(-6);
+      } catch { if (app.connected) toast('机器人暂时无法回答，请稍后再试或登录 Puter'); }
+      finally { clearTimeout(botTimer); app.botBusy=false; $('askBotBtn').disabled=!app.connected; $('askBotBtn').textContent='问机器人'; }
     }
 
     const WORK_END_KEY = 'cy-chat-work-end-time';
@@ -815,6 +846,7 @@
     $('nameBack').addEventListener('click',backToCharacters);
     $('copyLinkBtn').addEventListener('click',async()=>{try{const link=new URL(location.href);link.searchParams.set('refresh',Date.now());await navigator.clipboard.writeText(link.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}});
     $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value));
+    $('askBotBtn').addEventListener('click',askBot);
     $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)});
     document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));});
     document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir)));
