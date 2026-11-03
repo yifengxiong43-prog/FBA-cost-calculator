@@ -251,8 +251,8 @@
     <section class="layout" id="workspaceLayout">
       <aside class="panel sidebar">
         <div class="profile">
-          <label for="nickname">已选人物</label>
-          <div class="name-row"><input id="nickname" value="未选择人物" readonly /><div class="avatar" id="previewAvatar">?</div></div>
+          <label for="nickname">昵称</label>
+          <div class="name-row"><input id="nickname" value="未选择人物" maxlength="12" disabled /><div class="avatar" id="previewAvatar">?</div></div>
           <button class="primary" id="enterBtn" disabled>↗ 连接协作区</button>
           <div class="lobby-note" id="linkHint">连接后可查看团队讨论和实时预览。请分享浏览器地址栏中的完整链接（包含末尾标识），并使用公网 HTTPS 页面。</div>
         </div>
@@ -351,9 +351,23 @@
     function avatarImage(id) { const image=document.createElement('img');image.src=`avatars/${id}.jpg`;image.alt='';return image; }
     function setAvatar(element,player) { element.innerHTML='';if(CHARACTERS.some(c=>c.id===player.avatar))element.append(avatarImage(player.avatar));else element.textContent=animalFor(player); }
     function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));const name=document.createElement('span');name.textContent=character.name+(character.locked?' 🔒':'');button.append(name);button.addEventListener('click',()=>chooseCharacter(character.id));$(character.group==='product'?'productCharacters':'researchCharacters').append(button);}); }
-    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
+    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
     function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
     function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
+    renderCharacterOptions();
+    async function updateNickname() {
+      const name=cleanName($('nickname').value),previous=app.nickname;
+      if(!name){$('nickname').value=previous;return toast('名字不能为空');}
+      $('nickname').value=name;
+      if(name===previous)return;
+      app.nickname=name;
+      if(app.connected){
+        try { if(await app.channel.track({id:app.myId,name,avatar:app.characterId,joinedAt:app.joinedAt})!=='ok')throw Error('track failed'); }
+        catch {app.nickname=previous;$('nickname').value=previous;return toast('改名失败，请重试');}
+      }
+      const player=app.players.get(app.myId);if(player)player.name=name;
+      renderAll();
+    }
     function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; ['modeSnake','modeTetris','modeFlight'].forEach(id=>$(id).disabled=!enabled||!app.isHost); $('enterBtn').disabled = enabled || !app.characterId; }
     function playerArray() { return [...app.players.values()]; }
 
@@ -602,7 +616,6 @@
       if (!app.characterId) return toast('请先选择人物');
       if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return toast('请先配置 Supabase 项目地址和公开密钥');
       if (!window.supabase?.createClient) return toast('云端组件加载失败，请检查网络');
-      app.nickname = CHARACTERS.find(c=>c.id===app.characterId).name;
       app.myId = crypto.randomUUID(); app.joinedAt = Date.now(); app.synced = false;
       app.client = window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
       const channel = app.client.channel(LOBBY_ID,{config:{broadcast:{self:false},presence:{key:app.myId}}});
@@ -632,9 +645,11 @@
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
     $('enterBtn').addEventListener('click',enterLobby);
+    $('nickname').addEventListener('change',updateNickname);
+    $('nickname').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickname').blur();});
     $('unlockBtn').addEventListener('click',unlockCharacter);
     $('characterPassword').addEventListener('keydown',e=>{if(e.key==='Enter')unlockCharacter();});
-    $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}});
+    $('copyLinkBtn').addEventListener('click',async()=>{try{const link=new URL(location.href);link.searchParams.set('refresh',Date.now());await navigator.clipboard.writeText(link.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}});
     $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value));
     $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)});
     document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));});
@@ -644,7 +659,7 @@
     $('resetBtn').addEventListener('click',resetGame);
     [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>$(id).addEventListener('click',()=>setGameMode(mode)));
     window.addEventListener('keydown',e=>{if(e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
-    renderCharacterOptions(); renderGameMode(); renderCanvas();
+    renderGameMode(); renderCanvas();
   </script>
 </body>
 </html>
