@@ -194,8 +194,13 @@
     .mode-btn { min-width:0; padding:8px 4px; background:#f6f8fa; color:#57606a; border:1px solid var(--line); border-radius:6px; font-size:12px; }
     .mode-btn.active { color:#1a7f37; border-color:#1f883d; background:#eaf7ed; font-weight:700; }
     .mode-btn:disabled { cursor:default; }
-    .fire-btn { display:block; width:100%; margin:0 0 10px; padding:10px; border-radius:6px; background:#1f883d; color:#fff; font-size:13px; font-weight:700; }
-    .fire-btn[hidden] { display:none; }
+    .flight-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0; }
+    .flight-controls[hidden], .controls[hidden] { display:none; }
+    .flight-controls button { min-height:34px; padding:6px 10px; border-radius:6px; border:1px solid var(--line); background:#fff; color:var(--ink); }
+    .flight-controls button:disabled { opacity:.45; cursor:default; }
+    .flight-controls #rollBtn { background:#1f883d; color:#fff; border-color:#1f883d; font-weight:700; }
+    .flight-dice { min-width:56px; text-align:center; font-weight:700; }
+    .flight-pieces { display:flex; gap:5px; flex-wrap:wrap; }
     .footer-note { color:#8b949e; font-size:10px; }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
     @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
@@ -268,12 +273,12 @@
 
       <section class="panel game">
         <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
-        <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeAircraft" aria-pressed="false" disabled>飞行器</button></div>
+        <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeFlight" aria-pressed="false" disabled>飞行棋</button></div>
         <div class="game-inner">
           <div class="game-info"><span class="state" id="gameState">等待连接</span><div class="score-list" id="scoreList"></div></div>
           <canvas id="gameCanvas" width="420" height="420" aria-label="马克笔贪吃蛇游戏"></canvas>
-          <div class="controls" aria-label="方向控制"><button class="control-btn" data-dir="up">↑</button><button class="control-btn" data-dir="left">←</button><button class="control-btn" data-dir="down">↓</button><button class="control-btn" data-dir="right">→</button></div>
-          <button class="fire-btn" id="fireBtn" hidden>发射</button>
+          <div class="controls" id="directionControls" aria-label="方向控制"><button class="control-btn" data-dir="up">↑</button><button class="control-btn" data-dir="left">←</button><button class="control-btn" data-dir="down">↓</button><button class="control-btn" data-dir="right">→</button></div>
+          <div class="flight-controls" id="flightControls" hidden><button id="rollBtn">掷骰</button><span class="flight-dice" id="flightDice">🎲</span><div class="flight-pieces" id="flightPieces"></div></div>
           <div class="game-tip" id="gameTip">Ohuhu · 夏威夷水果与花布</div>
         </div>
       </section>
@@ -334,7 +339,7 @@
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '', characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
-      gameMode: 'snake', tetris: new Map(), running:false,
+      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),turnId:'',dice:0,winner:''}, running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
@@ -349,7 +354,7 @@
     function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
     function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
     function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
-    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('modeBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled || !app.characterId; }
+    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; ['modeSnake','modeTetris','modeFlight'].forEach(id=>$(id).disabled=!enabled||!app.isHost); $('enterBtn').disabled = enabled || !app.characterId; }
     function playerArray() { return [...app.players.values()]; }
 
     function showEmptyIfNeeded() {
@@ -379,15 +384,24 @@
       if (!app.players.size) list.innerHTML='<div class="member"><div class="avatar">🌱</div><span>还没有人，来坐坐吧</span></div>';
       $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/${MAX_PLAYERS} 位协作者在线` : '等待连接协作区…';
     }
-    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const avatar=document.createElement('span');avatar.className='avatar';setAvatar(avatar,p);const score=document.createElement('b');const gameState=app.gameMode==='tetris'?app.tetris.get(p.id):app.snakes.get(p.id);score.textContent=(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(avatar,score);box.append(chip)}); }
+    function currentPlayersGame() { return app.gameMode==='tetris'?app.tetris:app.gameMode==='flight'?app.flight.pieces:app.snakes; }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';chip.title=p.name;const avatar=document.createElement('span');avatar.className='avatar';setAvatar(avatar,p);const score=document.createElement('b');const gameState=currentPlayersGame().get(p.id);score.textContent=app.gameMode==='flight'?`${gameState?.filter(n=>n===66).length||0}/4`:(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(avatar,score);box.append(chip)}); }
     function renderGameMode() {
-      const tetris = app.gameMode === 'tetris';
-      $('gameIcon').textContent = tetris ? '▦' : '🖍️';
-      $('gameTitle').textContent = tetris ? '火拼俄罗斯' : '马克笔贪吃蛇';
-      $('gameSubtitle').textContent = tetris ? `俄罗斯方块 · ${app.players.size}/${MAX_PLAYERS} 人` : 'Ohuhu · Aloha';
-      $('gameTip').textContent = tetris ? '每位在线玩家一块棋盘，方向键左右移动，↑旋转，↓加速下落' : 'Ohuhu · 夏威夷水果与花布';
-      $('modeBtn').textContent = tetris ? '切换到贪吃蛇' : '切换到火拼俄罗斯';
-      $('gameCanvas').setAttribute('aria-label', tetris ? '火拼俄罗斯游戏' : '马克笔贪吃蛇游戏');
+      const modes={snake:['🖍️','马克笔贪吃蛇','Ohuhu · Aloha','Ohuhu · 夏威夷水果与花布'],tetris:['▦','火拼俄罗斯',`俄罗斯方块 · ${app.players.size}/${MAX_PLAYERS} 人`,'每位玩家一块棋盘'],flight:['✈','飞行棋',`环形棋盘 · ${app.players.size}/${MAX_PLAYERS} 人`,'掷到 6 起飞 · 踩中对手送回基地 · 4 枚先到终点获胜']};
+      const [icon,title,subtitle,tip]=modes[app.gameMode];
+      $('gameIcon').textContent=icon;$('gameTitle').textContent=title;$('gameSubtitle').textContent=subtitle;$('gameTip').textContent=tip;
+      [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>{$(id).classList.toggle('active',app.gameMode===mode);$(id).setAttribute('aria-pressed',String(app.gameMode===mode));});
+      $('directionControls').hidden=app.gameMode==='flight';$('flightControls').hidden=app.gameMode!=='flight';
+      if(app.gameMode==='flight') renderFlightControls();
+      $('gameCanvas').setAttribute('aria-label',`${title}游戏`);
+    }
+    function renderFlightControls() {
+      const turn=app.players.get(app.flight.turnId),mine=app.flight.turnId===app.myId;
+      $('flightDice').textContent=app.flight.dice?`🎲 ${app.flight.dice}`:'🎲';
+      $('rollBtn').disabled=!app.connected||!app.running||!mine||!!app.flight.dice;
+      const box=$('flightPieces');box.innerHTML='';
+      (app.flight.pieces.get(app.myId)||[-1,-1,-1,-1]).forEach((position,i)=>{const button=document.createElement('button');button.textContent=`${i+1}号 ${position===66?'✓':position<0?'基地':position>=60?'终点路':'棋子'}`;button.disabled=!app.running||!mine||!app.flight.dice||!flightCanMove(position,app.flight.dice);button.addEventListener('click',()=>setDirection(`piece-${i}`));box.append(button);});
+      if(turn) $('gameTip').textContent=app.flight.winner?`${app.players.get(app.flight.winner)?.name||'玩家'}获胜`:`轮到 ${turn.name}${mine?'（你）':''} · 掷到 6 起飞 · 4 枚先到终点获胜`;
     }
 
     function addMessage(text, sticker=false, source=app.players.get(app.myId)||{id:app.myId,name:app.nickname,avatar:app.characterId}) {
@@ -400,14 +414,27 @@
     }
 
     function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true}; }
+    function resetFlight() { app.flight={pieces:new Map(),turnId:playerArray()[0]?.id||'',dice:0,winner:''};playerArray().forEach(p=>{p.score=0;app.flight.pieces.set(p.id,[-1,-1,-1,-1]);}); }
+    function flightCanMove(position,dice) { return position===-1?dice===6:position>=0&&position<66&&position+dice<=66; }
+    function nextFlightTurn() { const ids=playerArray().map(p=>p.id);app.flight.turnId=ids[(ids.indexOf(app.flight.turnId)+1)%ids.length]||'';app.flight.dice=0; }
+    function flightAction(id,action) {
+      const game=app.flight;if(!app.running||game.winner||id!==game.turnId)return;
+      if(action==='roll'&&!game.dice){game.dice=1+Math.floor(Math.random()*6);if(!game.pieces.get(id)?.some(n=>flightCanMove(n,game.dice)))nextFlightTurn();return;}
+      if(!action.startsWith('piece-')||!game.dice)return;
+      const index=Number(action.slice(6)),pieces=game.pieces.get(id),old=pieces?.[index];if(!Number.isInteger(index)||index<0||index>3||!flightCanMove(old,game.dice))return;
+      const rolled=game.dice;pieces[index]=old<0?0:old+rolled;
+      if(pieces[index]<60){const seat=playerArray().findIndex(p=>p.id===id),cell=(seat*6+pieces[index])%60;game.pieces.forEach((other,otherId)=>{if(otherId===id)return;const otherSeat=playerArray().findIndex(p=>p.id===otherId);other.forEach((position,i)=>{if(position>=0&&position<60&&(otherSeat*6+position)%60===cell)other[i]=-1;});});}
+      if(pieces.every(n=>n===66)){game.winner=id;app.running=false;}
+      else if(rolled===6)game.dice=0;else nextFlightTurn();
+    }
     function tetrisPiece(index) { return {shape:Math.floor(Math.random()*TETRIS_SHAPES.length),rot:0,x:3,y:0,color:COLORS[index%COLORS.length]}; }
     function resetTetris() { app.tetris.clear(); playerArray().forEach((p,i)=>{p.score=0;app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(i),alive:true});}); }
-    function resetModeGame() { if(app.gameMode==='tetris') { resetTetris(); } else { app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;app.snakes.set(p.id,spawnSnake(i));}); resetFood(); } }
+    function resetModeGame() { if(app.gameMode==='tetris') resetTetris(); else if(app.gameMode==='flight') resetFlight(); else { app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;app.snakes.set(p.id,spawnSnake(i));}); resetFood(); } }
     function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID),kind:FOOD_TYPES[Math.floor(Math.random()*FOOD_TYPES.length)]}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
     function resetGame() { if(!app.isHost)return; resetModeGame(); app.running=false; broadcastState(); renderAll(); }
-    function startGame() { if(!app.isHost || !app.players.size)return; const game=app.gameMode==='tetris'?app.tetris:app.snakes;if(!game.size)resetModeGame();else if([...game.values()].every(state=>!state.alive))return toast('本局已结束，请房主重置'); app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); app.gameTimer=setInterval(tick,app.gameMode==='tetris'?430:170); broadcastState(); renderAll(); }
-    function toggleGameMode() { if(!app.isHost)return; app.gameMode=app.gameMode==='snake'?'tetris':'snake'; clearInterval(app.gameTimer); app.running=false; resetModeGame(); broadcastState(); renderAll(); }
-    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { applyInput(app.myId,dir); } else broadcast({type:'input',dir,to:app.hostId}); }
+    function startGame() { if(!app.isHost || !app.players.size)return; const game=currentPlayersGame();if(!game.size)resetModeGame();else if(app.gameMode==='flight'?!!app.flight.winner:[...game.values()].every(state=>!state.alive))return toast('本局已结束，请房主重置'); app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); if(app.gameMode!=='flight')app.gameTimer=setInterval(tick,app.gameMode==='tetris'?430:170); broadcastState(); renderAll(); }
+    function setGameMode(mode) { if(!app.isHost||!['snake','tetris','flight'].includes(mode)||mode===app.gameMode)return; app.gameMode=mode; clearInterval(app.gameTimer); app.running=false; resetModeGame(); broadcastState(); renderAll(); }
+    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { applyInput(app.myId,dir); if(app.gameMode==='flight'){broadcastState();renderAll();} } else broadcast({type:'input',dir,to:app.hostId}); }
     function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
     function stepHead(head,dir){ return {x:head.x+(dir==='left'?-1:dir==='right'?1:0),y:head.y+(dir==='up'?-1:dir==='down'?1:0)}; }
     function tetrisCells(piece,rot=piece.rot) { return TETRIS_SHAPES[piece.shape][rot%TETRIS_SHAPES[piece.shape].length]; }
@@ -415,15 +442,16 @@
     function addGarbage(game,lines) { for(let i=0;i<lines;i++){if(game.board.shift().some(Boolean))game.alive=false;const gap=Math.floor(Math.random()*TETRIS_W);game.board.push(Array.from({length:TETRIS_W},(_,x)=>x===gap?'':'#98a5a0'));}if(tetrisCollides(game,game.piece))game.alive=false; }
     function lockTetris(id,game) { tetrisCells(game.piece).forEach(([x,y])=>{const nx=game.piece.x+x,ny=game.piece.y+y;if(ny>=0)game.board[ny][nx]=game.piece.color;}); const kept=game.board.filter(row=>row.some(cell=>!cell)); const cleared=TETRIS_H-kept.length; while(kept.length<TETRIS_H)kept.unshift(Array(TETRIS_W).fill('')); game.board=kept; const player=app.players.get(id);if(player)player.score=(player.score||0)+cleared*100; game.piece=tetrisPiece(playerArray().findIndex(p=>p.id===id)); if(tetrisCollides(game,game.piece))game.alive=false; if(cleared>=2)app.tetris.forEach((opponent,opponentId)=>{if(opponentId!==id&&opponent.alive)addGarbage(opponent,cleared===4?4:cleared-1);}); }
     function moveTetris(id,dx,dy,rotate=false) { const game=app.tetris.get(id);if(!game||!game.alive)return false;const nextRot=rotate?(game.piece.rot+1)%TETRIS_SHAPES[game.piece.shape].length:game.piece.rot;if(!tetrisCollides(game,game.piece,dx,dy,nextRot)){game.piece={...game.piece,x:game.piece.x+dx,y:game.piece.y+dy,rot:nextRot};return true;}if(dy>0){lockTetris(id,game);return false;}return false; }
-    function applyInput(id,dir) { if(app.gameMode==='tetris'){if(dir==='left')moveTetris(id,-1,0);else if(dir==='right')moveTetris(id,1,0);else if(dir==='down')moveTetris(id,0,1);else if(dir==='up')moveTetris(id,0,0,true);} else {const s=app.snakes.get(id);if(s&&s.alive&&!opposite(dir,s.dir))s.nextDir=dir;} }
+    function applyInput(id,dir) { if(app.gameMode==='tetris'){if(dir==='left')moveTetris(id,-1,0);else if(dir==='right')moveTetris(id,1,0);else if(dir==='down')moveTetris(id,0,1);else if(dir==='up')moveTetris(id,0,0,true);} else if(app.gameMode==='flight')flightAction(id,dir);else {const s=app.snakes.get(id);if(s&&s.alive&&!opposite(dir,s.dir))s.nextDir=dir;} }
     function tickTetris() { app.tetris.forEach((game,id)=>{if(game.alive)moveTetris(id,0,1);});if([...app.tetris.values()].every(game=>!game.alive))app.running=false; }
     function tick() {
       if(!app.isHost || !app.running)return;
       if(app.gameMode==='tetris'){tickTetris();broadcastState();renderAll();return;}
+      if(app.gameMode==='flight')return;
       let ateFood = false;
       const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood();if([...app.snakes.values()].every(s=>!s.alive))app.running=false; broadcastState(); renderAll();
     }
-    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],food:app.food,running:app.running}; }
+    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],turnId:app.flight.turnId,dice:app.flight.dice,winner:app.flight.winner},food:app.food,running:app.running}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
     function drawMarkerSnake(ctx, snake, color, cell) {
       const body = [...snake.body].reverse();
@@ -468,13 +496,41 @@
       const boardW=cell*TETRIS_W,boardH=cell*TETRIS_H;
       people.forEach((p,i)=>{const col=i%cols,row=Math.floor(i/cols);const x=gap+col*(boardW+gap),y=gap+row*(boardH+24+gap);const game=app.tetris.get(p.id);if(game)drawTetrisBoard(ctx,game,p,i,x,y+18,cell);});
     }
+    function flightPoint(seat,position) {
+      const angle=-Math.PI/2+Math.PI*2*(seat*6+(position<60?position:0))/60;
+      if(position<0){const a=-Math.PI/2+Math.PI*2*seat/10;return {x:350+290*Math.cos(a),y:350+290*Math.sin(a)};}
+      if(position===66)return {x:350,y:350};
+      const radius=position<60?205:177-(position-60)*25;
+      const a=position<60?angle:-Math.PI/2+Math.PI*2*seat/10;
+      return {x:350+radius*Math.cos(a),y:350+radius*Math.sin(a)};
+    }
+    function renderFlight(ctx) {
+      ctx.fillStyle='#f8fafb';ctx.fillRect(0,0,700,700);
+      const people=playerArray();
+      for(let i=0;i<60;i++){const a=-Math.PI/2+Math.PI*2*i/60,x=350+205*Math.cos(a),y=350+205*Math.sin(a);ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5ddd9';ctx.stroke();}
+      people.forEach((p,seat)=>{
+        const base=flightPoint(seat,-1),start=flightPoint(seat,0),angle=-Math.PI/2+Math.PI*2*seat/10;
+        ctx.fillStyle=p.color+'33';ctx.beginPath();ctx.arc(base.x,base.y,31,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(start.x,start.y,11,0,Math.PI*2);ctx.fill();
+        for(let step=60;step<66;step++){const point=flightPoint(seat,step);ctx.beginPath();ctx.arc(point.x,point.y,10,0,Math.PI*2);ctx.fillStyle=p.color+'66';ctx.fill();}
+        ctx.fillStyle='#263238';ctx.font='12px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.name,base.x+25*Math.cos(angle),base.y+25*Math.sin(angle),76);
+        const pieces=app.flight.pieces.get(p.id)||[];
+        pieces.forEach((position,i)=>{
+          const point=flightPoint(seat,position),offset=position<0?[[ -10,-10],[10,-10],[-10,10],[10,10]][i]:position===66?[[ -12,-12],[12,-12],[-12,12],[12,12]][i]:[0,0];
+          ctx.beginPath();ctx.arc(point.x+offset[0],point.y+offset[1],9,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#34404b';ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 10px Arial, sans-serif';ctx.fillText(String(i+1),point.x+offset[0],point.y+offset[1]+1);
+        });
+      });
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(350,350,27,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a9b8af';ctx.stroke();ctx.font='24px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('★',350,352);
+    }
     function renderCanvas(){
       const canvas=$('gameCanvas');canvas.classList.toggle('tetris-canvas',app.gameMode==='tetris');
       if(app.gameMode==='tetris'){const count=Math.max(1,app.players.size),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols);canvas.width=cols*180+(cols+1)*12;canvas.height=rows*(360+24+12)+12;}
+      else if(app.gameMode==='flight'){canvas.width=700;canvas.height=700;}
       else {canvas.width=420;canvas.height=420;}
       const ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID;
       ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#eef7f3';ctx.fillRect(0,0,canvas.width,canvas.height);
       if(app.gameMode==='tetris'){renderTetris(ctx);return;}
+      if(app.gameMode==='flight'){renderFlight(ctx);return;}
       ctx.strokeStyle='#dcebe5';ctx.lineWidth=1;
       for(let i=1;i<GRID;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cell);ctx.lineTo(size,i*cell);ctx.stroke();}
       const f=app.food,fx=(f.x+.5)*cell,fy=(f.y+.5)*cell;
@@ -487,14 +543,14 @@
       app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
-    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&app.players.size>2);renderCanvas(); const game=app.gameMode==='tetris'?app.tetris:app.snakes;const ended=game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
+    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&app.players.size>2);renderCanvas(); const game=currentPlayersGame();const ended=app.gameMode==='flight'?!!app.flight.winner:game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
       if (data.type === 'chat' && typeof data.text === 'string') {
         addMessage(data.text, data.sticker === true, app.players.get(data.from));
-      } else if (data.type === 'input' && app.isHost && ['up','down','left','right'].includes(data.dir)) {
-        applyInput(data.from,data.dir);
+      } else if (data.type === 'input' && app.isHost && ['up','down','left','right','roll','piece-0','piece-1','piece-2','piece-3'].includes(data.dir)) {
+        applyInput(data.from,data.dir);if(app.gameMode==='flight'){broadcastState();renderAll();}
       } else if (data.type === 'state' && data.from === app.hostId && !app.isHost) {
         applyState(data.state); renderAll();
       } else if (data.type === 'sync-request' && app.isHost) {
@@ -504,14 +560,14 @@
         app.synced = true; applyState(data.state); renderMessages(); renderAll();
       }
     }
-    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.food=state.food||app.food;app.running=!!state.running;}
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),turnId:state.flight?.turnId||'',dice:state.flight?.dice||0,winner:state.flight?.winner||''};app.food=state.food||app.food;app.running=!!state.running;}
 
     function leaveRoom(message) {
       const channel = app.channel;
       app.channel = null;
       if (channel) app.client.removeChannel(channel);
       clearTimeout(app.connectTimer); clearInterval(app.gameTimer);
-      app.players.clear(); app.snakes.clear(); app.running = false;
+      app.players.clear(); app.snakes.clear(); app.tetris.clear();app.flight={pieces:new Map(),turnId:'',dice:0,winner:''};app.running = false;
       app.messages = []; renderMessages();
       app.isHost = false; app.hostId = ''; app.synced = false;
       setConnected(false); setStatus(message); renderAll(); toast(message);
@@ -529,9 +585,10 @@
       app.hostId = nextHost; app.isHost = nextHost === app.myId;
       app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),avatar:p.avatar,animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
       if (app.isHost) {
-        for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id); }
+        for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id);app.flight.pieces.delete(id);if(app.flight.turnId===id)nextFlightTurn(); }
         for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
           if (app.gameMode==='tetris') app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(active.indexOf(p)),alive:true});
+          else if (app.gameMode==='flight') app.flight.pieces.set(p.id,[-1,-1,-1,-1]);
           else if (app.running) app.snakes.set(p.id,spawnSnake(active.indexOf(p)));
           broadcast({type:'sync',to:p.id,messages:app.messages,state:serialState()});
         }
@@ -574,7 +631,20 @@
 
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
-    $('enterBtn').addEventListener('click',enterLobby); $('unlockBtn').addEventListener('click',unlockCharacter); $('characterPassword').addEventListener('keydown',e=>{if(e.key==='Enter')unlockCharacter();}); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('modeBtn').addEventListener('click',toggleGameMode); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCharacterOptions(); renderGameMode(); renderCanvas();
+    $('enterBtn').addEventListener('click',enterLobby);
+    $('unlockBtn').addEventListener('click',unlockCharacter);
+    $('characterPassword').addEventListener('keydown',e=>{if(e.key==='Enter')unlockCharacter();});
+    $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}});
+    $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value));
+    $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)});
+    document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));});
+    document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir)));
+    $('rollBtn').addEventListener('click',()=>setDirection('roll'));
+    $('startBtn').addEventListener('click',startGame);
+    $('resetBtn').addEventListener('click',resetGame);
+    [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>$(id).addEventListener('click',()=>setGameMode(mode)));
+    window.addEventListener('keydown',e=>{if(e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
+    renderCharacterOptions(); renderGameMode(); renderCanvas();
   </script>
 </body>
 </html>
