@@ -218,14 +218,15 @@
     @keyframes dice-roll { 0%{transform:rotate(0) scale(1)} 25%{transform:rotate(-22deg) scale(1.18)} 50%{transform:rotate(25deg) scale(.9)} 75%{transform:rotate(-14deg) scale(1.12)} 100%{transform:rotate(360deg) scale(1)} }
     .flight-pieces { display:flex; gap:5px; flex-wrap:wrap; }
     .footer-note { color:#8b949e; font-size:10px; }
+    .game { position:relative; }
+    .game.game-floating { position:fixed; z-index:10; max-height:calc(100vh - 8px); overflow:auto; }
     .game-toggle { display:none; }
-    .game-drag-handle { display:none; }
+    .game-drag-handle { display:grid; place-items:center; position:absolute; top:16px; right:16px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:20px; cursor:grab; touch-action:none; }
+    .game-drag-handle:active { cursor:grabbing; }
+    .game-actions { margin-right:38px; }
     @media (min-width:1101px) {
-      .game { position:relative; }
-      .game.game-floating { position:fixed; z-index:10; max-height:calc(100vh - 8px); overflow:auto; }
       .game-toggle { display:grid; place-items:center; position:absolute; top:16px; right:16px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:17px; }
-      .game-drag-handle { display:grid; place-items:center; position:absolute; top:16px; right:52px; z-index:1; width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#57606a; font-size:20px; cursor:grab; touch-action:none; }
-      .game-drag-handle:active { cursor:grabbing; }
+      .game-drag-handle { right:52px; }
       .game-actions { margin-right:74px; }
       .layout.game-floating-layout { grid-template-columns:240px minmax(380px,1fr); }
       .layout.game-collapsed { grid-template-columns:240px minmax(380px,1fr) 42px; }
@@ -317,7 +318,7 @@
 
       <section class="panel game" id="gamePanel">
         <button class="game-toggle" id="gameToggle" type="button" aria-label="展开游戏" aria-expanded="false" title="展开面板">▤</button>
-        <button class="game-drag-handle" id="gameDragHandle" type="button" aria-label="拖动游戏面板" title="拖动游戏面板">⠿</button>
+        <button class="game-drag-handle" id="gameDragHandle" type="button" aria-label="拖动游戏面板" title="拖动游戏面板，双击归位">⠿</button>
         <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
         <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeFlight" aria-pressed="false" disabled>飞行棋</button></div>
         <div class="game-membership"><button id="joinGameBtn" hidden>加入游戏</button><button id="leaveGameBtn" hidden>退出游戏</button></div>
@@ -826,7 +827,7 @@
     $('fortuneDialog').addEventListener('click',e=>{if(e.target===$('fortuneDialog'))$('fortuneDialog').close();});
     let gameDrag=null;
     $('gameDragHandle').addEventListener('pointerdown',e=>{
-      if(app.gameCollapsed||window.innerWidth<=1100||e.pointerType==='mouse'&&e.button!==0)return;
+      if(app.gameCollapsed||e.pointerType==='mouse'&&e.button!==0)return;
       const game=$('gamePanel'),rect=game.getBoundingClientRect();
       gameDrag={id:e.pointerId,x:e.clientX,y:e.clientY,left:rect.left,top:rect.top,width:rect.width};
       game.style.left=`${rect.left}px`;game.style.top=`${rect.top}px`;game.style.width=`${rect.width}px`;
@@ -840,6 +841,7 @@
       $('gamePanel').style.left=`${left}px`;$('gamePanel').style.top=`${top}px`;
     });
     for(const event of ['pointerup','pointercancel'])$('gameDragHandle').addEventListener(event,()=>{gameDrag=null;});
+    $('gameDragHandle').addEventListener('dblclick',resetGamePosition);
     $('gameToggle').addEventListener('click',()=>setGameCollapsed(!app.gameCollapsed));
     [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>$(id).addEventListener('click',()=>setGameMode(mode)));
     window.addEventListener('keydown',e=>{if($('fortuneDialog').open)return;if(e.key==='Escape'&&window.innerWidth>1100&&!app.gameCollapsed&&$('characterGate').hidden){e.preventDefault();setGameCollapsed(true);$('gameToggle').focus();return;}if(app.gameCollapsed||e.target?.tagName==='INPUT'||!$('characterGate').hidden)return;const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};const key=e.key.length===1?e.key.toLowerCase():e.key,action=app.gameMode==='flight'?(key===' '?'roll':/^[1-4]$/.test(key)?`piece-${Number(key)-1}`:null):map[key];if(action){e.preventDefault();setDirection(action);}});
