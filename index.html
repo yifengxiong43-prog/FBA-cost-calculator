@@ -190,6 +190,12 @@
     .controls { margin:12px 0 8px; }
     .control-btn { height:32px; border-radius:6px; font-size:12px; }
     .game-tip { padding:9px 10px; border-radius:6px; background:#f6f8fa; border:1px solid var(--line); font-size:10px; }
+    .game-modes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; padding:10px 16px 0; }
+    .mode-btn { min-width:0; padding:8px 4px; background:#f6f8fa; color:#57606a; border:1px solid var(--line); border-radius:6px; font-size:12px; }
+    .mode-btn.active { color:#1a7f37; border-color:#1f883d; background:#eaf7ed; font-weight:700; }
+    .mode-btn:disabled { cursor:default; }
+    .fire-btn { display:block; width:100%; margin:0 0 10px; padding:10px; border-radius:6px; background:#1f883d; color:#fff; font-size:13px; font-weight:700; }
+    .fire-btn[hidden] { display:none; }
     .footer-note { color:#8b949e; font-size:10px; }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
     @media (max-width:720px) { .app-shell{padding:0 12px 16px}.topbar{margin:0 -12px;padding:12px}.repo-nav{align-items:flex-start;flex-direction:column;gap:8px}.layout{margin-top:14px}.sidebar,.chat{min-height:0}.message-list{min-height:390px}.game{min-height:0} }
@@ -261,11 +267,13 @@
       </section>
 
       <section class="panel game">
-        <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="modeBtn" disabled>切换到火拼俄罗斯</button><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
+        <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
+        <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeAircraft" aria-pressed="false" disabled>飞行器</button></div>
         <div class="game-inner">
           <div class="game-info"><span class="state" id="gameState">等待连接</span><div class="score-list" id="scoreList"></div></div>
           <canvas id="gameCanvas" width="420" height="420" aria-label="马克笔贪吃蛇游戏"></canvas>
           <div class="controls" aria-label="方向控制"><button class="control-btn" data-dir="up">↑</button><button class="control-btn" data-dir="left">←</button><button class="control-btn" data-dir="down">↓</button><button class="control-btn" data-dir="right">→</button></div>
+          <button class="fire-btn" id="fireBtn" hidden>发射</button>
           <div class="game-tip" id="gameTip">Ohuhu · 夏威夷水果与花布</div>
         </div>
       </section>
