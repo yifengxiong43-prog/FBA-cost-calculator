@@ -187,6 +187,9 @@
     #gameCanvas { border-radius:6px; background:#f6f8fa; aspect-ratio:auto; }
     #gameCanvas.tetris-canvas { width:auto; max-width:100%; margin:auto; }
     .layout.tetris-layout #gameCanvas.tetris-canvas { max-width:none; }
+    .layout.flight-layout .game { grid-column:1/-1; min-height:0; }
+    .layout.flight-layout .game-inner { max-width:none; }
+    #gameCanvas.flight-canvas { image-rendering:auto; max-width:100%; margin:auto; }
     .controls { margin:12px 0 8px; }
     .control-btn { height:32px; border-radius:6px; font-size:12px; }
     .game-tip { padding:9px 10px; border-radius:6px; background:#f6f8fa; border:1px solid var(--line); font-size:10px; }
@@ -199,7 +202,9 @@
     .flight-controls button { min-height:34px; padding:6px 10px; border-radius:6px; border:1px solid var(--line); background:#fff; color:var(--ink); }
     .flight-controls button:disabled { opacity:.45; cursor:default; }
     .flight-controls #rollBtn { background:#1f883d; color:#fff; border-color:#1f883d; font-weight:700; }
-    .flight-dice { min-width:56px; text-align:center; font-weight:700; }
+    .flight-dice { display:inline-grid; place-items:center; width:56px; height:38px; text-align:center; font-size:20px; font-weight:700; }
+    .flight-dice.rolling { animation:dice-roll .7s ease-in-out infinite; }
+    @keyframes dice-roll { 0%{transform:rotate(0) scale(1)} 25%{transform:rotate(-22deg) scale(1.18)} 50%{transform:rotate(25deg) scale(.9)} 75%{transform:rotate(-14deg) scale(1.12)} 100%{transform:rotate(360deg) scale(1)} }
     .flight-pieces { display:flex; gap:5px; flex-wrap:wrap; }
     .footer-note { color:#8b949e; font-size:10px; }
     @media (max-width:1100px) { .layout { grid-template-columns:220px minmax(340px,1fr); } .game { grid-column:1/-1; } .layout.tetris-layout .game-inner { max-width:none; } }
@@ -316,6 +321,18 @@
     ];
     const CHARACTER_PASSWORD = '0206';
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
+    const FLIGHT_GOAL = 58;
+    const FLIGHT_COLORS = ['#e94435','#16a365','#168bd0','#f5c72e'];
+    const FLIGHT_TRACK = [
+      ...Array.from({length:6},(_,i)=>[6,i]), ...Array.from({length:6},(_,i)=>[5-i,6]), [0,7],
+      ...Array.from({length:6},(_,i)=>[i,8]), ...Array.from({length:6},(_,i)=>[6,9+i]), [7,14],
+      ...Array.from({length:6},(_,i)=>[8,14-i]), ...Array.from({length:6},(_,i)=>[9+i,8]), [14,7],
+      ...Array.from({length:6},(_,i)=>[14-i,6]), ...Array.from({length:6},(_,i)=>[8,5-i]), [7,0]
+    ];
+    const FLIGHT_HOME = [
+      Array.from({length:6},(_,i)=>[7,1+i]), Array.from({length:6},(_,i)=>[1+i,7]),
+      Array.from({length:6},(_,i)=>[7,13-i]), Array.from({length:6},(_,i)=>[13-i,7])
+    ];
     const TETRIS_W = 10, TETRIS_H = 20;
     const TETRIS_SHAPES = [
       [[[0,1],[1,1],[2,1],[3,1]], [[2,0],[2,1],[2,2],[2,3]]],
@@ -339,7 +356,7 @@
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '', characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
-      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),turnId:'',dice:0,lastRoll:0,winner:''}, running:false,
+      gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
@@ -399,9 +416,9 @@
       $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/${MAX_PLAYERS} 位协作者在线` : '等待连接协作区…';
     }
     function currentPlayersGame() { return app.gameMode==='tetris'?app.tetris:app.gameMode==='flight'?app.flight.pieces:app.snakes; }
-    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';chip.title=p.name;const avatar=document.createElement('span');avatar.className='avatar';setAvatar(avatar,p);const score=document.createElement('b');const gameState=currentPlayersGame().get(p.id);score.textContent=app.gameMode==='flight'?`${gameState?.filter(n=>n===66).length||0}/4`:(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(avatar,score);box.append(chip)}); }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';chip.title=p.name;const avatar=document.createElement('span');avatar.className='avatar';setAvatar(avatar,p);const score=document.createElement('b');const gameState=currentPlayersGame().get(p.id);score.textContent=app.gameMode==='flight'?`${gameState?.filter(n=>n===FLIGHT_GOAL).length||0}/4`:(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(avatar,score);box.append(chip)}); }
     function renderGameMode() {
-      const modes={snake:['🖍️','马克笔贪吃蛇','Ohuhu · Aloha','Ohuhu · 夏威夷水果与花布'],tetris:['▦','火拼俄罗斯',`俄罗斯方块 · ${app.players.size}/${MAX_PLAYERS} 人`,'每位玩家一块棋盘'],flight:['✈','飞行棋',`环形棋盘 · ${app.players.size}/${MAX_PLAYERS} 人`,'掷到 6 起飞 · 踩中对手送回基地 · 4 枚先到终点获胜']};
+      const modes={snake:['🖍️','马克笔贪吃蛇','Ohuhu · Aloha','Ohuhu · 夏威夷水果与花布'],tetris:['▦','火拼俄罗斯',`俄罗斯方块 · ${app.players.size}/${MAX_PLAYERS} 人`,'每位玩家一块棋盘'],flight:['✈','飞行棋',`四色棋盘 · ${app.players.size}/${MAX_PLAYERS} 人`,'掷到 6 起飞 · 踩中对手送回基地 · 4 枚先到终点获胜']};
       const [icon,title,subtitle,tip]=modes[app.gameMode];
       $('gameIcon').textContent=icon;$('gameTitle').textContent=title;$('gameSubtitle').textContent=subtitle;$('gameTip').textContent=tip;
       [['modeSnake','snake'],['modeTetris','tetris'],['modeFlight','flight']].forEach(([id,mode])=>{$(id).classList.toggle('active',app.gameMode===mode);$(id).setAttribute('aria-pressed',String(app.gameMode===mode));});
@@ -410,12 +427,13 @@
       $('gameCanvas').setAttribute('aria-label',`${title}游戏`);
     }
     function renderFlightControls() {
-      const turn=app.players.get(app.flight.turnId),mine=app.flight.turnId===app.myId;
-      $('flightDice').textContent=app.flight.lastRoll?`🎲 ${app.flight.lastRoll}`:'🎲';
-      $('rollBtn').disabled=!app.connected||!app.running||!mine||!!app.flight.dice;
+      const table=flightTable(app.myId),turn=app.players.get(table?.turnId),mine=table?.turnId===app.myId;
+      $('flightDice').classList.toggle('rolling',!!table?.rolling);
+      $('flightDice').textContent=table?.rolling?'🎲':table?.lastRoll?`${['','⚀','⚁','⚂','⚃','⚄','⚅'][table.lastRoll]} ${table.lastRoll}`:'🎲';
+      $('rollBtn').disabled=!app.connected||!app.running||!mine||!!table?.dice||!!table?.winner||!!table?.rolling;
       const box=$('flightPieces');box.innerHTML='';
-      (app.flight.pieces.get(app.myId)||[-1,-1,-1,-1]).forEach((position,i)=>{const button=document.createElement('button');button.textContent=`${i+1}号 ${position===66?'✓':position<0?'基地':position>=60?'终点路':'棋子'}`;button.disabled=!app.running||!mine||!app.flight.dice||!flightCanMove(position,app.flight.dice);button.addEventListener('click',()=>setDirection(`piece-${i}`));box.append(button);});
-      if(turn) $('gameTip').textContent=app.flight.winner?`${app.players.get(app.flight.winner)?.name||'玩家'}获胜`:`轮到 ${turn.name}${mine?'（你）':''} · 掷到 6 起飞 · 4 枚先到终点获胜`;
+      (app.flight.pieces.get(app.myId)||[-1,-1,-1,-1]).forEach((position,i)=>{const button=document.createElement('button');button.textContent=`${i+1}号 ${position===FLIGHT_GOAL?'✓':position<0?'基地':position>=52?'终点路':'棋子'}`;button.disabled=!app.running||!mine||!table?.dice||!!table?.winner||!!table?.rolling||!flightCanMove(position,table?.dice);button.addEventListener('click',()=>setDirection(`piece-${i}`));box.append(button);});
+      if(table){const seat=table.seats[app.myId],colors=['红','绿','蓝','黄'];$('gameTip').textContent=table.winner?`第 ${app.flight.tables.indexOf(table)+1} 盘 · ${app.players.get(table.winner)?.name||'玩家'}获胜`:`第 ${app.flight.tables.indexOf(table)+1} 盘 · 你是${colors[seat]}方 · 轮到 ${turn?.name||'玩家'}${mine?'（你）':''}`;}
     }
 
     function addMessage(text, sticker=false, source=app.players.get(app.myId)||{id:app.myId,name:app.nickname,avatar:app.characterId}) {
@@ -428,25 +446,32 @@
     }
 
     function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true}; }
-    function resetFlight() { app.flight={pieces:new Map(),turnId:playerArray()[0]?.id||'',dice:0,lastRoll:0,winner:''};playerArray().forEach(p=>{p.score=0;app.flight.pieces.set(p.id,[-1,-1,-1,-1]);}); }
-    function flightCanMove(position,dice) { return position===-1?dice===6:position>=0&&position<66&&position+dice<=66; }
-    function nextFlightTurn() { const ids=playerArray().map(p=>p.id);app.flight.turnId=ids[(ids.indexOf(app.flight.turnId)+1)%ids.length]||'';app.flight.dice=0; }
+    function flightTable(id) { return app.flight.tables.find(table=>table.players.includes(id)); }
+    function flightJoin(id) { let table=app.flight.tables.find(t=>t.players.length<4&&!t.winner);if(!table){table={players:[],seats:{},turnId:'',dice:0,lastRoll:0,rolling:false,winner:''};app.flight.tables.push(table);}table.seats[id]=[0,1,2,3].find(seat=>!Object.values(table.seats).includes(seat));table.players.push(id);if(!table.turnId)table.turnId=id;app.flight.pieces.set(id,[-1,-1,-1,-1]); }
+    function flightLeave(id) { const table=flightTable(id);app.flight.pieces.delete(id);if(!table)return;const index=table.players.indexOf(id);table.players.splice(index,1);delete table.seats[id];if(!table.players.length){app.flight.tables.splice(app.flight.tables.indexOf(table),1);return;}if(table.turnId===id){table.turnId=table.players[index%table.players.length];table.dice=0;table.rolling=false;} }
+    function resetFlight() { app.flight={pieces:new Map(),tables:[]};playerArray().forEach(p=>{p.score=0;flightJoin(p.id);}); }
+    function flightCanMove(position,dice) { return position===-1?dice===6:position>=0&&position<FLIGHT_GOAL&&position+dice<=FLIGHT_GOAL; }
+    function nextFlightTurn(table) { const ids=table.players;table.turnId=ids[(ids.indexOf(table.turnId)+1)%ids.length]||'';table.dice=0; }
     function flightAction(id,action) {
-      const game=app.flight;if(!app.running||game.winner||id!==game.turnId)return;
-      if(action==='roll'&&!game.dice){game.dice=1+Math.floor(Math.random()*6);game.lastRoll=game.dice;if(!game.pieces.get(id)?.some(n=>flightCanMove(n,game.dice)))nextFlightTurn();return;}
-      if(!action.startsWith('piece-')||!game.dice)return;
-      const index=Number(action.slice(6)),pieces=game.pieces.get(id),old=pieces?.[index];if(!Number.isInteger(index)||index<0||index>3||!flightCanMove(old,game.dice))return;
-      const rolled=game.dice;pieces[index]=old<0?0:old+rolled;
-      if(pieces[index]<60){const seat=playerArray().findIndex(p=>p.id===id),cell=(seat*6+pieces[index])%60;game.pieces.forEach((other,otherId)=>{if(otherId===id)return;const otherSeat=playerArray().findIndex(p=>p.id===otherId);other.forEach((position,i)=>{if(position>=0&&position<60&&(otherSeat*6+position)%60===cell)other[i]=-1;});});}
-      if(pieces.every(n=>n===66)){game.winner=id;app.running=false;}
-      else if(rolled===6)game.dice=0;else nextFlightTurn();
+      const table=flightTable(id);if(!app.running||!table||table.winner||id!==table.turnId)return;
+      if(action==='roll'&&!table.dice&&!table.rolling){
+        table.rolling=true;
+        setTimeout(()=>{if(!app.isHost||!app.running||app.gameMode!=='flight'||flightTable(id)!==table||table.winner)return;table.rolling=false;table.dice=1+Math.floor(Math.random()*6);table.lastRoll=table.dice;if(!app.flight.pieces.get(id)?.some(n=>flightCanMove(n,table.dice)))nextFlightTurn(table);broadcastState();renderAll();},700);
+        return;
+      }
+      if(!action.startsWith('piece-')||!table.dice||table.rolling)return;
+      const index=Number(action.slice(6)),pieces=app.flight.pieces.get(id),old=pieces?.[index];if(!Number.isInteger(index)||index<0||index>3||!flightCanMove(old,table.dice))return;
+      const rolled=table.dice;pieces[index]=old<0?0:old+rolled;
+      if(pieces[index]<52){const seat=table.seats[id],cell=(seat*13+pieces[index])%52;table.players.forEach(otherId=>{if(otherId===id)return;const otherSeat=table.seats[otherId];app.flight.pieces.get(otherId)?.forEach((position,i)=>{if(position>=0&&position<52&&(otherSeat*13+position)%52===cell)app.flight.pieces.get(otherId)[i]=-1;});});}
+      if(pieces.every(n=>n===FLIGHT_GOAL)){table.winner=id;if(app.flight.tables.every(t=>t.winner))app.running=false;}
+      else if(rolled===6)table.dice=0;else nextFlightTurn(table);
     }
     function tetrisPiece(index) { return {shape:Math.floor(Math.random()*TETRIS_SHAPES.length),rot:0,x:3,y:0,color:COLORS[index%COLORS.length]}; }
     function resetTetris() { app.tetris.clear(); playerArray().forEach((p,i)=>{p.score=0;app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(i),alive:true});}); }
     function resetModeGame() { if(app.gameMode==='tetris') resetTetris(); else if(app.gameMode==='flight') resetFlight(); else { app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;app.snakes.set(p.id,spawnSnake(i));}); resetFood(); } }
     function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID),kind:FOOD_TYPES[Math.floor(Math.random()*FOOD_TYPES.length)]}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
     function resetGame() { if(!app.isHost)return; resetModeGame(); app.running=false; broadcastState(); renderAll(); }
-    function startGame() { if(!app.isHost || !app.players.size)return; const game=currentPlayersGame();if(!game.size)resetModeGame();else if(app.gameMode==='flight'?!!app.flight.winner:[...game.values()].every(state=>!state.alive))return toast('本局已结束，请房主重置'); app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); if(app.gameMode!=='flight')app.gameTimer=setInterval(tick,app.gameMode==='tetris'?430:170); broadcastState(); renderAll(); }
+    function startGame() { if(!app.isHost || !app.players.size)return; const game=currentPlayersGame();if(!game.size)resetModeGame();else if(app.gameMode==='flight'?app.flight.tables.every(t=>t.winner):[...game.values()].every(state=>!state.alive))return toast('本局已结束，请房主重置'); app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); if(app.gameMode!=='flight')app.gameTimer=setInterval(tick,app.gameMode==='tetris'?430:170); broadcastState(); renderAll(); }
     function setGameMode(mode) { if(!app.isHost||!['snake','tetris','flight'].includes(mode)||mode===app.gameMode)return; app.gameMode=mode; clearInterval(app.gameTimer); app.running=false; resetModeGame(); broadcastState(); renderAll(); }
     function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { applyInput(app.myId,dir); if(app.gameMode==='flight'){broadcastState();renderAll();} } else broadcast({type:'input',dir,to:app.hostId}); }
     function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
@@ -465,7 +490,7 @@
       let ateFood = false;
       const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood();if([...app.snakes.values()].every(s=>!s.alive))app.running=false; broadcastState(); renderAll();
     }
-    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],turnId:app.flight.turnId,dice:app.flight.dice,lastRoll:app.flight.lastRoll,winner:app.flight.winner},food:app.food,running:app.running}; }
+    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],tables:app.flight.tables},food:app.food,running:app.running}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
     function drawMarkerSnake(ctx, snake, color, cell) {
       const body = [...snake.body].reverse();
@@ -510,41 +535,76 @@
       const boardW=cell*TETRIS_W,boardH=cell*TETRIS_H;
       people.forEach((p,i)=>{const col=i%cols,row=Math.floor(i/cols);const x=gap+col*(boardW+gap),y=gap+row*(boardH+24+gap);const game=app.tetris.get(p.id);if(game)drawTetrisBoard(ctx,game,p,i,x,y+18,cell);});
     }
-    function flightPoint(seat,position) {
-      const angle=-Math.PI/2+Math.PI*2*(seat*6+(position<60?position:0))/60;
-      if(position<0){const a=-Math.PI/2+Math.PI*2*seat/10;return {x:350+290*Math.cos(a),y:350+290*Math.sin(a)};}
-      if(position===66)return {x:350,y:350};
-      const radius=position<60?205:177-(position-60)*25;
-      const a=position<60?angle:-Math.PI/2+Math.PI*2*seat/10;
-      return {x:350+radius*Math.cos(a),y:350+radius*Math.sin(a)};
+    function flightCell(ctx,x,y,color) {
+      ctx.fillStyle=color;ctx.fillRect(x*40+1,y*40+1,38,38);
+      ctx.strokeStyle='#263238';ctx.lineWidth=1.5;ctx.strokeRect(x*40+1,y*40+1,38,38);
+      ctx.fillStyle='#fffdf3';ctx.beginPath();ctx.arc(x*40+20,y*40+20,12,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#34404b';ctx.lineWidth=1;ctx.stroke();
     }
-    function renderFlight(ctx) {
-      ctx.fillStyle='#f8fafb';ctx.fillRect(0,0,700,700);
-      const people=playerArray();
-      for(let i=0;i<60;i++){const a=-Math.PI/2+Math.PI*2*i/60,x=350+205*Math.cos(a),y=350+205*Math.sin(a);ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5ddd9';ctx.stroke();}
-      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(350,350,27,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a9b8af';ctx.stroke();ctx.font='24px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('★',350,352);
-      people.forEach((p,seat)=>{
-        const base=flightPoint(seat,-1),start=flightPoint(seat,0),angle=-Math.PI/2+Math.PI*2*seat/10;
-        ctx.fillStyle=p.color+'33';ctx.beginPath();ctx.arc(base.x,base.y,31,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(start.x,start.y,11,0,Math.PI*2);ctx.fill();
-        for(let step=60;step<66;step++){const point=flightPoint(seat,step);ctx.beginPath();ctx.arc(point.x,point.y,10,0,Math.PI*2);ctx.fillStyle=p.color+'66';ctx.fill();}
-        ctx.fillStyle='#263238';ctx.font='12px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.name,base.x+25*Math.cos(angle),base.y+25*Math.sin(angle),76);
-        const pieces=app.flight.pieces.get(p.id)||[];
-        pieces.forEach((position,i)=>{
-          const point=flightPoint(seat,position),offset=position<0?[[ -10,-10],[10,-10],[-10,10],[10,10]][i]:position===66?[[ -12,-12],[12,-12],[-12,12],[12,12]][i]:[0,0];
-          ctx.beginPath();ctx.arc(point.x+offset[0],point.y+offset[1],9,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#34404b';ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 10px Arial, sans-serif';ctx.fillText(String(i+1),point.x+offset[0],point.y+offset[1]+1);
+    const flightAvatarCache=new Map();
+    function flightAvatar(avatar) {
+      if(!avatar)return null;
+      if(!flightAvatarCache.has(avatar)){const image=document.createElement('img');image.onload=()=>{if(app.gameMode==='flight')renderCanvas();};image.src=`avatars/${avatar}.jpg`;flightAvatarCache.set(avatar,image);}
+      return flightAvatarCache.get(avatar);
+    }
+    function flightPiecePoint(seat,position,index) {
+      const bases=[[[420,60],[540,60],[420,180],[540,180]],[[60,60],[180,60],[60,180],[180,180]],[[60,420],[180,420],[60,540],[180,540]],[[420,420],[540,420],[420,540],[540,540]]];
+      if(position<0)return bases[seat][index];
+      if(position===FLIGHT_GOAL){const goals=[[300,266],[266,300],[300,334],[334,300]],offsets=[[-8,-8],[8,-8],[-8,8],[8,8]];return [goals[seat][0]+offsets[index][0],goals[seat][1]+offsets[index][1]];}
+      const [x,y]=position<52?FLIGHT_TRACK[(seat*13+position)%52]:FLIGHT_HOME[seat][position-52];
+      return [x*40+20,y*40+20];
+    }
+    function drawFlightBoard(ctx,table,x,y) {
+      ctx.save();ctx.translate(x,y);ctx.fillStyle='#fff';ctx.fillRect(0,0,600,600);
+      const bases=[[9,0],[0,0],[0,9],[9,9]];
+      bases.forEach(([bx,by],seat)=>{
+        const color=FLIGHT_COLORS[seat],px=bx*40,py=by*40;
+        ctx.fillStyle=color;ctx.fillRect(px,py,240,240);ctx.strokeStyle='#263238';ctx.lineWidth=2;ctx.strokeRect(px+1,py+1,238,238);
+        ctx.fillStyle='#fff';ctx.fillRect(px+20,py+20,200,200);
+        [[60,60],[180,60],[60,180],[180,180]].forEach(([dx,dy])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(px+dx,py+dy,25,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#263238';ctx.stroke();});
+        const player=app.players.get(table.players.find(id=>table.seats[id]===seat));if(player){ctx.fillStyle='#263238';ctx.font='bold 16px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(player.name,px+120,py+120,155);}
+      });
+      FLIGHT_TRACK.forEach(([cx,cy],i)=>flightCell(ctx,cx,cy,FLIGHT_COLORS[Math.floor(i/13)]));
+      FLIGHT_HOME.forEach((lane,seat)=>lane.forEach(([cx,cy])=>flightCell(ctx,cx,cy,FLIGHT_COLORS[seat])));
+      const center=[[[240,240],[360,240],[300,300]],[[240,240],[300,300],[240,360]],[[240,360],[300,300],[360,360]],[[360,240],[360,360],[300,300]]];
+      center.forEach((points,seat)=>{ctx.beginPath();ctx.moveTo(...points[0]);ctx.lineTo(...points[1]);ctx.lineTo(...points[2]);ctx.closePath();ctx.fillStyle=FLIGHT_COLORS[seat];ctx.fill();ctx.strokeStyle='#263238';ctx.lineWidth=2;ctx.stroke();});
+      table.players.forEach(id=>{
+        const seat=table.seats[id];
+        const pieces=app.flight.pieces.get(id)||[];
+        const image=flightAvatar(app.players.get(id)?.avatar);
+        pieces.forEach((position,index)=>{
+          const [px,py]=flightPiecePoint(seat,position,index);
+          const stack=position>=0&&position<FLIGHT_GOAL?pieces.slice(0,index).filter(n=>n===position).length:0;
+          const ox=stack?((stack%2)*2-1)*9:0,oy=stack?Math.floor(stack/2)*12:0;
+          ctx.fillStyle=FLIGHT_COLORS[seat];ctx.beginPath();ctx.arc(px+ox,py+oy,19,0,Math.PI*2);ctx.fill();
+          ctx.save();ctx.beginPath();ctx.arc(px+ox,py+oy,15,0,Math.PI*2);ctx.clip();
+          if(image?.complete&&image.naturalWidth)ctx.drawImage(image,px+ox-15,py+oy-15,30,30);
+          else {ctx.fillStyle='#fff';ctx.font='bold 17px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(index+1),px+ox,py+oy+1);}
+          ctx.restore();
+          ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px+ox+13,py+oy+13,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle=FLIGHT_COLORS[seat];ctx.lineWidth=2;ctx.stroke();
+          ctx.fillStyle='#263238';ctx.font='bold 10px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(index+1),px+ox+13,py+oy+14);
         });
+      });
+      ctx.restore();
+    }
+    function renderFlight(ctx,cols,gap) {
+      const tables=app.flight.tables.length?app.flight.tables:[{players:[],turnId:'',winner:''}];
+      tables.forEach((table,i)=>{
+        const x=gap+(i%cols)*(600+gap),y=gap+Math.floor(i/cols)*(630+gap);
+        ctx.fillStyle='#263238';ctx.font='bold 16px Arial, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(`第 ${i+1} 盘${table.winner?' · 已结束':''}`,x,y+13);
+        drawFlightBoard(ctx,table,x,y+30);
       });
     }
     function renderCanvas(){
-      const canvas=$('gameCanvas');canvas.classList.toggle('tetris-canvas',app.gameMode==='tetris');
+      const canvas=$('gameCanvas');canvas.classList.toggle('tetris-canvas',app.gameMode==='tetris');canvas.classList.toggle('flight-canvas',app.gameMode==='flight');
+      let flightCols=1,flightGap=18;
       if(app.gameMode==='tetris'){const count=Math.max(1,app.players.size),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols);canvas.width=cols*180+(cols+1)*12;canvas.height=rows*(360+24+12)+12;}
-      else if(app.gameMode==='flight'){canvas.width=700;canvas.height=700;}
+      else if(app.gameMode==='flight'){const count=Math.max(1,app.flight.tables.length);flightCols=window.innerWidth<720?1:Math.min(2,count);canvas.width=flightCols*600+(flightCols+1)*flightGap;canvas.height=Math.ceil(count/flightCols)*(630+flightGap)+flightGap;}
       else {canvas.width=420;canvas.height=420;}
       const ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID;
       ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#eef7f3';ctx.fillRect(0,0,canvas.width,canvas.height);
       if(app.gameMode==='tetris'){renderTetris(ctx);return;}
-      if(app.gameMode==='flight'){renderFlight(ctx);return;}
+      if(app.gameMode==='flight'){renderFlight(ctx,flightCols,flightGap);return;}
       ctx.strokeStyle='#dcebe5';ctx.lineWidth=1;
       for(let i=1;i<GRID;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cell);ctx.lineTo(size,i*cell);ctx.stroke();}
       const f=app.food,fx=(f.x+.5)*cell,fy=(f.y+.5)*cell;
@@ -557,7 +617,7 @@
       app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
-    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&app.players.size>2);renderCanvas(); const game=currentPlayersGame();const ended=app.gameMode==='flight'?!!app.flight.winner:game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
+    function renderAll(){ renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&app.players.size>2);$('workspaceLayout').classList.toggle('flight-layout',app.gameMode==='flight');renderCanvas(); const game=currentPlayersGame();const ended=app.gameMode==='flight'?app.flight.tables.length&&app.flight.tables.every(t=>t.winner):game.size&&[...game.values()].every(state=>!state.alive);if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':ended?'本局结束，等待重置':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
@@ -574,14 +634,14 @@
         app.synced = true; applyState(data.state); renderMessages(); renderAll();
       }
     }
-    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),turnId:state.flight?.turnId||'',dice:state.flight?.dice||0,lastRoll:state.flight?.lastRoll||0,winner:state.flight?.winner||''};app.food=state.food||app.food;app.running=!!state.running;}
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),tables:state.flight?.tables||[]};app.food=state.food||app.food;app.running=!!state.running;}
 
     function leaveRoom(message) {
       const channel = app.channel;
       app.channel = null;
       if (channel) app.client.removeChannel(channel);
       clearTimeout(app.connectTimer); clearInterval(app.gameTimer);
-      app.players.clear(); app.snakes.clear(); app.tetris.clear();app.flight={pieces:new Map(),turnId:'',dice:0,lastRoll:0,winner:''};app.running = false;
+      app.players.clear(); app.snakes.clear(); app.tetris.clear();app.flight={pieces:new Map(),tables:[]};app.running = false;
       app.messages = []; renderMessages();
       app.isHost = false; app.hostId = ''; app.synced = false;
       setConnected(false); setStatus(message); renderAll(); toast(message);
@@ -599,10 +659,10 @@
       app.hostId = nextHost; app.isHost = nextHost === app.myId;
       app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),avatar:p.avatar,animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
       if (app.isHost) {
-        for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id);app.flight.pieces.delete(id);if(app.flight.turnId===id)nextFlightTurn(); }
+        for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id);flightLeave(id); }
         for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
           if (app.gameMode==='tetris') app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(active.indexOf(p)),alive:true});
-          else if (app.gameMode==='flight') app.flight.pieces.set(p.id,[-1,-1,-1,-1]);
+          else if (app.gameMode==='flight') flightJoin(p.id);
           else if (app.running) app.snakes.set(p.id,spawnSnake(active.indexOf(p)));
           broadcast({type:'sync',to:p.id,messages:app.messages,state:serialState()});
         }
