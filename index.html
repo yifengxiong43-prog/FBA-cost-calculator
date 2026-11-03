@@ -142,6 +142,7 @@
     .fortune-head { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; border-bottom:1px solid var(--line); font-size:13px; }
     .fortune-head button { width:32px; height:32px; border:1px solid var(--line); border-radius:6px; background:#fff; font-size:20px; }
     .fortune-dialog iframe { display:block; width:100%; height:calc(100% - 48px); border:0; }
+    .fortune-dialog iframe[hidden] { display:none; }
     .layout { grid-template-columns:240px minmax(380px,1fr) 420px; gap:20px; margin-top:20px; }
     .layout.tetris-layout .game { grid-column:1/-1; min-height:0; }
     .layout.tetris-layout .game-inner { max-width:none; overflow-x:auto; }
@@ -290,7 +291,7 @@
 
     <nav class="repo-nav" aria-label="项目导航">
       <div class="repo-crumb">workspace <span>/</span> daily-sync <span>·</span> main</div>
-      <div class="repo-tools"><button class="fortune-open" id="fortuneOpen" type="button">八字 · 姻缘</button><div class="work-clock"><span>下班倒计时</span><output id="workCountdown" role="timer">--:--:--</output><label for="workEndTime">下班时间 <input id="workEndTime" type="time" value="17:30" /></label></div></div>
+      <div class="repo-tools"><button class="fortune-open" id="fortuneOpen" type="button">八字 · 姻缘</button><button class="fortune-open" id="oracleOpen" type="button">摸鱼问卦</button><div class="work-clock"><span>下班倒计时</span><output id="workCountdown" role="timer">--:--:--</output><label for="workEndTime">下班时间 <input id="workEndTime" type="time" value="17:30" /></label></div></div>
     </nav>
 
     <section class="layout" id="workspaceLayout">
@@ -333,7 +334,7 @@
     </section>
     <div class="footer-note">workspace status · live sync</div>
   </main>
-  <dialog class="fortune-dialog" id="fortuneDialog" aria-label="八字与姻缘测算"><div class="fortune-head"><strong>八字 · 姻缘</strong><button id="fortuneClose" type="button" aria-label="关闭测算">×</button></div><iframe id="fortuneFrame" title="八字与姻缘测算" loading="lazy"></iframe></dialog>
+  <dialog class="fortune-dialog" id="fortuneDialog" aria-label="八字与姻缘测算"><div class="fortune-head"><strong id="fortuneTitle">八字 · 姻缘</strong><button id="fortuneClose" type="button" aria-label="关闭测算">×</button></div><iframe id="fortuneFrame" title="八字与姻缘测算" loading="lazy"></iframe><iframe id="oracleFrame" title="摸鱼问卦" loading="lazy" hidden></iframe></dialog>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -822,7 +823,9 @@
     $('resetBtn').addEventListener('click',resetGame);
     $('joinGameBtn').addEventListener('click',joinGame);
     $('leaveGameBtn').addEventListener('click',leaveGame);
-    $('fortuneOpen').addEventListener('click',()=>{const frame=$('fortuneFrame');if(!frame.src)frame.src='bazi.html';$('fortuneDialog').showModal();});
+    function openFortune(mode) { const oracle=mode==='oracle',frame=$(oracle?'oracleFrame':'fortuneFrame'),title=oracle?'摸鱼问卦':'八字 · 姻缘';$('fortuneFrame').hidden=oracle;$('oracleFrame').hidden=!oracle;if(!frame.src)frame.src=oracle?'divination.html':'bazi.html';$('fortuneTitle').textContent=title;$('fortuneDialog').setAttribute('aria-label',title);$('fortuneDialog').showModal(); }
+    $('fortuneOpen').addEventListener('click',()=>openFortune('bazi'));
+    $('oracleOpen').addEventListener('click',()=>openFortune('oracle'));
     $('fortuneClose').addEventListener('click',()=>$('fortuneDialog').close());
     $('fortuneDialog').addEventListener('click',e=>{if(e.target===$('fortuneDialog'))$('fortuneDialog').close();});
     let gameDrag=null;
