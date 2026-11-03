@@ -236,6 +236,7 @@
       <h2 id="characterTitle">选择人物</h2><p>选择后进入协作区</p>
       <div class="character-group">Ohuhu 美术产品部</div><div class="character-options" id="productCharacters"></div>
       <div class="character-group">Ohuhu 美术研发部</div><div class="character-options" id="researchCharacters"></div>
+      <div class="character-group">更多照片</div><div class="character-options" id="extraCharacters"></div>
       <div class="unlock-panel" id="unlockPanel" hidden><label for="characterPassword">请输入密码</label><input id="characterPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" /><button id="unlockBtn">解锁</button><span class="unlock-error" id="unlockError" role="status"></span></div>
     </div>
   </div>
@@ -317,7 +318,14 @@
       {id:'08',name:'陈颖',group:'research'}, {id:'09',name:'贾俊楠',group:'research'},
       {id:'10',name:'雷婉君',group:'research'}, {id:'11',name:'骆明辉',group:'research'},
       {id:'12',name:'邵伟开',group:'research'}, {id:'13',name:'王超',group:'research'},
-      {id:'14',name:'项辉',group:'research'}, {id:'15',name:'张麒康',group:'research'}
+      {id:'14',name:'项辉',group:'research'}, {id:'15',name:'张麒康',group:'research'},
+      {id:'16',name:'吴亦凡',group:'extra'}, {id:'17',name:'李易峰',group:'extra'},
+      {id:'18',name:'贾乃亮',group:'extra'}, {id:'19',name:'握拳橘猫',group:'extra'},
+      {id:'20',name:'惊讶猴',group:'extra'}, {id:'21',name:'派大星',group:'extra'},
+      {id:'22',name:'紧张橘猫',group:'extra'}, {id:'23',name:'白帽橘猫',group:'extra'},
+      {id:'24',name:'火焰橘猫',group:'extra'}, {id:'25',name:'棕色小狗',group:'extra'},
+      {id:'26',name:'草帽猴',group:'extra'}, {id:'27',name:'蝴蝶结小狗',group:'extra'},
+      {id:'28',name:'眼镜橘猫',group:'extra'}
     ];
     const CHARACTER_PASSWORD = '0206';
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
@@ -355,7 +363,7 @@
     }
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
-      myId: '', nickname: '', characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
+      myId: '', nickname: '', autoName:true, characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
       gameMode: 'snake', tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
@@ -367,20 +375,20 @@
     function animalFor(player) { return player.animal || '🐻'; }
     function avatarImage(id) { const image=document.createElement('img');image.src=`avatars/${id}.jpg`;image.alt='';return image; }
     function setAvatar(element,player) { element.innerHTML='';if(CHARACTERS.some(c=>c.id===player.avatar))element.append(avatarImage(player.avatar));else element.textContent=animalFor(player); }
-    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));if(character.locked){const lock=document.createElement('span');lock.className='character-lock';lock.setAttribute('aria-hidden','true');lock.textContent='🔒';button.append(lock);}button.addEventListener('click',()=>chooseCharacter(character.id));$(character.group==='product'?'productCharacters':'researchCharacters').append(button);}); }
-    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname=character.name;$('nickname').value=character.name;$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
+    function renderCharacterOptions() { CHARACTERS.forEach(character=>{const button=document.createElement('button');button.type='button';button.className='character-option';button.setAttribute('aria-label',character.name+(character.locked?'，需要密码':''));button.append(avatarImage(character.id));if(character.locked){const lock=document.createElement('span');lock.className='character-lock';lock.setAttribute('aria-hidden','true');lock.textContent='🔒';button.append(lock);}button.addEventListener('click',()=>chooseCharacter(character.id));$(({product:'productCharacters',research:'researchCharacters',extra:'extraCharacters'})[character.group]).append(button);}); }
+    function finishCharacterSelection(character) { app.characterId=character.id;app.nickname='1';app.autoName=true;$('nickname').value='1';$('nickname').disabled=false;setAvatar($('previewAvatar'),{avatar:character.id});$('characterGate').hidden=true;$('enterBtn').disabled=false;enterLobby(); }
     function chooseCharacter(id) { const character=CHARACTERS.find(c=>c.id===id);if(!character)return;if(character.locked){$('unlockPanel').hidden=false;$('unlockError').textContent='';$('characterPassword').value='';$('characterPassword').focus();return;}finishCharacterSelection(character); }
     function unlockCharacter() { if($('characterPassword').value!==CHARACTER_PASSWORD){$('unlockError').textContent='密码错误';$('characterPassword').value='';return;} $('characterPassword').value='';$('unlockPanel').hidden=true;finishCharacterSelection(CHARACTERS.find(c=>c.locked)); }
     renderCharacterOptions();
     async function updateNickname() {
-      const name=cleanName($('nickname').value),previous=app.nickname;
+      const name=cleanName($('nickname').value),previous=app.nickname,previousAutoName=app.autoName;
       if(!name){$('nickname').value=previous;return toast('名字不能为空');}
       $('nickname').value=name;
       if(name===previous)return;
-      app.nickname=name;
+      app.nickname=name;app.autoName=false;
       if(app.connected){
-        try { if(await app.channel.track({id:app.myId,name,avatar:app.characterId,joinedAt:app.joinedAt})!=='ok')throw Error('track failed'); }
-        catch {app.nickname=previous;$('nickname').value=previous;return toast('改名失败，请重试');}
+        try { if(await app.channel.track({id:app.myId,name,autoName:false,avatar:app.characterId,joinedAt:app.joinedAt})!=='ok')throw Error('track failed'); }
+        catch {app.nickname=previous;app.autoName=previousAutoName;$('nickname').value=previous;return toast('改名失败，请重试');}
       }
       const player=app.players.get(app.myId);if(player)player.name=name;
       renderAll();
@@ -657,7 +665,8 @@
       if (app.hostId && app.hostId !== nextHost) return leaveRoom('房主已离开，请重新加入');
       const previous = app.players;
       app.hostId = nextHost; app.isHost = nextHost === app.myId;
-      app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),avatar:p.avatar,animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
+      app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:p.autoName===true?String(i+1):cleanName(p.name),avatar:p.avatar,animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
+      if(app.autoName){app.nickname=app.players.get(app.myId).name;if(document.activeElement!==$('nickname'))$('nickname').value=app.nickname;}
       if (app.isHost) {
         for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id);flightLeave(id); }
         for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
@@ -686,7 +695,7 @@
           if (app.channel !== channel) return;
           if (status === 'SUBSCRIBED') {
             let result;
-            try { result = await channel.track({id:app.myId,name:app.nickname,avatar:app.characterId,joinedAt:app.joinedAt}); }
+            try { result = await channel.track({id:app.myId,name:app.nickname,autoName:app.autoName,avatar:app.characterId,joinedAt:app.joinedAt}); }
             catch { result = 'error'; }
             if (app.channel === channel && result !== 'ok') leaveRoom('加入协作区失败');
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') leaveRoom('云端连接失败，请检查网络');
