@@ -215,7 +215,7 @@
         <div class="room-status">
           <div class="room-card"><strong id="roomTitle">daily-sync</strong><span id="roomSub">等待连接协作区…</span><button class="tiny-btn copy-link" id="copyLinkBtn">复制协作链接</button></div>
         </div>
-        <div class="members"><h3>协作者 · <span id="memberCount">0</span>/4</h3><div class="member-list" id="memberList"><div class="member"><div class="avatar">🌱</div><span>等待协作者连接</span></div></div></div>
+        <div class="members"><h3>协作者 · <span id="memberCount">0</span>/10</h3><div class="member-list" id="memberList"><div class="member"><div class="avatar">🌱</div><span>等待协作者连接</span></div></div></div>
       </aside>
 
       <section class="panel chat">
@@ -228,12 +228,12 @@
       </section>
 
       <section class="panel game">
-        <div class="panel-header"><div class="game-head"><div class="game-icon">🖍️</div><div><h2>马克笔贪吃蛇</h2><small>Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
+        <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="modeBtn" disabled>切换到火拼俄罗斯</button><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
         <div class="game-inner">
           <div class="game-info"><span class="state" id="gameState">等待连接</span><div class="score-list" id="scoreList"></div></div>
           <canvas id="gameCanvas" width="420" height="420" aria-label="马克笔贪吃蛇游戏"></canvas>
           <div class="controls" aria-label="方向控制"><button class="control-btn" data-dir="up">↑</button><button class="control-btn" data-dir="left">←</button><button class="control-btn" data-dir="down">↓</button><button class="control-btn" data-dir="right">→</button></div>
-          <div class="game-tip">Ohuhu · 夏威夷水果与花布</div>
+          <div class="game-tip" id="gameTip">Ohuhu · 夏威夷水果与花布</div>
         </div>
       </section>
     </section>
@@ -255,9 +255,20 @@
       return id;
     };
     const LOBBY_ID = makeLobbyId();
-    const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7'];
-    const ANIMALS = ['🐻', '🐰', '🐴', '🐑'];
+    const MAX_PLAYERS = 10;
+    const COLORS = ['#ff8b6e', '#8cc7ff', '#ae93ed', '#76c7a7', '#f3b562', '#e889b5', '#68c5c0', '#9a9de8', '#d58b63', '#75b85b'];
+    const ANIMALS = ['🐻', '🐰', '🐴', '🐑', '🦊', '🐼', '🐸', '🐯', '🐨', '🦁'];
     const FOOD_TYPES = ['🍍', '🥥', '🥭', 'fabric'];
+    const TETRIS_W = 10, TETRIS_H = 20;
+    const TETRIS_SHAPES = [
+      [[[0,1],[1,1],[2,1],[3,1]], [[2,0],[2,1],[2,2],[2,3]]],
+      [[[0,0],[1,0],[0,1],[1,1]]],
+      [[[1,0],[0,1],[1,1],[2,1]], [[1,0],[1,1],[2,1],[1,2]], [[0,1],[1,1],[2,1],[1,2]], [[1,0],[0,1],[1,1],[1,2]]],
+      [[[1,0],[2,0],[0,1],[1,1]], [[1,0],[1,1],[2,1],[2,2]]],
+      [[[0,0],[1,0],[1,1],[2,1]], [[2,0],[1,1],[2,1],[1,2]]],
+      [[[0,0],[0,1],[1,1],[2,1]], [[1,0],[2,0],[1,1],[1,2]], [[0,1],[1,1],[2,1],[2,2]], [[1,0],[1,1],[0,2],[1,2]]],
+      [[[2,0],[0,1],[1,1],[2,1]], [[1,0],[1,1],[1,2],[2,2]], [[0,1],[1,1],[2,1],[0,2]], [[0,0],[1,0],[1,1],[1,2]]]
+    ];
     const CHARACTER_STICKERS = {
       '🐲 奶龙': { name:'奶龙', svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe56f"/><stop offset=".6" stop-color="#ffc63f"/><stop offset="1" stop-color="#f29434"/></linearGradient><radialGradient id="belly"><stop stop-color="#fffefa"/><stop offset="1" stop-color="#f7e9d3"/></radialGradient></defs><path d="M69 65c12-4 18-1 17 6-2 6-10 8-18 6" fill="#ef9738" stroke="#d57b2f" stroke-width="1.5"/><ellipse cx="35" cy="84" rx="10" ry="6" fill="#e58b37"/><ellipse cx="66" cy="84" rx="10" ry="6" fill="#e58b37"/><ellipse cx="53" cy="63" rx="29" ry="27" fill="url(#gold)"/><ellipse cx="53" cy="66" rx="18" ry="21" fill="url(#belly)"/><path d="M28 53c-10 2-13 14-5 18 5 2 10-3 14-7m42-12c9 2 10 12 4 16-4 3-9-1-13-5" fill="url(#gold)" stroke="#e9a13b" stroke-width="1.5"/><ellipse cx="50" cy="34" rx="32" ry="27" fill="url(#gold)"/><ellipse cx="29" cy="46" rx="17" ry="11" fill="#ffd057"/><ellipse cx="41" cy="31" rx="6" ry="8" fill="#32302f"/><ellipse cx="66" cy="30" rx="6" ry="8" fill="#32302f"/><circle cx="43" cy="28" r="2.3" fill="#fff"/><circle cx="68" cy="27" r="2.3" fill="#fff"/><path d="M24 49c11 7 24 7 35 2" fill="none" stroke="#e9ad4b" stroke-width="1.8" stroke-linecap="round"/><path d="M34 86l-2 3m7-2-1 3m25-2-1 3m7-4 1 3" stroke="#9d6034" stroke-width="2" stroke-linecap="round"/></svg>` },
       '👶 奶娃': { name:'奶娃', svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe667"/><stop offset=".65" stop-color="#ffce45"/><stop offset="1" stop-color="#ecab38"/></linearGradient><radialGradient id="eye"><stop stop-color="#9dd779"/><stop offset=".7" stop-color="#68ac65"/><stop offset="1" stop-color="#365d42"/></radialGradient></defs><path d="M58 6c20 1 32 19 33 41v31c0 9-8 14-20 14H38c-16 0-23-11-19-24 2-8 8-14 11-21-7-19 7-40 28-41Z" fill="url(#yellow)" stroke="#e6ae39" stroke-width="1.5"/><path d="M29 45c-5 1-10 2-15 5 5 2 12 2 18 0" fill="#d99b34" stroke="#9b6830" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="42" cy="32" rx="13" ry="15" fill="#3f4b37"/><ellipse cx="43" cy="32" rx="10.5" ry="12.5" fill="url(#eye)"/><ellipse cx="44" cy="32" rx="6" ry="9" fill="#1f2b29"/><ellipse cx="47" cy="27" rx="3" ry="3.5" fill="#fff"/><path d="M29 54c-4 10-10 16-10 26 0 7 5 11 11 11" fill="none" stroke="#f4b844" stroke-width="2"/><path d="M76 16c8 9 12 20 12 35" fill="none" stroke="#ffe980" stroke-width="3" stroke-linecap="round" opacity=".65"/></svg>` }
@@ -270,7 +281,8 @@
     }
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
-      myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'}, running:false,
+      myId: '', nickname: '小熊玩家', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
+      gameMode: 'snake', tetris: new Map(), running:false,
       messages: [], gameTimer: null, lastChatAt: 0, toastTimer: null, connectTimer: null
     };
 
@@ -279,7 +291,7 @@
     function cleanName(value) { return (value || '小熊玩家').replace(/[<>]/g,'').trim().slice(0,12) || '小熊玩家'; }
     function randomAnimal() { return ANIMALS[app.players.size % ANIMALS.length]; }
     function animalFor(player) { return player.animal || '🐻'; }
-    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled; $('nickname').disabled = enabled; }
+    function setConnected(enabled) { app.connected = enabled; if (enabled) clearTimeout(app.connectTimer); $('messageInput').disabled = !enabled; $('sendBtn').disabled = !enabled; $('startBtn').disabled = !enabled || !app.isHost; $('resetBtn').disabled = !enabled || !app.isHost; $('modeBtn').disabled = !enabled || !app.isHost; $('enterBtn').disabled = enabled; $('nickname').disabled = enabled; }
     function playerArray() { return [...app.players.values()]; }
 
     function showEmptyIfNeeded() {
@@ -307,9 +319,18 @@
       const list = $('memberList'); list.innerHTML = ''; $('memberCount').textContent = app.players.size;
       playerArray().forEach(p => { const row=document.createElement('div'); row.className='member'; const av=document.createElement('div'); av.className='avatar'; av.style.background=p.color+'22'; av.textContent=animalFor(p); const name=document.createElement('span'); name.textContent=p.name; row.append(av,name); if(p.id===app.myId){const you=document.createElement('span');you.className='you';you.textContent='你';row.append(you)} list.append(row); });
       if (!app.players.size) list.innerHTML='<div class="member"><div class="avatar">🌱</div><span>还没有人，来坐坐吧</span></div>';
-      $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/4 位协作者在线` : '等待连接协作区…';
+      $('roomSub').textContent = app.connected ? `${app.isHost ? '你是当前节点 · ' : ''}${app.players.size}/${MAX_PLAYERS} 位协作者在线` : '等待连接协作区…';
     }
-    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const animal=document.createElement('span');animal.textContent=animalFor(p);const score=document.createElement('b');score.textContent=p.score||0;chip.append(animal,score);box.append(chip)}); }
+    function renderScores() { const box=$('scoreList'); box.innerHTML=''; playerArray().forEach(p=>{const chip=document.createElement('div');chip.className='score-chip';const animal=document.createElement('span');animal.textContent=animalFor(p);const score=document.createElement('b');const gameState=app.gameMode==='tetris'?app.tetris.get(p.id):app.snakes.get(p.id);score.textContent=(p.score||0)+(gameState&&!gameState.alive?' ×':'');chip.append(animal,score);box.append(chip)}); }
+    function renderGameMode() {
+      const tetris = app.gameMode === 'tetris';
+      $('gameIcon').textContent = tetris ? '▦' : '🖍️';
+      $('gameTitle').textContent = tetris ? '火拼俄罗斯' : '马克笔贪吃蛇';
+      $('gameSubtitle').textContent = tetris ? `俄罗斯方块 · ${app.players.size}/${MAX_PLAYERS} 人` : 'Ohuhu · Aloha';
+      $('gameTip').textContent = tetris ? '每位在线玩家一块棋盘，方向键左右移动，↑旋转，↓加速下落' : 'Ohuhu · 夏威夷水果与花布';
+      $('modeBtn').textContent = tetris ? '切换到贪吃蛇' : '切换到火拼俄罗斯';
+      $('gameCanvas').setAttribute('aria-label', tetris ? '火拼俄罗斯游戏' : '马克笔贪吃蛇游戏');
+    }
 
     function addMessage(text, sticker=false, source={id:app.myId,name:app.nickname,animal: animalFor(app.players.get(app.myId)||{})}) {
       const msg={id:source.id,name:source.name,animal:source.animal,text:String(text).slice(0,200),sticker,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
@@ -320,29 +341,40 @@
       return app.channel.send({type:'broadcast',event:'packet',payload:{...packet,from:app.myId}}).catch(()=>'error');
     }
 
-    function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true,score:0,respawnAt:0}; }
+    function spawnSnake(index) { const x=4+(index%4)*4, y=4+Math.floor(index/4)*5; return {body:[{x,y},{x:x-1,y},{x:x-2,y}],dir:'right',nextDir:'right',alive:true}; }
+    function tetrisPiece(index) { return {shape:Math.floor(Math.random()*TETRIS_SHAPES.length),rot:0,x:3,y:0,color:COLORS[index%COLORS.length]}; }
+    function resetTetris() { app.tetris.clear(); playerArray().forEach((p,i)=>{p.score=0;app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(i),alive:true});}); }
+    function resetModeGame() { if(app.gameMode==='tetris') { resetTetris(); } else { app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;app.snakes.set(p.id,spawnSnake(i));}); resetFood(); } }
     function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID),kind:FOOD_TYPES[Math.floor(Math.random()*FOOD_TYPES.length)]}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
-    function resetGame() { if(!app.isHost)return; app.snakes.clear(); playerArray().forEach((p,i)=>{p.score=0;p.alive=true;app.snakes.set(p.id,spawnSnake(i));}); app.running=false; resetFood(); broadcastState(); renderAll(); }
-    function startGame() { if(!app.isHost || !app.players.size)return; if(!app.snakes.size) { app.snakes.clear(); playerArray().forEach((p,i)=>app.snakes.set(p.id,spawnSnake(i))); resetFood(); } app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); app.gameTimer=setInterval(tick,170); broadcastState(); renderAll(); }
-    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { const s=app.snakes.get(app.myId); if(s && !opposite(dir,s.dir))s.nextDir=dir; } else broadcast({type:'input',dir,to:app.hostId}); }
+    function resetGame() { if(!app.isHost)return; resetModeGame(); app.running=false; broadcastState(); renderAll(); }
+    function startGame() { if(!app.isHost || !app.players.size)return; if(app.gameMode==='tetris' ? !app.tetris.size : !app.snakes.size) resetModeGame(); app.running=true; $('gameState').textContent='游戏进行中'; clearInterval(app.gameTimer); app.gameTimer=setInterval(tick,app.gameMode==='tetris'?430:170); broadcastState(); renderAll(); }
+    function toggleGameMode() { if(!app.isHost)return; app.gameMode=app.gameMode==='snake'?'tetris':'snake'; clearInterval(app.gameTimer); app.running=false; resetModeGame(); broadcastState(); renderAll(); }
+    function setDirection(dir) { const p=app.players.get(app.myId); if(!p)return; if(app.isHost) { applyInput(app.myId,dir); } else broadcast({type:'input',dir,to:app.hostId}); }
     function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
     function stepHead(head,dir){ return {x:head.x+(dir==='left'?-1:dir==='right'?1:0),y:head.y+(dir==='up'?-1:dir==='down'?1:0)}; }
+    function tetrisCells(piece,rot=piece.rot) { return TETRIS_SHAPES[piece.shape][rot%TETRIS_SHAPES[piece.shape].length]; }
+    function tetrisCollides(game,piece,dx=0,dy=0,rot=piece.rot) { return tetrisCells(piece,rot).some(([x,y])=>{const nx=piece.x+x+dx,ny=piece.y+y+dy;return nx<0||nx>=TETRIS_W||ny>=TETRIS_H||(ny>=0&&game.board[ny][nx]);}); }
+    function lockTetris(id,game) { tetrisCells(game.piece).forEach(([x,y])=>{const nx=game.piece.x+x,ny=game.piece.y+y;if(ny>=0)game.board[ny][nx]=game.piece.color;}); const kept=game.board.filter(row=>row.some(cell=>!cell)); const cleared=TETRIS_H-kept.length; while(kept.length<TETRIS_H)kept.unshift(Array(TETRIS_W).fill('')); game.board=kept; const player=app.players.get(id);if(player)player.score=(player.score||0)+cleared*100; game.piece=tetrisPiece(playerArray().findIndex(p=>p.id===id)); if(tetrisCollides(game,game.piece))game.alive=false; }
+    function moveTetris(id,dx,dy,rotate=false) { const game=app.tetris.get(id);if(!game||!game.alive)return false;const nextRot=rotate?(game.piece.rot+1)%TETRIS_SHAPES[game.piece.shape].length:game.piece.rot;if(!tetrisCollides(game,game.piece,dx,dy,nextRot)){game.piece={...game.piece,x:game.piece.x+dx,y:game.piece.y+dy,rot:nextRot};return true;}if(dy>0){lockTetris(id,game);return false;}return false; }
+    function applyInput(id,dir) { if(app.gameMode==='tetris'){if(dir==='left')moveTetris(id,-1,0);else if(dir==='right')moveTetris(id,1,0);else if(dir==='down')moveTetris(id,0,1);else if(dir==='up')moveTetris(id,0,0,true);} else {const s=app.snakes.get(id);if(s&&s.alive&&!opposite(dir,s.dir))s.nextDir=dir;} }
+    function tickTetris() { let alive=0; app.tetris.forEach((game,id)=>{if(game.alive){alive++;moveTetris(id,0,1);}});if(!alive)app.running=false; }
     function tick() {
       if(!app.isHost || !app.running)return;
+      if(app.gameMode==='tetris'){tickTetris();broadcastState();renderAll();return;}
       let ateFood = false;
-      const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ if(Date.now()>s.respawnAt){const idx=playerArray().findIndex(p=>p.id===id); next.set(id,spawnSnake(idx<0?0:idx));} else next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;s.respawnAt=Date.now()+1200;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood(); broadcastState(); renderAll();
+      const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir:s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood(); broadcastState(); renderAll();
     }
-    function serialState(){ return {players:playerArray(),snakes:[...app.snakes.entries()],food:app.food,running:app.running}; }
+    function serialState(){ return {players:playerArray(),gameMode:app.gameMode,snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],food:app.food,running:app.running}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
     function drawMarkerSnake(ctx, snake, color, cell) {
       const body = [...snake.body].reverse();
       const angleFor = dir => ({right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2})[dir];
       const center = part => [(part.x+.5)*cell,(part.y+.5)*cell];
-      ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.save(); ctx.globalAlpha=snake.alive?1:.28; ctx.lineCap='round'; ctx.lineJoin='round';
       ctx.beginPath(); body.forEach((part,i)=>{const [x,y]=center(part); if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});
-      ctx.strokeStyle=color;ctx.lineWidth=18;ctx.stroke();
-      ctx.strokeStyle='#39444b';ctx.lineWidth=16;ctx.stroke();
-      ctx.strokeStyle='#fffdf8';ctx.lineWidth=13;ctx.stroke();
+      ctx.strokeStyle=color;ctx.lineWidth=Math.min(22,cell*1.08);ctx.stroke();
+      ctx.strokeStyle='#39444b';ctx.lineWidth=Math.min(20,cell*.98);ctx.stroke();
+      ctx.strokeStyle='#fffdf8';ctx.lineWidth=Math.min(16,cell*.78);ctx.stroke();
 
       const tail=snake.body.at(-1),next=snake.body.at(-2);
       const tailDir=next.x>tail.x?'right':next.x<tail.x?'left':next.y>tail.y?'down':'up';
@@ -354,7 +386,7 @@
 
       const head=snake.body[0];
       ctx.save();ctx.translate(...center(head));ctx.rotate(angleFor(snake.dir));
-      ctx.fillStyle='#fffdf8';roundRect(ctx,-6,-7,12,14,3);
+      ctx.fillStyle='#fffdf8';roundRect(ctx,-7,-8,14,16,3);
       ctx.fillStyle=color;ctx.fillRect(5,-6,2,12);
       ctx.fillStyle='#39444b';ctx.beginPath();ctx.moveTo(7,-4);ctx.lineTo(12,0);ctx.lineTo(7,4);ctx.closePath();ctx.fill();
       ctx.restore();
@@ -365,9 +397,24 @@
       ctx.fillStyle='#354049';ctx.font='italic bold 7px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Ohuhu',0,0);
       ctx.restore();ctx.restore();
     }
+    function drawTetrisBoard(ctx,game,p,index,x,y,cell) {
+      const w=TETRIS_W*cell,h=TETRIS_H*cell;
+      ctx.fillStyle='#f4f8f7';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#cbd8d3';ctx.strokeRect(x,y,w,h);
+      game.board.forEach((row,ry)=>row.forEach((color,cx)=>{if(color){ctx.fillStyle=color;ctx.fillRect(x+cx*cell+1,y+ry*cell+1,cell-2,cell-2);}}));
+      if(game.alive) tetrisCells(game.piece).forEach(([cx,cy])=>{if(game.piece.y+cy>=0){ctx.fillStyle=game.piece.color;ctx.fillRect(x+(game.piece.x+cx)*cell+1,y+(game.piece.y+cy)*cell+1,cell-2,cell-2);}});
+      ctx.fillStyle='#354049';ctx.font=`${Math.max(9,Math.min(13,cell))}px Arial`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(`${animalFor(p)} ${p.name}${game.alive?'':' · 淘汰'}`,x,y-3);
+    }
+    function renderTetris(ctx,size) {
+      const people=playerArray(),count=Math.max(1,people.length),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols),gap=12;
+      const cell=Math.max(8,Math.min(18,Math.floor((size-gap*(cols+1))/(cols*TETRIS_W))));
+      const boardW=cell*TETRIS_W,boardH=cell*TETRIS_H,totalH=rows*(boardH+24)+gap;
+      const top=Math.max(8,Math.floor((size-totalH)/2));
+      people.forEach((p,i)=>{const col=i%cols,row=Math.floor(i/cols);const x=gap+col*(boardW+gap),y=top+row*(boardH+24+gap);const game=app.tetris.get(p.id);if(game)drawTetrisBoard(ctx,game,p,i,x,y+18,cell);});
+    }
     function renderCanvas(){
       const canvas=$('gameCanvas'),ctx=canvas.getContext('2d'),size=canvas.width,cell=size/GRID;
       ctx.clearRect(0,0,size,size); ctx.fillStyle='#eef7f3';ctx.fillRect(0,0,size,size);
+      if(app.gameMode==='tetris'){renderTetris(ctx,size);return;}
       ctx.strokeStyle='#dcebe5';ctx.lineWidth=1;
       for(let i=1;i<GRID;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cell);ctx.lineTo(size,i*cell);ctx.stroke();}
       const f=app.food,fx=(f.x+.5)*cell,fy=(f.y+.5)*cell;
@@ -377,18 +424,17 @@
         ctx.fillStyle='#fff4d8'; ctx.beginPath(); ctx.moveTo(f.x*cell+13,f.y*cell+2); ctx.lineTo(f.x*cell+18,f.y*cell+7); ctx.lineTo(f.x*cell+18,f.y*cell+2); ctx.closePath(); ctx.fill();
       }
       ctx.font=(f.kind==='fabric'?'12px':'16px')+' "Segoe UI Emoji", "Apple Color Emoji", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.kind==='fabric'?'🌺':(f.kind||'🍍'),fx,fy+1);
-      app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p&&s.alive)drawMarkerSnake(ctx,s,p.color,cell);});
+      app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
-    function renderAll(){ renderMembers();renderScores();renderCanvas(); if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
+    function renderAll(){ renderMembers();renderScores();renderGameMode();renderCanvas(); if(app.connected){ $('gameState').textContent=app.running?'游戏进行中':(app.isHost?'等待开始':'等待房主开始'); } else $('gameState').textContent='等待连接'; }
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
       if (data.type === 'chat' && typeof data.text === 'string') {
         addMessage(data.text, data.sticker === true, app.players.get(data.from));
       } else if (data.type === 'input' && app.isHost && ['up','down','left','right'].includes(data.dir)) {
-        const snake = app.snakes.get(data.from);
-        if (snake && !opposite(data.dir, snake.dir)) snake.nextDir = data.dir;
+        applyInput(data.from,data.dir);
       } else if (data.type === 'state' && data.from === app.hostId && !app.isHost) {
         applyState(data.state); renderAll();
       } else if (data.type === 'sync-request' && app.isHost) {
@@ -398,7 +444,7 @@
         app.synced = true; applyState(data.state); renderMessages(); renderAll();
       }
     }
-    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.snakes=new Map(state.snakes||[]);app.food=state.food||app.food;app.running=!!state.running;}
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.gameMode=state.gameMode||'snake';app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.food=state.food||app.food;app.running=!!state.running;}
 
     function leaveRoom(message) {
       const channel = app.channel;
@@ -414,18 +460,19 @@
       const members = Object.values(app.channel.presenceState()).flat()
         .filter(p => p && typeof p.id === 'string' && typeof p.name === 'string')
         .sort((a,b) => a.joinedAt - b.joinedAt || a.id.localeCompare(b.id));
-      const active = members.slice(0,4);
+      const active = members.slice(0,MAX_PLAYERS);
       if (!members.some(p => p.id === app.myId)) return;
-      if (!active.some(p => p.id === app.myId)) return leaveRoom('协作区已满，最多 4 人');
+      if (!active.some(p => p.id === app.myId)) return leaveRoom(`协作区已满，最多 ${MAX_PLAYERS} 人`);
       const nextHost = active[0].id;
       if (app.hostId && app.hostId !== nextHost) return leaveRoom('房主已离开，请重新加入');
       const previous = app.players;
       app.hostId = nextHost; app.isHost = nextHost === app.myId;
       app.players = new Map(active.map((p,i) => [p.id, {id:p.id,name:cleanName(p.name),animal:ANIMALS[i],color:COLORS[i],score:previous.get(p.id)?.score||0}]));
       if (app.isHost) {
-        for (const id of previous.keys()) if (!app.players.has(id)) app.snakes.delete(id);
+        for (const id of previous.keys()) if (!app.players.has(id)) { app.snakes.delete(id); app.tetris.delete(id); }
         for (const p of active) if (p.id !== app.myId && !previous.has(p.id)) {
-          if (app.running) app.snakes.set(p.id,spawnSnake(active.indexOf(p)));
+          if (app.gameMode==='tetris') app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(active.indexOf(p)),alive:true});
+          else if (app.running) app.snakes.set(p.id,spawnSnake(active.indexOf(p)));
           broadcast({type:'sync',to:p.id,messages:app.messages,state:serialState()});
         }
       } else if (!app.synced) broadcast({type:'sync-request',to:app.hostId});
@@ -466,7 +513,7 @@
 
     if (location.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(location.hostname)) $('linkHint').textContent = '当前页面不是 HTTPS，浏览器可能拦截联机连接；请部署到 HTTPS 后再分享。';
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) $('linkHint').textContent = '网站尚未配置云端服务。完成 Supabase 项目配置并重新上传 index.html 后才能联机。';
-    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderCanvas();
+    $('enterBtn').addEventListener('click',enterLobby); $('copyLinkBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('协作链接已复制，请发送这个完整链接');}catch{toast('请从浏览器地址栏复制完整链接（包含末尾标识）');}}); $('sendBtn').addEventListener('click',()=>sendChat($('messageInput').value)); $('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat(e.target.value)}); document.querySelectorAll('.sticker').forEach(btn=>{if(Object.hasOwn(CHARACTER_STICKERS,btn.dataset.sticker))btn.append(characterImage(btn.dataset.sticker,''));btn.addEventListener('click',()=>sendChat(btn.dataset.sticker,true));}); document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir))); $('startBtn').addEventListener('click',startGame); $('resetBtn').addEventListener('click',resetGame); $('modeBtn').addEventListener('click',toggleGameMode); $('nickname').addEventListener('input',e=>{const animals=['🐻','🐰','🐴','🐑'];$('previewAvatar').textContent=animals[Math.abs([...e.target.value].reduce((a,c)=>a+c.charCodeAt(0),0))%animals.length]||'🐻';}); window.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();setDirection(map[e.key]);}}); renderGameMode(); renderCanvas();
   </script>
 </body>
 </html>
