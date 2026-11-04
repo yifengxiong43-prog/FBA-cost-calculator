@@ -192,6 +192,7 @@
     .game-head { gap:8px; }
     .game-icon { width:28px; height:28px; border-radius:6px; background:#eaeef2; font-size:15px; color:#57606a; }
     .game-actions { gap:4px; }
+    .game-actions #pauseBtn { width:32px; padding:6px; }
     .tiny-btn { padding:6px 9px; border-radius:6px; font-size:11px; }
     .game-inner { padding:14px 16px 18px; }
     .game-info { margin-bottom:10px; }
@@ -324,7 +325,7 @@
       <section class="panel game" id="gamePanel">
         <button class="game-toggle" id="gameToggle" type="button" aria-label="展开游戏" aria-expanded="false" title="展开面板">▤</button>
         <button class="game-drag-handle" id="gameDragHandle" type="button" aria-label="拖动游戏面板" title="拖动游戏面板，双击归位">⠿</button>
-        <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
+        <div class="panel-header"><div class="game-head"><div class="game-icon" id="gameIcon">🖍️</div><div><h2 id="gameTitle">马克笔贪吃蛇</h2><small id="gameSubtitle">Ohuhu · Aloha</small></div></div><div class="game-actions"><button class="tiny-btn" id="startBtn" disabled>开始</button><button class="tiny-btn" id="pauseBtn" type="button" aria-label="暂停" title="暂停" hidden disabled>⏸</button><button class="tiny-btn" id="resetBtn" disabled>重置</button></div></div>
         <div class="game-modes" role="group" aria-label="选择游戏"><button class="mode-btn active" id="modeSnake" aria-pressed="true" disabled>贪吃蛇</button><button class="mode-btn" id="modeTetris" aria-pressed="false" disabled>俄罗斯方块</button><button class="mode-btn" id="modeFlight" aria-pressed="false" disabled>飞行棋</button></div>
         <div class="game-membership"><button id="joinGameBtn" hidden>加入游戏</button><button id="leaveGameBtn" hidden>退出游戏</button></div>
         <div class="game-inner">
@@ -346,6 +347,8 @@
     const GRID = 21;
     const SNAKE_START_DELAY = 3000;
     const SNAKE_TICK_MS = 400;
+    const TETRIS_START_DELAY = 3000;
+    const TETRIS_TICK_MS = 600;
     const SUPABASE_URL = 'https://gvvurtnuvngkszngvhms.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KP6L4tEyyFj7DmNXC1lQnw_wyLRrvyZ';
     const LOBBY_PREFIX = 'workspace-sync-';
@@ -423,7 +426,7 @@
     const app = {
       client: null, channel: null, hostId: '', isHost: false, connected: false,
       myId: '', nickname: '', autoName:true, characterId: '', players: new Map(), snakes: new Map(), food: {x:10,y:10,kind:'🍍'},
-      gameMode: 'snake', memberships:new Map(), runningModes:{snake:false,tetris:false,flight:false}, snakeReadyAt:0, snakeEliminated:new Set(),
+      gameMode: 'snake', memberships:new Map(), runningModes:{snake:false,tetris:false,flight:false}, snakeReadyAt:0, tetrisReadyAt:0, snakeEliminated:new Set(),
       tetris: new Map(), flight: {pieces:new Map(),tables:[]}, running:false, gameCollapsed:false,
       messages: [], gameTimers:{snake:null,tetris:null}, lastChatAt: 0, botBusy:false, botHistory:[], toastTimer: null, connectTimer: null
     };
@@ -506,6 +509,7 @@
       $('joinGameBtn').hidden=!ready||ownGame;$('joinGameBtn').textContent=joined?'切换加入':'加入游戏';$('joinGameBtn').disabled=app.gameMode==='snake'&&app.snakeEliminated.has(app.myId);
       $('leaveGameBtn').hidden=!ready||!joined;$('leaveGameBtn').textContent=joined?`退出${{snake:'贪吃蛇',tetris:'俄罗斯方块',flight:'飞行棋'}[joined]}`:'退出游戏';
       const ended=gameEnded(app.gameMode);$('startBtn').disabled=!ready||!ownGame||app.runningModes[app.gameMode]||ended;$('resetBtn').disabled=!ready||!ownGame||app.runningModes[app.gameMode];
+      const pause=$('pauseBtn'),ownTetris=app.tetris.get(app.myId);pause.hidden=app.gameMode!=='tetris'||!ownGame;pause.disabled=!ready||!app.runningModes.tetris||!ownTetris?.alive;pause.textContent=ownTetris?.paused?'▶':'⏸';pause.title=ownTetris?.paused?'继续':'暂停';pause.setAttribute('aria-label',pause.title);
       $('directionControls').hidden=app.gameMode==='flight';$('flightControls').hidden=app.gameMode!=='flight';
       if(app.gameMode==='flight') renderFlightControls();
       $('gameCanvas').setAttribute('aria-label',`${title}游戏`);
@@ -560,39 +564,41 @@
       else if(rolled===6)table.dice=0;else nextFlightTurn(table);
     }
     function tetrisPiece(index) { return {shape:Math.floor(Math.random()*TETRIS_SHAPES.length),rot:0,x:3,y:0,color:COLORS[index%COLORS.length]}; }
-    function resetTetris() { app.tetris.clear(); gamePlayers('tetris').forEach((p,i)=>{p.score=0;app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(i),alive:true});}); }
+    function resetTetris() { app.tetris.clear();app.tetrisReadyAt=0; gamePlayers('tetris').forEach((p,i)=>{p.score=0;app.tetris.set(p.id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(i),alive:true,paused:false});}); }
     function resetModeGame(mode=app.gameMode) { if(mode==='tetris') resetTetris(); else if(mode==='flight') resetFlight(); else { app.snakes.clear();app.snakeEliminated.clear();app.snakeReadyAt=0;gamePlayers('snake').forEach((p,i)=>{p.score=0;app.snakes.set(p.id,spawnSnake(i));}); resetFood(); } }
     function resetFood() { let food; do { food={x:Math.floor(Math.random()*GRID),y:Math.floor(Math.random()*GRID),kind:FOOD_TYPES[Math.floor(Math.random()*FOOD_TYPES.length)]}; } while([...app.snakes.values()].some(s=>s.body.some(b=>b.x===food.x&&b.y===food.y))); app.food=food; }
     function gameEnded(mode) { const ids=gamePlayers(mode);if(!ids.length)return false;if(mode==='flight')return app.flight.tables.length>0&&app.flight.tables.every(t=>t.winner);const game=mode==='tetris'?app.tetris:app.snakes;return ids.every(p=>game.get(p.id)&&!game.get(p.id).alive); }
-    function ensureGameTimers() { if(!app.isHost)return;for(const mode of ['snake','tetris']){if(app.runningModes[mode]&&!app.gameTimers[mode])app.gameTimers[mode]=setInterval(()=>tick(mode),mode==='snake'?SNAKE_TICK_MS:430);else if(!app.runningModes[mode]&&app.gameTimers[mode]){clearInterval(app.gameTimers[mode]);app.gameTimers[mode]=null;}} }
+    function ensureGameTimers() { if(!app.isHost)return;for(const mode of ['snake','tetris']){if(app.runningModes[mode]&&!app.gameTimers[mode])app.gameTimers[mode]=setInterval(()=>tick(mode),mode==='snake'?SNAKE_TICK_MS:TETRIS_TICK_MS);else if(!app.runningModes[mode]&&app.gameTimers[mode]){clearInterval(app.gameTimers[mode]);app.gameTimers[mode]=null;}} }
     function removeGameMember(id) { const mode=app.memberships.get(id);if(!mode)return;app.memberships.delete(id);if(mode==='flight')flightLeave(id);else if(mode==='tetris')app.tetris.delete(id);else app.snakes.delete(id);if(!gamePlayers(mode).length||gameEnded(mode))app.runningModes[mode]=false;ensureGameTimers(); }
-    function applyJoinGame(id,mode) { if(!app.players.has(id)||!['snake','tetris','flight'].includes(mode)||app.memberships.get(id)===mode||mode==='snake'&&app.snakeEliminated.has(id))return;removeGameMember(id);app.memberships.set(id,mode);const p=app.players.get(id);p.score=0;if(mode==='flight')flightJoin(id);else if(mode==='tetris')app.tetris.set(id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(playerArray().findIndex(x=>x.id===id)),alive:true});else app.snakes.set(id,spawnSnake(playerArray().findIndex(x=>x.id===id))); }
+    function applyJoinGame(id,mode) { if(!app.players.has(id)||!['snake','tetris','flight'].includes(mode)||app.memberships.get(id)===mode||mode==='snake'&&app.snakeEliminated.has(id))return;removeGameMember(id);app.memberships.set(id,mode);const p=app.players.get(id);p.score=0;if(mode==='flight')flightJoin(id);else if(mode==='tetris')app.tetris.set(id,{board:Array.from({length:TETRIS_H},()=>Array(TETRIS_W).fill('')),piece:tetrisPiece(playerArray().findIndex(x=>x.id===id)),alive:true,paused:false});else app.snakes.set(id,spawnSnake(playerArray().findIndex(x=>x.id===id))); }
     function joinGame() { if(!app.connected||!app.isHost&&!app.synced)return;const mode=app.gameMode;if(app.isHost){applyJoinGame(app.myId,mode);broadcastState();renderAll();}else broadcast({type:'join-game',mode,to:app.hostId}); }
     function leaveGame() { if(!app.connected||!app.isHost&&!app.synced||!app.memberships.has(app.myId))return;if(app.isHost){removeGameMember(app.myId);broadcastState();renderAll();}else broadcast({type:'leave-game',to:app.hostId}); }
-    function applyStartGame(id,mode) { if(app.memberships.get(id)!==mode||app.runningModes[mode]||gameEnded(mode))return;app.runningModes[mode]=true;if(mode==='snake')app.snakeReadyAt=Date.now()+SNAKE_START_DELAY;ensureGameTimers();broadcastState();renderAll(); }
+    function applyStartGame(id,mode) { if(app.memberships.get(id)!==mode||app.runningModes[mode]||gameEnded(mode))return;app.runningModes[mode]=true;if(mode==='snake')app.snakeReadyAt=Date.now()+SNAKE_START_DELAY;if(mode==='tetris')app.tetrisReadyAt=Date.now()+TETRIS_START_DELAY;ensureGameTimers();broadcastState();renderAll(); }
     function startGame() { if(!app.connected||!app.isHost&&!app.synced||app.memberships.get(app.myId)!==app.gameMode)return;if(app.isHost)applyStartGame(app.myId,app.gameMode);else broadcast({type:'start-game',mode:app.gameMode,to:app.hostId}); }
     function applyResetGame(id,mode) { if(app.memberships.get(id)!==mode||app.runningModes[mode])return;resetModeGame(mode);broadcastState();renderAll(); }
     function resetGame() { if(!app.connected||!app.isHost&&!app.synced||app.memberships.get(app.myId)!==app.gameMode)return;if(app.isHost)applyResetGame(app.myId,app.gameMode);else broadcast({type:'reset-game',mode:app.gameMode,to:app.hostId}); }
+    function applyTogglePause(id) { const game=app.tetris.get(id);if(app.memberships.get(id)!=='tetris'||!app.runningModes.tetris||!game?.alive)return;game.paused=!game.paused;broadcastState();renderAll(); }
+    function togglePause() { if(!app.connected||!app.isHost&&!app.synced||app.gameMode!=='tetris'||app.memberships.get(app.myId)!=='tetris')return;if(app.isHost)applyTogglePause(app.myId);else broadcast({type:'toggle-pause',to:app.hostId}); }
     function setGameMode(mode) { if(!['snake','tetris','flight'].includes(mode)||mode===app.gameMode)return;app.gameMode=mode;renderAll(); }
-    function setDirection(dir) { if(app.memberships.get(app.myId)!==app.gameMode||!app.runningModes[app.gameMode])return;if(app.isHost) { applyInput(app.myId,dir,app.gameMode); if(app.gameMode==='flight'){broadcastState();renderAll();} } else broadcast({type:'input',dir,mode:app.gameMode,to:app.hostId}); }
+    function setDirection(dir) { if(app.memberships.get(app.myId)!==app.gameMode||!app.runningModes[app.gameMode]||app.gameMode==='tetris'&&app.tetris.get(app.myId)?.paused)return;if(app.isHost) { applyInput(app.myId,dir,app.gameMode); if(app.gameMode==='flight'){broadcastState();renderAll();} } else broadcast({type:'input',dir,mode:app.gameMode,to:app.hostId}); }
     function opposite(a,b){ return (a==='up'&&b==='down')||(a==='down'&&b==='up')||(a==='left'&&b==='right')||(a==='right'&&b==='left'); }
     function stepHead(head,dir){ return {x:head.x+(dir==='left'?-1:dir==='right'?1:0),y:head.y+(dir==='up'?-1:dir==='down'?1:0)}; }
     function tetrisCells(piece,rot=piece.rot) { return TETRIS_SHAPES[piece.shape][rot%TETRIS_SHAPES[piece.shape].length]; }
     function tetrisCollides(game,piece,dx=0,dy=0,rot=piece.rot) { return tetrisCells(piece,rot).some(([x,y])=>{const nx=piece.x+x+dx,ny=piece.y+y+dy;return nx<0||nx>=TETRIS_W||ny>=TETRIS_H||(ny>=0&&game.board[ny][nx]);}); }
     function addGarbage(game,lines) { for(let i=0;i<lines;i++){if(game.board.shift().some(Boolean))game.alive=false;const gap=Math.floor(Math.random()*TETRIS_W);game.board.push(Array.from({length:TETRIS_W},(_,x)=>x===gap?'':'#98a5a0'));}if(tetrisCollides(game,game.piece))game.alive=false; }
-    function lockTetris(id,game) { tetrisCells(game.piece).forEach(([x,y])=>{const nx=game.piece.x+x,ny=game.piece.y+y;if(ny>=0)game.board[ny][nx]=game.piece.color;}); const kept=game.board.filter(row=>row.some(cell=>!cell)); const cleared=TETRIS_H-kept.length; while(kept.length<TETRIS_H)kept.unshift(Array(TETRIS_W).fill('')); game.board=kept; const player=app.players.get(id);if(player)player.score=(player.score||0)+cleared*100; game.piece=tetrisPiece(playerArray().findIndex(p=>p.id===id)); if(tetrisCollides(game,game.piece))game.alive=false; if(cleared>=2)app.tetris.forEach((opponent,opponentId)=>{if(opponentId!==id&&opponent.alive)addGarbage(opponent,cleared===4?4:cleared-1);}); }
+    function lockTetris(id,game) { tetrisCells(game.piece).forEach(([x,y])=>{const nx=game.piece.x+x,ny=game.piece.y+y;if(ny>=0)game.board[ny][nx]=game.piece.color;}); const kept=game.board.filter(row=>row.some(cell=>!cell)); const cleared=TETRIS_H-kept.length; while(kept.length<TETRIS_H)kept.unshift(Array(TETRIS_W).fill('')); game.board=kept; const player=app.players.get(id);if(player)player.score=(player.score||0)+cleared*100; game.piece=tetrisPiece(playerArray().findIndex(p=>p.id===id)); if(tetrisCollides(game,game.piece))game.alive=false; if(cleared>=2)app.tetris.forEach((opponent,opponentId)=>{if(opponentId!==id&&opponent.alive&&!opponent.paused)addGarbage(opponent,cleared===4?4:cleared-1);}); }
     function moveTetris(id,dx,dy,rotate=false) { const game=app.tetris.get(id);if(!game||!game.alive)return false;const nextRot=rotate?(game.piece.rot+1)%TETRIS_SHAPES[game.piece.shape].length:game.piece.rot;if(!tetrisCollides(game,game.piece,dx,dy,nextRot)){game.piece={...game.piece,x:game.piece.x+dx,y:game.piece.y+dy,rot:nextRot};return true;}if(dy>0){lockTetris(id,game);return false;}return false; }
-    function applyInput(id,dir,mode) { if(app.memberships.get(id)!==mode||!app.runningModes[mode])return;if(mode==='tetris'){if(dir==='left')moveTetris(id,-1,0);else if(dir==='right')moveTetris(id,1,0);else if(dir==='down')moveTetris(id,0,1);else if(dir==='up')moveTetris(id,0,0,true);} else if(mode==='flight')flightAction(id,dir);else {const s=app.snakes.get(id);if(s&&s.alive&&!opposite(dir,s.dir))s.nextDir=dir;} }
-    function tickTetris() { app.tetris.forEach((game,id)=>{if(game.alive)moveTetris(id,0,1);});if(gameEnded('tetris'))app.runningModes.tetris=false; }
+    function applyInput(id,dir,mode) { if(app.memberships.get(id)!==mode||!app.runningModes[mode])return;if(mode==='tetris'){if(app.tetris.get(id)?.paused)return;if(dir==='left')moveTetris(id,-1,0);else if(dir==='right')moveTetris(id,1,0);else if(dir==='down')moveTetris(id,0,1);else if(dir==='up')moveTetris(id,0,0,true);} else if(mode==='flight')flightAction(id,dir);else {const s=app.snakes.get(id);if(s&&s.alive&&!opposite(dir,s.dir))s.nextDir=dir;} }
+    function tickTetris() { app.tetris.forEach((game,id)=>{if(game.alive&&!game.paused)moveTetris(id,0,1);});if(gameEnded('tetris'))app.runningModes.tetris=false; }
     function tick(mode='snake') {
       if(!app.isHost || !app.runningModes[mode])return;
-      if(mode==='tetris'){tickTetris();ensureGameTimers();broadcastState();renderAll();return;}
+      if(mode==='tetris'){if(Date.now()<app.tetrisReadyAt)return;tickTetris();ensureGameTimers();broadcastState();renderAll();return;}
       if(mode!=='snake')return;
       if(Date.now()<app.snakeReadyAt)return;
       let ateFood = false;
       const next = new Map(); app.snakes.forEach((s,id)=>{ if(!s.alive){ next.set(id,s); return; } const dir=opposite(s.nextDir,s.dir)?s.dir: s.nextDir; const head=stepHead(s.body[0],dir); const hitWall=head.x<0||head.x>=GRID||head.y<0||head.y>=GRID; const hitSelf=s.body.some((b,i)=>i>0&&b.x===head.x&&b.y===head.y); const hitOther=[...app.snakes.values()].some(other=>other!==s&&other.alive&&other.body.some(b=>b.x===head.x&&b.y===head.y)); if(hitWall||hitSelf||hitOther){s.alive=false;app.snakeEliminated.add(id);next.set(id,s);return;} const body=[head,...s.body]; if(head.x===app.food.x&&head.y===app.food.y){const p=app.players.get(id);if(p)p.score=(p.score||0)+1;ateFood=true;}else body.pop(); next.set(id,{...s,body,dir,nextDir:dir}); }); app.snakes=next; if(ateFood)resetFood();if(gameEnded('snake'))app.runningModes.snake=false;ensureGameTimers();broadcastState(); renderAll();
     }
-    function serialState(){ return {players:playerArray(),memberships:[...app.memberships.entries()],runningModes:app.runningModes,snakeReadyAt:app.snakeReadyAt,snakeEliminated:[...app.snakeEliminated],snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],tables:app.flight.tables},food:app.food}; }
+    function serialState(){ return {players:playerArray(),memberships:[...app.memberships.entries()],runningModes:app.runningModes,snakeReadyAt:app.snakeReadyAt,tetrisReadyAt:app.tetrisReadyAt,snakeEliminated:[...app.snakeEliminated],snakes:[...app.snakes.entries()],tetris:[...app.tetris.entries()],flight:{pieces:[...app.flight.pieces.entries()],tables:app.flight.tables},food:app.food}; }
     function broadcastState(){ broadcast({type:'state',state:serialState()}); }
     function drawMarkerSnake(ctx, snake, color, cell) {
       const body = [...snake.body].reverse();
@@ -630,7 +636,7 @@
       ctx.fillStyle='#f4f8f7';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#cbd8d3';ctx.strokeRect(x,y,w,h);
       game.board.forEach((row,ry)=>row.forEach((color,cx)=>{if(color){ctx.fillStyle=color;ctx.fillRect(x+cx*cell+1,y+ry*cell+1,cell-2,cell-2);}}));
       if(game.alive) tetrisCells(game.piece).forEach(([cx,cy])=>{if(game.piece.y+cy>=0){ctx.fillStyle=game.piece.color;ctx.fillRect(x+(game.piece.x+cx)*cell+1,y+(game.piece.y+cy)*cell+1,cell-2,cell-2);}});
-      ctx.fillStyle='#354049';ctx.font=`${Math.max(9,Math.min(13,cell))}px Arial`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(`${p.name}${game.alive?'':' · 淘汰'}`,x,y-3);
+      ctx.fillStyle='#354049';ctx.font=`${Math.max(9,Math.min(13,cell))}px Arial`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(`${p.name}${!game.alive?' · 淘汰':game.paused?' · 暂停':''}`,x,y-3);
     }
     function renderTetris(ctx) {
       const people=gamePlayers('tetris'),count=Math.max(1,people.length),cols=count<=2?count:count<=6?3:4,rows=Math.ceil(count/cols),gap=12,cell=18;
@@ -698,7 +704,18 @@
       app.snakes.forEach((s,id)=>{const p=app.players.get(id);if(p)drawMarkerSnake(ctx,s,p.color,cell);});
     }
     function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill();}
-    function renderAll(){ app.running=!!app.runningModes[app.gameMode];renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&gamePlayers('tetris').length>2);renderCanvas();$('gameState').textContent=!app.connected?'等待连接':app.memberships.get(app.myId)!==app.gameMode?'未加入该游戏':app.running?app.gameMode==='snake'&&Date.now()<app.snakeReadyAt?'准备中':'游戏进行中':gameEnded(app.gameMode)?'本局结束，等待重置':'等待开始'; }
+    function renderAll(){
+      app.running=!!app.runningModes[app.gameMode];renderMembers();renderScores();renderGameMode();$('workspaceLayout').classList.toggle('tetris-layout',app.gameMode==='tetris'&&gamePlayers('tetris').length>2);renderCanvas();
+      let status='等待开始';
+      if(!app.connected)status='等待连接';
+      else if(app.memberships.get(app.myId)!==app.gameMode)status='未加入该游戏';
+      else if(app.running){
+        if(app.gameMode==='tetris'&&app.tetris.get(app.myId)?.paused)status='已暂停';
+        else if(app.gameMode==='snake'&&Date.now()<app.snakeReadyAt||app.gameMode==='tetris'&&Date.now()<app.tetrisReadyAt)status='准备中';
+        else status='游戏进行中';
+      } else if(gameEnded(app.gameMode))status='本局结束，等待重置';
+      $('gameState').textContent=status;
+    }
 
     function handlePacket(data) {
       if (!data || !app.players.has(data.from) || (data.to && data.to !== app.myId)) return;
@@ -714,6 +731,8 @@
         applyStartGame(data.from,data.mode);
       } else if (data.type === 'reset-game' && app.isHost) {
         applyResetGame(data.from,data.mode);
+      } else if (data.type === 'toggle-pause' && app.isHost) {
+        applyTogglePause(data.from);
       } else if (data.type === 'input' && app.isHost && ['up','down','left','right','roll','piece-0','piece-1','piece-2','piece-3'].includes(data.dir)) {
         applyInput(data.from,data.dir,data.mode);if(data.mode==='flight'){broadcastState();renderAll();}
       } else if (data.type === 'state' && data.from === app.hostId && !app.isHost) {
@@ -725,14 +744,14 @@
         app.synced = true; applyState(data.state); renderMessages(); renderAll();
       }
     }
-    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.memberships=new Map(state.memberships||[]);app.runningModes=state.runningModes||{snake:false,tetris:false,flight:false};app.snakeReadyAt=state.snakeReadyAt||0;app.snakeEliminated=new Set(state.snakeEliminated||[]);app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),tables:state.flight?.tables||[]};app.food=state.food||app.food;}
+    function applyState(state){if(!state)return;app.players=new Map((state.players||[]).map(p=>[p.id,p]));app.memberships=new Map(state.memberships||[]);app.runningModes=state.runningModes||{snake:false,tetris:false,flight:false};app.snakeReadyAt=state.snakeReadyAt||0;app.tetrisReadyAt=state.tetrisReadyAt||0;app.snakeEliminated=new Set(state.snakeEliminated||[]);app.snakes=new Map(state.snakes||[]);app.tetris=new Map(state.tetris||[]);app.flight={pieces:new Map(state.flight?.pieces||[]),tables:state.flight?.tables||[]};app.food=state.food||app.food;}
 
     function leaveRoom(message) {
       const channel = app.channel;
       app.channel = null;
       if (channel) app.client.removeChannel(channel);
       clearTimeout(app.connectTimer);Object.values(app.gameTimers).forEach(clearInterval);app.gameTimers={snake:null,tetris:null};
-      app.players.clear();app.memberships.clear();app.snakeEliminated.clear();app.snakes.clear();app.tetris.clear();app.flight={pieces:new Map(),tables:[]};app.runningModes={snake:false,tetris:false,flight:false};app.snakeReadyAt=0;app.running=false;
+      app.players.clear();app.memberships.clear();app.snakeEliminated.clear();app.snakes.clear();app.tetris.clear();app.flight={pieces:new Map(),tables:[]};app.runningModes={snake:false,tetris:false,flight:false};app.snakeReadyAt=0;app.tetrisReadyAt=0;app.running=false;
       app.messages = []; app.botHistory = []; app.botBusy = false; renderMessages();
       app.isHost = false; app.hostId = ''; app.synced = false;
       setConnected(false); setStatus(message); renderAll(); toast(message);
@@ -855,6 +874,7 @@
     document.querySelectorAll('.control-btn').forEach(btn=>btn.addEventListener('click',()=>setDirection(btn.dataset.dir)));
     $('rollBtn').addEventListener('click',()=>setDirection('roll'));
     $('startBtn').addEventListener('click',startGame);
+    $('pauseBtn').addEventListener('click',togglePause);
     $('resetBtn').addEventListener('click',resetGame);
     $('joinGameBtn').addEventListener('click',joinGame);
     $('leaveGameBtn').addEventListener('click',leaveGame);
