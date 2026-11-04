@@ -295,7 +295,7 @@
 
     <nav class="repo-nav" aria-label="项目导航">
       <div class="repo-crumb">workspace <span>/</span> daily-sync <span>·</span> main</div>
-      <div class="repo-tools"><button class="fortune-open" id="fortuneOpen" type="button">八字 · 姻缘</button><button class="fortune-open" id="oracleOpen" type="button">摸鱼问卦</button><button class="fortune-open" id="arcadeOpen" type="button">小游戏库</button><div class="work-clock"><span>下班倒计时</span><output id="workCountdown" role="timer">--:--:--</output><label for="workEndTime">下班时间 <input id="workEndTime" type="time" value="17:30" /></label></div></div>
+      <div class="repo-tools"><button class="fortune-open" id="fortuneOpen" type="button">八字 · 姻缘</button><button class="fortune-open" id="oracleOpen" type="button">摸鱼问卦</button><button class="fortune-open" id="arcadeOpen" type="button">小游戏库</button><button class="fortune-open" id="cookOpen" type="button">居家食谱</button><div class="work-clock"><span>下班倒计时</span><output id="workCountdown" role="timer">--:--:--</output><label for="workEndTime">下班时间 <input id="workEndTime" type="time" value="17:30" /></label></div></div>
     </nav>
 
     <section class="layout" id="workspaceLayout">
@@ -338,7 +338,7 @@
     </section>
     <div class="footer-note">workspace status · live sync</div>
   </main>
-  <dialog class="fortune-dialog" id="fortuneDialog" aria-label="八字与姻缘测算"><div class="fortune-head"><strong id="fortuneTitle">八字 · 姻缘</strong><button id="fortuneClose" type="button" aria-label="关闭窗口">×</button></div><iframe id="fortuneFrame" title="八字与姻缘测算" loading="lazy"></iframe><iframe id="oracleFrame" title="摸鱼问卦" loading="lazy" hidden></iframe><iframe id="arcadeFrame" title="小游戏库" loading="lazy" hidden></iframe></dialog>
+  <dialog class="fortune-dialog" id="fortuneDialog" aria-label="八字与姻缘测算"><div class="fortune-head"><strong id="fortuneTitle">八字 · 姻缘</strong><button id="fortuneClose" type="button" aria-label="关闭窗口">×</button></div><iframe id="fortuneFrame" title="八字与姻缘测算" loading="lazy"></iframe><iframe id="oracleFrame" title="摸鱼问卦" loading="lazy" hidden></iframe><iframe id="arcadeFrame" title="小游戏库" loading="lazy" hidden></iframe><iframe id="cookFrame" title="居家食谱" loading="lazy" hidden></iframe></dialog>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -855,10 +855,11 @@
     $('resetBtn').addEventListener('click',resetGame);
     $('joinGameBtn').addEventListener('click',joinGame);
     $('leaveGameBtn').addEventListener('click',leaveGame);
-    function openTool(mode) { const tools={bazi:['fortuneFrame','八字 · 姻缘','bazi.html'],oracle:['oracleFrame','摸鱼问卦','divination.html'],arcade:['arcadeFrame','小游戏库','arcade/index.html']};const [id,title,src]=tools[mode];['fortuneFrame','oracleFrame','arcadeFrame'].forEach(frameId=>$(frameId).hidden=frameId!==id);const frame=$(id);if(!frame.src)frame.src=src;$('fortuneTitle').textContent=title;$('fortuneDialog').setAttribute('aria-label',title);$('fortuneDialog').showModal(); }
+    function openTool(mode) { const tools={bazi:['fortuneFrame','八字 · 姻缘','bazi.html'],oracle:['oracleFrame','摸鱼问卦','divination.html'],arcade:['arcadeFrame','小游戏库','arcade/index.html'],cook:['cookFrame','居家食谱','cook.html']};const [id,title,src]=tools[mode];['fortuneFrame','oracleFrame','arcadeFrame','cookFrame'].forEach(frameId=>$(frameId).hidden=frameId!==id);const frame=$(id);if(!frame.src)frame.src=src;$('fortuneTitle').textContent=title;$('fortuneDialog').setAttribute('aria-label',title);$('fortuneDialog').showModal(); }
     $('fortuneOpen').addEventListener('click',()=>openTool('bazi'));
     $('oracleOpen').addEventListener('click',()=>openTool('oracle'));
     $('arcadeOpen').addEventListener('click',()=>openTool('arcade'));
+    $('cookOpen').addEventListener('click',()=>openTool('cook'));
     $('fortuneClose').addEventListener('click',()=>$('fortuneDialog').close());
     $('fortuneDialog').addEventListener('click',e=>{if(e.target===$('fortuneDialog'))$('fortuneDialog').close();});
     let gameDrag=null;
