@@ -13,6 +13,20 @@ const US_RATES = {
 const SMALL_STANDARD_MAX_LB = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
 const LARGE_STANDARD_MAX_LB = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3];
 const LB_PER_KG = 1 / 0.45359237;
+export function getUsFeeSeason(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return null;
+  const [year, month, day] = date.split('-').map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+  if (parsedDate.getUTCFullYear() !== year || parsedDate.getUTCMonth() !== month - 1 || parsedDate.getUTCDate() !== day) return null;
+
+  const isPeak = (month === 10 && day >= 15) || month === 11 || month === 12 || (month === 1 && day <= 14);
+  if (isPeak) {
+    const startYear = month === 1 ? year - 1 : year;
+    return { season: '旺季', ratePeriod: `${startYear}-10-15 至 ${startYear + 1}-01-14` };
+  }
+  return { season: '淡季', ratePeriod: `${year}-01-15 至 ${year}-10-14` };
+}
+
 export function calculateUsFba({ dimensionsMm, weightG, dimensionalWeightG, priceUsd, date }) {
   if (!Array.isArray(dimensionsMm) || dimensionsMm.length !== 3 || dimensionsMm.some(value => !Number.isFinite(value) || value <= 0)
     || ![weightG, dimensionalWeightG, priceUsd].every(value => Number.isFinite(value) && value > 0)
@@ -20,9 +34,10 @@ export function calculateUsFba({ dimensionsMm, weightG, dimensionalWeightG, pric
     throw new TypeError('请提供有效的包装尺寸、重量、售价和配送日期。');
   }
   const year = Number(date.slice(0, 4));
-  const monthDay = date.slice(5);
-  if (!['2026', '2027'].includes(String(year)) || monthDay < '01-15' || monthDay > '10-14') {
-    return { status: 'missing_rate', total: null, reason: '所选日期不在已提供的费率期间（每年 1 月 15 日至 10 月 14 日）。' };
+  const feeSeason = getUsFeeSeason(date);
+  if (!feeSeason) throw new TypeError('请提供有效的配送日期。');
+  if (!['2026', '2027'].includes(String(year)) || feeSeason.season !== '淡季') {
+    return { status: 'missing_rate', total: null, season: feeSeason.season, ratePeriod: feeSeason.ratePeriod, reason: `${feeSeason.ratePeriod} 为${feeSeason.season}，当前缺少对应的美国费率表。` };
   }
 
   const billableLb = Math.max(weightG, dimensionalWeightG) / 1000 * LB_PER_KG;
@@ -61,6 +76,7 @@ export function calculateUsFba({ dimensionsMm, weightG, dimensionalWeightG, pric
     tier,
     billedWeightLb,
     total: Math.round(baseFee * 100) / 100,
-    ratePeriod: `${year}-01-15 至 ${year}-10-14`
+    season: feeSeason.season,
+    ratePeriod: feeSeason.ratePeriod
   };
 }

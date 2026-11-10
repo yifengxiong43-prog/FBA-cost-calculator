@@ -63,6 +63,8 @@
     .metric { min-width: 93px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--soft); }
     .metric span { display: block; color: var(--muted); font-size: 10px; }
     .metric b { display: block; margin-top: 2px; font-size: 13px; }
+    .season-badge { display: inline-block; margin-top: 3px; padding: 1px 5px; border-radius: 4px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 700; }
+    .season-badge.peak { background: var(--amber-soft); color: var(--amber); }
     .country-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 20px 20px; }
     .country-card { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
     .country-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; background: var(--soft); border-bottom: 1px solid var(--line); }
@@ -125,7 +127,7 @@
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">2026-11-10</b></div></div></div>
+        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">2026-11-10</b><small class="season-badge peak" id="seasonBadge">旺季</small></div></div></div>
         <div class="country-grid">
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><span class="currency">EUR</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
@@ -139,7 +141,7 @@
     </section>
   </main>
   <script type="module">
-    import { calculateUsFba } from './fba-calculator.mjs';
+    import { calculateUsFba, getUsFeeSeason } from './fba-calculator.mjs';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
@@ -149,7 +151,12 @@
       document.querySelector('#volumeValue').textContent = volume ? `${format(volume)} mm³` : '—';
       document.querySelector('#airWeightValue').textContent = airWeight ? `${format(Math.max(number('weight'), airWeight), 1)} g` : '—';
       document.querySelector('#priceValue').textContent = number('price') ? `$${format(number('price'))}` : '—';
-      document.querySelector('#seasonValue').textContent = document.querySelector('#feeDate').value || '—';
+      const date = document.querySelector('#feeDate').value;
+      document.querySelector('#seasonValue').textContent = date || '—';
+      const season = getUsFeeSeason(date);
+      const badge = document.querySelector('#seasonBadge');
+      badge.textContent = season?.season || '未选择';
+      badge.classList.toggle('peak', season?.season === '旺季');
     }
     form.addEventListener('input', () => {
       updateDerived();

@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateUsFba } from '../fba-calculator.mjs';
+import { calculateUsFba, getUsFeeSeason } from '../fba-calculator.mjs';
+
+test('classifies the seasonal rate window across the year boundary', () => {
+  assert.deepEqual(getUsFeeSeason('2026-10-14'), { season: '淡季', ratePeriod: '2026-01-15 至 2026-10-14' });
+  assert.deepEqual(getUsFeeSeason('2026-10-15'), { season: '旺季', ratePeriod: '2026-10-15 至 2027-01-14' });
+  assert.deepEqual(getUsFeeSeason('2027-01-14'), { season: '旺季', ratePeriod: '2026-10-15 至 2027-01-14' });
+  assert.deepEqual(getUsFeeSeason('2027-01-15'), { season: '淡季', ratePeriod: '2027-01-15 至 2027-10-14' });
+});
+
+test('returns no season for malformed dates', () => {
+  assert.equal(getUsFeeSeason('2027-13-40'), null);
+});
 
 test('automatically matches small standard size 1 and uses the price bracket without a surcharge', () => {
   const result = calculateUsFba({
@@ -34,6 +45,16 @@ test('does not extrapolate rates into dates absent from the supplied tables', ()
     assert.equal(result.status, 'missing_rate');
     assert.equal(result.total, null);
   }
+});
+
+test('identifies peak-season dates even when the matching fee table is unavailable', () => {
+  const result = calculateUsFba({
+    dimensionsMm: [200, 150, 18], weightG: 50, dimensionalWeightG: 40,
+    priceUsd: 9.99, date: '2026-11-10'
+  });
+  assert.equal(result.status, 'missing_rate');
+  assert.equal(result.season, '旺季');
+  assert.equal(result.ratePeriod, '2026-10-15 至 2027-01-14');
 });
 
 test('reports weights beyond the large standard rate table instead of extrapolating', () => {
