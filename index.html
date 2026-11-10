@@ -115,10 +115,10 @@
         <form class="form-body" id="calculatorForm">
           <div class="field-grid">
             <div class="field full"><label for="productName">产品名称（可选）</label><input id="productName" name="productName" placeholder="例如：ohuhu36色丙烯马克笔" maxlength="60"></div>
-            <div class="field"><label for="length">包装长</label><div class="unit-input"><input id="length" name="length" type="number" min="0" step="0.01" placeholder="0"><span class="unit">cm</span></div></div>
-            <div class="field"><label for="width">包装宽</label><div class="unit-input"><input id="width" name="width" type="number" min="0" step="0.01" placeholder="0"><span class="unit">cm</span></div></div>
-            <div class="field"><label for="height">包装高</label><div class="unit-input"><input id="height" name="height" type="number" min="0" step="0.01" placeholder="0"><span class="unit">cm</span></div></div>
-            <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.001" placeholder="0"><span class="unit">kg</span></div></div>
+            <div class="field"><label for="length">包装长</label><div class="unit-input"><input id="length" name="length" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="width">包装宽</label><div class="unit-input"><input id="width" name="width" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="height">包装高</label><div class="unit-input"><input id="height" name="height" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.1" placeholder="0"><span class="unit">g</span></div></div>
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
             <div class="field"><label for="shippingMode">头程方式</label><select id="shippingMode" name="shippingMode"><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
             <div class="field full"><label>费用季节</label><div class="season-switch" id="seasonSwitch" role="group" aria-label="费用季节"><button class="season-option active" type="button" data-season="off" aria-pressed="true">淡季</button><button class="season-option" type="button" data-season="peak" aria-pressed="false">旺季</button></div></div>
@@ -161,8 +161,8 @@
       const volume = number('length') * number('width') * number('height');
       const airWeight = volume / 5000;
       const season = { key: currentSeason, label: seasonLabels[currentSeason] };
-      document.querySelector('#volumeValue').textContent = volume ? `${format(volume)} cm³` : '—';
-      document.querySelector('#airWeightValue').textContent = airWeight ? `${format(Math.max(number('weight'), airWeight), 3)} kg` : '—';
+      document.querySelector('#volumeValue').textContent = volume ? `${format(volume)} mm³` : '—';
+      document.querySelector('#airWeightValue').textContent = airWeight ? `${format(Math.max(number('weight'), airWeight), 1)} g` : '—';
       document.querySelector('#priceValue').textContent = number('price') ? `$${format(number('price'))}` : '—';
       document.querySelector('#seasonValue').textContent = season.label;
       document.querySelector('#seasonMetric').className = `metric season-${season.key}`;
