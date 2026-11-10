@@ -124,33 +124,30 @@
             <div class="field"><label for="shippingMode">头程方式</label><select id="shippingMode" name="shippingMode"><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
             <div class="field full"><label>费用季节</label><div class="season-switch" id="seasonSwitch" role="group" aria-label="费用季节"><button class="season-option active" type="button" data-season="off" aria-pressed="true">淡季</button><button class="season-option" type="button" data-season="peak" aria-pressed="false">旺季</button></div></div>
           </div>
-          <div class="form-note">FBA 已接入当前资料中的淡季和旺季费率。遇到来源冲突或未覆盖的尺寸档会显示“需核实”；头程与非 FBA 尾程待补充算法资料。</div>
-          <div class="actions"><button class="btn primary" type="submit">开始测算</button><button class="btn" type="button" id="clearBtn">清空</button></div>
+          <div class="form-note">旧版 FBA 费率与计算规则已清除，等待重新整理资料。</div>
+          <div class="actions"><button class="btn primary" type="submit" disabled>规则待补充</button><button class="btn" type="button" id="clearBtn">清空</button></div>
         </form>
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">填写参数后，产品体积、计费重量和费用季节会在这里更新。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric" id="seasonMetric"><span>费用季节</span><b id="seasonValue">—</b></div></div></div>
+        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">旧版 FBA 计算规则已清除，等待重新整理资料。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric" id="seasonMetric"><span>费用季节</span><b id="seasonValue">—</b></div></div></div>
         <div class="country-grid">
-          <article class="country-card" data-country="US"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><div><strong class="cost-value pending" data-fba-total>待测算</strong><small class="cost-detail" data-fba-detail></small></div></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card" data-country="DE"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><span class="currency">EUR</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><div><strong class="cost-value pending" data-fba-total>待测算</strong><small class="cost-detail" data-fba-detail></small></div></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card" data-country="UK"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><span class="currency">GBP</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><div><strong class="cost-value pending" data-fba-total>待测算</strong><small class="cost-detail" data-fba-detail></small></div></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card" data-country="CA"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><span class="currency">CAD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><div><strong class="cost-value pending" data-fba-total>待测算</strong><small class="cost-detail" data-fba-detail></small></div></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><span class="currency">EUR</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><span class="currency">GBP</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><span class="currency">CAD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
         </div>
         <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><span id="fxUpdated">获取中</span></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
-        <div class="status-bar"><span class="status"><i></i>FBA：已接入现有淡旺季规则，冲突档位提示核实</span><span class="status waiting"><i></i>头程算法：待补充</span><span class="status waiting"><i></i>非 FBA 尾程：待补充</span></div>
-        <p class="footnote">当前 FBA 规则来自 2026 年资料快照，并非实时官网校验。加拿大 Standard ≤1.5 kg 的部分边界、低价条件不满足时的英德回退、以及超出完整档位的尺寸会标记待核实。英德售价档按 USD 售价 × 1.1 × 实时汇率判定。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
+        <div class="status-bar"><span class="status waiting"><i></i>FBA 规则：等待重新整理</span><span class="status waiting"><i></i>头程算法：待补充</span><span class="status waiting"><i></i>非 FBA 尾程：待补充</span></div>
+        <p class="footnote">FBA 费率与计算规则已清除。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
       </section>
     </section>
   </main>
   <script type="module">
-    import { calculateFba } from './fba-calculator.mjs';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
     let currentSeason = 'off';
-    let fxRates = {};
-    let hasCalculated = false;
     const seasonLabels = { off: '淡季', peak: '旺季' };
     function applySeason(key) {
       currentSeason = key === 'peak' ? 'peak' : 'off';
@@ -160,45 +157,6 @@
         button.setAttribute('aria-pressed', String(active));
       });
       updateDerived();
-      if (hasCalculated) renderFba();
-    }
-    function renderFba() {
-      const inputs = {
-        dimensionsMm: [number('length'), number('width'), number('height')],
-        weightG: number('weight'),
-        priceUsd: number('price'),
-        season: currentSeason,
-        fx: fxRates
-      };
-      const valid = [...inputs.dimensionsMm, inputs.weightG, inputs.priceUsd].every(value => Number.isFinite(value) && value > 0);
-      if (!valid) {
-        document.querySelectorAll('.country-card').forEach(card => {
-          card.querySelector('[data-fba-total]').textContent = '待补全参数';
-          card.querySelector('[data-fba-total]').classList.add('pending');
-          card.querySelector('[data-fba-detail]').textContent = '请填写三边尺寸、包装重量和 USD 售价。';
-        });
-        document.querySelector('#resultHint').textContent = '参数不完整，暂不显示 FBA 费用。';
-        return;
-      }
-      const results = calculateFba(inputs);
-      document.querySelectorAll('.country-card').forEach(card => {
-        const fee = results[card.dataset.country];
-        const total = card.querySelector('[data-fba-total]');
-        const detail = card.querySelector('[data-fba-detail]');
-        total.classList.toggle('pending', fee.status !== 'ok');
-        if (fee.status === 'ok') {
-          total.textContent = `${fee.total} ${fee.currency}`;
-          detail.textContent = `${seasonLabels[currentSeason]} · ${fee.tier} · ${fee.billableWeight} · 基础 ${fee.baseFee} + 附加 ${fee.surcharge}`;
-        } else {
-          total.textContent = fee.status === 'fx_required' ? '缺少汇率' : '需核实';
-          const candidates = fee.candidates?.map(candidate => typeof candidate === 'string'
-            ? candidate
-            : `${candidate.total} ${fee.currency}`).join('；');
-          detail.textContent = candidates ? `${fee.reason} 候选：${candidates}` : fee.reason;
-        }
-      });
-      hasCalculated = true;
-      document.querySelector('#resultHint').textContent = `${seasonLabels[currentSeason]} FBA 费已按当前参数测算；其余物流费用待算法资料。`;
     }
     function updateDerived() {
       const volume = number('length') * number('width') * number('height');
@@ -212,24 +170,17 @@
     }
     form.addEventListener('input', () => {
       updateDerived();
-      if (hasCalculated) renderFba();
     });
     document.querySelectorAll('.season-option').forEach(button => button.addEventListener('click', () => applySeason(button.dataset.season)));
     form.addEventListener('submit', event => {
       event.preventDefault();
       updateDerived();
-      renderFba();
+      document.querySelector('#resultHint').textContent = '旧版 FBA 计算规则已清除，等待重新整理资料。';
     });
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
-      hasCalculated = false;
-      document.querySelectorAll('[data-fba-total]').forEach(total => {
-        total.textContent = '待测算';
-        total.classList.add('pending');
-      });
-      document.querySelectorAll('[data-fba-detail]').forEach(detail => detail.textContent = '');
       applySeason('off');
-      document.querySelector('#resultHint').textContent = '填写参数后，产品体积、计费重量和费用季节会在这里更新。';
+      document.querySelector('#resultHint').textContent = '旧版 FBA 计算规则已清除，等待重新整理资料。';
     });
     async function loadRates() {
       const status = document.querySelector('#rateStatus');
@@ -262,11 +213,9 @@
         document.querySelector('#fxGBP').textContent = data.rates.gbp.toFixed(4);
         document.querySelector('#fxCAD').textContent = data.rates.cad.toFixed(4);
         document.querySelector('#fxEUR').textContent = data.rates.eur.toFixed(4);
-        fxRates = { EUR: data.rates.eur, GBP: data.rates.gbp };
         document.querySelector('#fxUpdated').textContent = `更新于 ${data.date || '今日'}`;
         document.querySelector('#rateDot').classList.add('live');
         status.textContent = '汇率已更新';
-        if (hasCalculated) renderFba();
       } catch {
         document.querySelector('#fxUpdated').textContent = '暂时无法获取';
         status.textContent = '汇率获取失败';
