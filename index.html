@@ -135,7 +135,7 @@
         </div>
         <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><span id="fxUpdated">获取中</span></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
         <div class="status-bar"><span class="status waiting"><i></i>FBA 规则：待导入</span><span class="status waiting"><i></i>头程算法：待导入</span><span class="status waiting"><i></i>非 FBA 尾程：待导入</span></div>
-        <p class="footnote">费用规则需要按国家、尺寸段、重量段、配送区域和物流渠道分别配置；汇率仅用于展示和后续换算，不能替代供应商报价。汇率数据来源：irfanokr/currency-api。</p>
+        <p class="footnote">费用规则需要按国家、尺寸段、重量段、配送区域和物流渠道分别配置；汇率仅用于展示和后续换算，不能替代供应商报价。汇率数据来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
       </section>
     </section>
   </main>
@@ -185,8 +185,8 @@
     async function loadRates() {
       const status = document.querySelector('#rateStatus');
       const rateUrls = [
-        'https://cdn.jsdelivr.net/gh/irfanokr/currency-api@main/v1/currencies/usd.min.json',
-        'https://irfanokr.github.io/currency-api/v1/currencies/usd.min.json'
+        'https://api.frankfurter.dev/v1/latest?base=USD&symbols=GBP,CAD,EUR',
+        'https://cdn.jsdelivr.net/gh/irfanokr/currency-api@main/v1/currencies/usd.min.json'
       ];
       try {
         let data;
@@ -195,9 +195,14 @@
             const response = await fetch(url, { headers: { Accept: 'application/json' } });
             if (!response.ok) continue;
             const candidate = await response.json();
-            const rates = candidate.usd || {};
+            const sourceRates = candidate.rates || candidate.usd || {};
+            const rates = {
+              gbp: sourceRates.GBP ?? sourceRates.gbp,
+              cad: sourceRates.CAD ?? sourceRates.cad,
+              eur: sourceRates.EUR ?? sourceRates.eur
+            };
             if ([rates.gbp, rates.cad, rates.eur].every(value => typeof value === 'number')) {
-              data = candidate;
+              data = { date: candidate.date, rates };
               break;
             }
           } catch {
@@ -205,10 +210,9 @@
           }
         }
         if (!data) throw new Error('rate request failed');
-        const rates = data.usd;
-        document.querySelector('#fxGBP').textContent = rates.gbp.toFixed(4);
-        document.querySelector('#fxCAD').textContent = rates.cad.toFixed(4);
-        document.querySelector('#fxEUR').textContent = rates.eur.toFixed(4);
+        document.querySelector('#fxGBP').textContent = data.rates.gbp.toFixed(4);
+        document.querySelector('#fxCAD').textContent = data.rates.cad.toFixed(4);
+        document.querySelector('#fxEUR').textContent = data.rates.eur.toFixed(4);
         document.querySelector('#fxUpdated').textContent = `更新于 ${data.date || '今日'}`;
         document.querySelector('#rateDot').classList.add('live');
         status.textContent = '汇率已更新';
