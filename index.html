@@ -160,6 +160,7 @@
         button.setAttribute('aria-pressed', String(active));
       });
       updateDerived();
+      if (hasCalculated) renderFba();
     }
     function renderFba() {
       const inputs = {
@@ -187,7 +188,7 @@
         total.classList.toggle('pending', fee.status !== 'ok');
         if (fee.status === 'ok') {
           total.textContent = `${fee.total} ${fee.currency}`;
-          detail.textContent = `${fee.tier} · ${fee.billableWeight} · 基础 ${fee.baseFee} + 附加 ${fee.surcharge}`;
+          detail.textContent = `${seasonLabels[currentSeason]} · ${fee.tier} · ${fee.billableWeight} · 基础 ${fee.baseFee} + 附加 ${fee.surcharge}`;
         } else {
           total.textContent = fee.status === 'fx_required' ? '缺少汇率' : '需核实';
           const candidates = fee.candidates?.map(candidate => typeof candidate === 'string'
@@ -208,9 +209,11 @@
       document.querySelector('#priceValue').textContent = number('price') ? `$${format(number('price'))}` : '—';
       document.querySelector('#seasonValue').textContent = season.label;
       document.querySelector('#seasonMetric').className = `metric season-${season.key}`;
-      if (hasCalculated) renderFba();
     }
-    form.addEventListener('input', updateDerived);
+    form.addEventListener('input', () => {
+      updateDerived();
+      if (hasCalculated) renderFba();
+    });
     document.querySelectorAll('.season-option').forEach(button => button.addEventListener('click', () => applySeason(button.dataset.season)));
     form.addEventListener('submit', event => {
       event.preventDefault();

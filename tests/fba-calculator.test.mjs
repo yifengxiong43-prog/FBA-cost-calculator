@@ -25,6 +25,14 @@ test('uses the non-peak rate card for US and seasonal parcels in DE and UK', () 
   assert.equal(result.UK.status, 'ok');
 });
 
+test('returns different US fees for the same product in off-peak and peak seasons', () => {
+  const input = { dimensionsMm: [400, 180, 70], weightG: 1000, priceUsd: 62.99 };
+  const off = calculateFba({ ...input, season: 'off' }).US;
+  const peak = calculateFba({ ...input, season: 'peak' }).US;
+  assert.deepEqual([off.baseFee, off.surcharge, off.total], ['6.18', '0.22', '6.40']);
+  assert.deepEqual([peak.baseFee, peak.surcharge, peak.total], ['6.55', '0.23', '6.78']);
+});
+
 test('keeps annual envelope rates unchanged when the season changes', () => {
   const input = { dimensionsMm: [300, 200, 20], weightG: 20, priceUsd: 5, fx: { EUR: 0.85, GBP: 0.75 } };
   const off = calculateFba({ ...input, season: 'off' });
