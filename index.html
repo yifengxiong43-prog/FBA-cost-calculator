@@ -50,9 +50,6 @@
     .unit-input input { padding-right: 42px; }
     .unit { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: var(--muted); font-size: 11px; pointer-events: none; }
     .form-note { margin-top: 14px; padding: 10px 11px; border: 1px solid #f3dfb4; border-radius: 7px; background: var(--amber-soft); color: #795014; font-size: 11px; }
-    .season-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid #cbd3dd; border-radius: 7px; background: var(--soft); }
-    .season-option { min-height: 32px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; }
-    .season-option.active { background: #fff; color: var(--green); box-shadow: 0 1px 4px rgba(29, 42, 61, .12); }
     .actions { display: flex; gap: 8px; margin-top: 18px; }
     .btn { min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font-size: 13px; font-weight: 700; }
     .btn.primary { flex: 1; border-color: var(--green); background: var(--green); color: #fff; }
@@ -66,8 +63,6 @@
     .metric { min-width: 93px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--soft); }
     .metric span { display: block; color: var(--muted); font-size: 10px; }
     .metric b { display: block; margin-top: 2px; font-size: 13px; }
-    .metric.season-peak b { color: var(--amber); }
-    .metric.season-off b { color: var(--green); }
     .country-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 20px 20px; }
     .country-card { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
     .country-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; background: var(--soft); border-bottom: 1px solid var(--line); }
@@ -112,7 +107,7 @@
 
     <section class="layout">
       <aside class="panel">
-        <div class="panel-head"><h2>产品参数</h2><p>先录入包装数据，费率规则接入后即可测算。</p></div>
+        <div class="panel-head"><h2>产品参数</h2><p>录入包装尺寸、重量和售价后按配送日期计算。</p></div>
         <form class="form-body" id="calculatorForm">
           <div class="field-grid">
             <div class="field full"><label for="productName">产品名称（可选）</label><input id="productName" name="productName" placeholder="例如：ohuhu36色丙烯马克笔" maxlength="60"></div>
@@ -122,66 +117,78 @@
             <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.01" placeholder="0"><span class="unit">g</span></div></div>
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
             <div class="field"><label for="shippingMode">头程方式</label><select id="shippingMode" name="shippingMode"><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
-            <div class="field full"><label>费用季节</label><div class="season-switch" id="seasonSwitch" role="group" aria-label="费用季节"><button class="season-option active" type="button" data-season="off" aria-pressed="true">淡季</button><button class="season-option" type="button" data-season="peak" aria-pressed="false">旺季</button></div></div>
+            <div class="field full"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date" value="2026-11-10"></div>
           </div>
-          <div class="form-note">旧版 FBA 费率与计算规则已清除，等待重新整理资料。</div>
-          <div class="actions"><button class="btn primary" type="submit" disabled>规则待补充</button><button class="btn" type="button" id="clearBtn">清空</button></div>
+          <div class="form-note">美国尺寸档按包装三边自动匹配小号标准尺寸 1 或大号标准尺寸；计费重量取包装实重与体积重（包装体积 ÷ 5000）的较大值。四国都不另加 3.5%。</div>
+          <div class="actions"><button class="btn primary" type="submit">计算 FBA 费用</button><button class="btn" type="button" id="clearBtn">清空</button></div>
         </form>
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">旧版 FBA 计算规则已清除，等待重新整理资料。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric" id="seasonMetric"><span>费用季节</span><b id="seasonValue">—</b></div></div></div>
+        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">2026-11-10</b></div></div></div>
         <div class="country-grid">
-          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><span class="currency">EUR</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><span class="currency">GBP</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><span class="currency">CAD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
         </div>
         <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><span id="fxUpdated">获取中</span></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
-        <div class="status-bar"><span class="status waiting"><i></i>FBA 规则：等待重新整理</span><span class="status waiting"><i></i>头程算法：待补充</span><span class="status waiting"><i></i>非 FBA 尾程：待补充</span></div>
-        <p class="footnote">FBA 费率与计算规则已清除。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
+        <div class="status-bar"><span class="status waiting"><i></i>美国 FBA：2026/2027 费率已接入</span><span class="status waiting"><i></i>英国、德国、加拿大 FBA：待接入</span><span class="status waiting"><i></i>头程与非 FBA 尾程：待补充</span></div>
+        <p class="footnote">计算器不额外叠加 3.5% 费率。美国表未覆盖的日期会显示待补；英国、德国和加拿大费率接入后也按表列配送费计算。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
       </section>
     </section>
   </main>
   <script type="module">
+    import { calculateUsFba } from './fba-calculator.mjs';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
-    let currentSeason = 'off';
-    const seasonLabels = { off: '淡季', peak: '旺季' };
-    function applySeason(key) {
-      currentSeason = key === 'peak' ? 'peak' : 'off';
-      document.querySelectorAll('.season-option').forEach(button => {
-        const active = button.dataset.season === currentSeason;
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', String(active));
-      });
-      updateDerived();
-    }
     function updateDerived() {
       const volume = number('length') * number('width') * number('height');
       const airWeight = volume / 5000;
-      const season = { key: currentSeason, label: seasonLabels[currentSeason] };
       document.querySelector('#volumeValue').textContent = volume ? `${format(volume)} mm³` : '—';
       document.querySelector('#airWeightValue').textContent = airWeight ? `${format(Math.max(number('weight'), airWeight), 1)} g` : '—';
       document.querySelector('#priceValue').textContent = number('price') ? `$${format(number('price'))}` : '—';
-      document.querySelector('#seasonValue').textContent = season.label;
-      document.querySelector('#seasonMetric').className = `metric season-${season.key}`;
+      document.querySelector('#seasonValue').textContent = document.querySelector('#feeDate').value || '—';
     }
     form.addEventListener('input', () => {
       updateDerived();
+      if (['length', 'width', 'height', 'weight', 'price'].every(id => number(id) > 0) && document.querySelector('#feeDate').value) calculateFba();
     });
-    document.querySelectorAll('.season-option').forEach(button => button.addEventListener('click', () => applySeason(button.dataset.season)));
     form.addEventListener('submit', event => {
       event.preventDefault();
       updateDerived();
-      document.querySelector('#resultHint').textContent = '旧版 FBA 计算规则已清除，等待重新整理资料。';
+      calculateFba();
     });
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
-      applySeason('off');
-      document.querySelector('#resultHint').textContent = '旧版 FBA 计算规则已清除，等待重新整理资料。';
+      document.querySelector('#feeDate').value = '2026-11-10';
+      updateDerived();
+      document.querySelector('#resultHint').textContent = '请填写产品参数并选择配送日期。';
+      document.querySelector('#usFbaValue').textContent = '待计算';
+      document.querySelector('#usFbaValue').classList.add('pending');
     });
+    function calculateFba() {
+      const result = document.querySelector('#usFbaValue');
+      if (['length', 'width', 'height', 'weight', 'price'].some(id => number(id) <= 0) || !document.querySelector('#feeDate').value) {
+        result.textContent = '请填写完整参数';
+        result.classList.add('pending');
+        document.querySelector('#resultHint').textContent = '请填写包装长宽高、包装重量、售价和配送日期。';
+        return;
+      }
+      const fee = calculateUsFba({
+        dimensionsMm: ['length', 'width', 'height'].map(number),
+        weightG: number('weight'),
+        dimensionalWeightG: number('length') * number('width') * number('height') / 5000,
+        priceUsd: number('price'),
+        date: document.querySelector('#feeDate').value
+      });
+      result.textContent = fee.status === 'ok' ? `$${fee.total.toFixed(2)} USD` : fee.reason;
+      result.classList.toggle('pending', fee.status !== 'ok');
+      document.querySelector('#resultHint').textContent = fee.status === 'ok'
+        ? `${fee.tier} · 计费重 ${fee.billedWeightLb} lb · 美国费率期间 ${fee.ratePeriod}`
+        : fee.reason;
+    }
     async function loadRates() {
       const status = document.querySelector('#rateStatus');
       const rateUrls = [
@@ -221,7 +228,7 @@
         status.textContent = '汇率获取失败';
       }
     }
-    applySeason('off');
+    updateDerived();
     loadRates();
   </script>
 </body>
