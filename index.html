@@ -50,6 +50,9 @@
     .unit-input input { padding-right: 42px; }
     .unit { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: var(--muted); font-size: 11px; pointer-events: none; }
     .form-note { margin-top: 14px; padding: 10px 11px; border: 1px solid #f3dfb4; border-radius: 7px; background: var(--amber-soft); color: #795014; font-size: 11px; }
+    .season-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid #cbd3dd; border-radius: 7px; background: var(--soft); }
+    .season-option { min-height: 32px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .season-option.active { background: #fff; color: var(--green); box-shadow: 0 1px 4px rgba(29, 42, 61, .12); }
     .actions { display: flex; gap: 8px; margin-top: 18px; }
     .btn { min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font-size: 13px; font-weight: 700; }
     .btn.primary { flex: 1; border-color: var(--green); background: var(--green); color: #fff; }
@@ -118,9 +121,9 @@
             <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.001" placeholder="0"><span class="unit">kg</span></div></div>
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
             <div class="field"><label for="shippingMode">头程方式</label><select id="shippingMode" name="shippingMode"><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
-            <div class="field full"><label for="costDate">费用日期</label><input id="costDate" name="costDate" type="date" aria-describedby="seasonRuleNote"></div>
+            <div class="field full"><label>费用季节</label><div class="season-switch" id="seasonSwitch" role="group" aria-label="费用季节"><button class="season-option active" type="button" data-season="off" aria-pressed="true">淡季</button><button class="season-option" type="button" data-season="peak" aria-pressed="false">旺季</button></div></div>
           </div>
-          <div class="form-note" id="seasonRuleNote">目前还没有导入四国最新费率。测算结果会保留费用栏目，并明确标记“待配置”，不会生成虚假的价格。季节判断暂按每年 10 月 1 日至 12 月 31 日为旺季，其余时间为淡季，拿到正式规则后可替换。</div>
+          <div class="form-note">目前还没有导入四国最新费率。测算结果会保留费用栏目，并明确标记“待配置”，不会生成虚假的价格。先手动选择淡季或旺季，拿到正式规则后会按选择套用对应费率。</div>
           <div class="actions"><button class="btn primary" type="submit">开始测算</button><button class="btn" type="button" id="clearBtn">清空</button></div>
         </form>
       </aside>
@@ -143,25 +146,21 @@
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
-    const seasonRules = { peakStartMonth: 10, peakStartDay: 1, peakEndMonth: 12, peakEndDay: 31 };
-    const todayISO = () => {
-      const now = new Date();
-      const offset = now.getTimezoneOffset() * 60000;
-      return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-    };
-    function getSeason(dateValue) {
-      const date = new Date(`${dateValue}T00:00:00`);
-      if (Number.isNaN(date.getTime())) return { key: 'off', label: '淡季' };
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const afterPeakStart = month > seasonRules.peakStartMonth || (month === seasonRules.peakStartMonth && day >= seasonRules.peakStartDay);
-      const beforePeakEnd = month < seasonRules.peakEndMonth || (month === seasonRules.peakEndMonth && day <= seasonRules.peakEndDay);
-      return afterPeakStart && beforePeakEnd ? { key: 'peak', label: '旺季' } : { key: 'off', label: '淡季' };
+    let currentSeason = 'off';
+    const seasonLabels = { off: '淡季', peak: '旺季' };
+    function applySeason(key) {
+      currentSeason = key === 'peak' ? 'peak' : 'off';
+      document.querySelectorAll('.season-option').forEach(button => {
+        const active = button.dataset.season === currentSeason;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      updateDerived();
     }
     function updateDerived() {
       const volume = number('length') * number('width') * number('height');
       const airWeight = volume / 5000;
-      const season = getSeason(document.querySelector('#costDate').value);
+      const season = { key: currentSeason, label: seasonLabels[currentSeason] };
       document.querySelector('#volumeValue').textContent = volume ? `${format(volume)} cm³` : '—';
       document.querySelector('#airWeightValue').textContent = airWeight ? `${format(Math.max(number('weight'), airWeight), 3)} kg` : '—';
       document.querySelector('#priceValue').textContent = number('price') ? `$${format(number('price'))}` : '—';
@@ -169,17 +168,15 @@
       document.querySelector('#seasonMetric').className = `metric season-${season.key}`;
     }
     form.addEventListener('input', updateDerived);
+    document.querySelectorAll('.season-option').forEach(button => button.addEventListener('click', () => applySeason(button.dataset.season)));
     form.addEventListener('submit', event => {
       event.preventDefault();
       updateDerived();
-      const date = document.querySelector('#costDate').value || todayISO();
-      const season = getSeason(date);
-      document.querySelector('#resultHint').textContent = `参数已记录：${date} · ${season.label}。费用规则资料导入后，将在四国卡片中显示对应金额。`;
+      document.querySelector('#resultHint').textContent = `参数已记录：${seasonLabels[currentSeason]}。费用规则资料导入后，将在四国卡片中显示对应金额。`;
     });
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
-      document.querySelector('#costDate').value = todayISO();
-      updateDerived();
+      applySeason('off');
       document.querySelector('#resultHint').textContent = '填写参数后，产品体积、计费重量和费用季节会在这里更新。';
     });
     async function loadRates() {
@@ -221,8 +218,7 @@
         status.textContent = '汇率获取失败';
       }
     }
-    document.querySelector('#costDate').value = todayISO();
-    updateDerived();
+    applySeason('off');
     loadRates();
   </script>
 </body>
