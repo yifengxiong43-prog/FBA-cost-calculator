@@ -52,6 +52,46 @@ export function normalizeEndpoint(input) {
   return url.href;
 }
 
+export async function discoverModels({ endpoint, apiKey, signal }, fetchImpl = fetch) {
+  const url = normalizeEndpoint(endpoint).replace(/\/chat\/completions$/, '/models');
+  if (!apiKey?.trim()) throw new Error('请先填写 API Key，再验证连接。');
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  const timeout = setTimeout(abort, 20000);
+  signal?.addEventListener('abort', abort, { once: true });
+  if (signal?.aborted) controller.abort();
+  try {
+    const response = await fetchImpl(url, {
+      method: 'GET', credentials: 'omit', redirect: 'error', cache: 'no-store', signal: controller.signal,
+      headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' }
+    });
+    if (!response.ok) {
+      const reasons = { 401: 'API Key 无效或已过期。', 403: '密钥没有访问权限。',
+        404: '此地址未提供模型列表，请检查 API 地址，或手动填写服务商提供的模型名。',
+        429: '请求过于频繁或额度不足，请稍后重试。' };
+      throw new Error(`API ${response.status}：${reasons[response.status] || '服务暂时不可用，请稍后重试。'}`);
+    }
+    if (response.headers.get('content-type')?.includes('text/html')) {
+      throw new Error('这个地址返回了网站或管理页面，请使用服务商提供的 API 基础地址，不是 dashboard 地址。');
+    }
+    const body = await response.json();
+    if (!Array.isArray(body.data) || body.data.some(item => !isObject(item) || typeof item.id !== 'string' || !item.id.trim())) {
+      throw new Error('接口未返回有效的模型列表；请检查地址，或手动填写服务商提供的模型名。');
+    }
+    const models = [...new Set(body.data.map(item => item.id))];
+    if (!models.length) throw new Error('连接成功，但此密钥没有可用模型，请检查服务商的模型权限。');
+    return models;
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error(signal?.aborted ? '已取消验证。' : '连接验证超时，请检查接口地址和网络。');
+    if (error instanceof SyntaxError) throw new Error('接口未返回 JSON 模型列表，请确认填写的是 API 地址。');
+    if (error instanceof TypeError) throw new Error('连接失败，请检查网络及服务商是否允许本网站跨域访问（CORS）。');
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', abort);
+  }
+}
+
 function normalizeValue(key, field) {
   const value = field.value;
   if (NUMERIC_FIELDS.includes(key)) {

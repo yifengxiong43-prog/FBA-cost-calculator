@@ -1,6 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeEndpoint, normalizeRecognition, recognizeProduct } from '../product-recognition.mjs';
+import { normalizeEndpoint, normalizeRecognition, recognizeProduct, discoverModels } from '../product-recognition.mjs';
+
+test('discovers actual model IDs from a base or chat URL using authenticated GET', async () => {
+  for (const endpoint of ['https://provider.example/custom/v1/', 'https://provider.example/custom/v1/chat/completions']) {
+    const models = await discoverModels({ endpoint, apiKey: 'test-key' }, async (url, options) => {
+      assert.equal(url, 'https://provider.example/custom/v1/models');
+      assert.equal(options.method, 'GET');
+      assert.equal(options.headers.Authorization, 'Bearer test-key');
+      assert.equal(options.redirect, 'error');
+      return Response.json({ data: [{ id: 'vision-a' }, { id: 'vision-b' }, { id: 'vision-a' }] });
+    });
+    assert.deepEqual(models, ['vision-a', 'vision-b']);
+  }
+});
+
+test('model verification explains auth, website HTML, unavailable lists and network errors', async () => {
+  const config = { endpoint: 'https://provider.example/v1', apiKey: 'test-key' };
+  for (const code of [401, 403, 404, 429, 500]) {
+    await assert.rejects(discoverModels(config, async () => new Response('private detail', { status: code })), new RegExp(String(code)));
+  }
+  await assert.rejects(discoverModels(config, async () => new Response('<html>dashboard</html>', { headers: { 'Content-Type': 'text/html' } })), /管理页面/);
+  for (const body of [{ data: [] }, { data: [{ id: 123 }] }, {}]) {
+    await assert.rejects(discoverModels(config, async () => Response.json(body)), /模型/);
+  }
+  await assert.rejects(discoverModels(config, async () => { throw new TypeError('private'); }), /CORS/);
+  await assert.rejects(discoverModels({ ...config, apiKey: '' }, async () => assert.fail()), /Key/);
+});
 
 const keys = ['productName', 'length', 'width', 'height', 'weight', 'price', 'feeDate'];
 function missingFields() {

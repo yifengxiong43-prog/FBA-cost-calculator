@@ -1,4 +1,4 @@
-import { FIELD_LABELS, normalizeEndpoint, recognizeProduct } from './product-recognition.mjs';
+import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs';
 
 export function initRecognition(form, onRecognized) {
   const $ = id => document.getElementById(id);
@@ -24,12 +24,14 @@ export function initRecognition(form, onRecognized) {
     $('recognitionSummary').textContent = `已识别 ${counts.recognized} 项 · 未提供 ${counts.missing} 项 · 待确认 ${counts.uncertain} 项${counts.edited ? ` · 手动填写 ${counts.edited} 项` : ''}`;
   }
 
-  function setBusy(busy) {
-    const ids = ['smartText', 'smartImage', 'uploadImageBtn', 'removeImageBtn', 'apiEndpoint', 'apiModel', 'apiKey', 'clearApiKeyBtn'];
+  function setBusy(busy, verifying = false) {
+    const ids = ['smartText', 'smartImage', 'uploadImageBtn', 'removeImageBtn', 'apiEndpoint', 'apiModel', 'apiKey', 'clearApiKeyBtn', 'verifyApiBtn'];
     for (const id of ids) $(id).disabled = busy;
     for (const input of form.querySelectorAll('input, button')) input.disabled = busy;
     $('recognizeBtn').disabled = busy || imageReading;
-    $('recognizeBtn').textContent = busy ? '识别中…' : '智能识别';
+    $('recognizeBtn').textContent = busy && !verifying ? '识别中…' : '智能识别';
+    $('verifyApiBtn').textContent = verifying ? '正在验证…' : '验证连接并获取模型';
+    $('cancelRecognitionBtn').textContent = verifying ? '取消验证' : '取消识别';
     $('cancelRecognitionBtn').hidden = !busy;
     $('smartText').setAttribute('aria-busy', String(busy));
   }
@@ -90,11 +92,60 @@ export function initRecognition(form, onRecognized) {
   $('removeImageBtn').addEventListener('click', () => { resetImage(); status.textContent = '已移除图片。'; });
   $('cancelRecognitionBtn').addEventListener('click', () => controller?.abort());
 
-  function updateConfigStatus() {
-    $('apiConfigStatus').textContent = ['apiEndpoint', 'apiModel', 'apiKey'].every(id => $(id).value.trim()) ? '已填写，待识别验证' : '尚未填写完整';
+  const storageKey = 'art-cost-desk-api-config';
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (typeof saved?.endpoint === 'string') $('apiEndpoint').value = saved.endpoint;
+    if (typeof saved?.model === 'string') $('apiModel').value = saved.model;
+  } catch { /* Keep the defaults if storage is unavailable or damaged. */ }
+  function saveConfig() {
+    try {
+      // Explicit allowlist: never persist the API key.
+      localStorage.setItem(storageKey, JSON.stringify({ endpoint: $('apiEndpoint').value.trim(), model: $('apiModel').value.trim() }));
+      $('apiStorageStatus').textContent = '地址和模型已保存在当前浏览器；密钥仅本次使用。接口需允许跨域访问。';
+    } catch {
+      $('apiStorageStatus').textContent = '浏览器禁止保存设置，刷新后需重新填写；密钥仅本次使用。';
+    }
   }
-  for (const id of ['apiEndpoint', 'apiModel', 'apiKey']) $(id).addEventListener('input', updateConfigStatus);
-  $('clearApiKeyBtn').addEventListener('click', () => { $('apiKey').value = ''; updateConfigStatus(); });
+  function updateConfigStatus(clearModels = false) {
+    $('apiConfigStatus').textContent = $('apiKey').value.trim() ? '待验证连接' : '请填入 Key 后验证';
+    $('apiVerificationStatus').textContent = '';
+    if (clearModels) $('apiModelOptions').replaceChildren();
+  }
+  for (const id of ['apiEndpoint', 'apiModel', 'apiKey']) $(id).addEventListener('input', () => {
+    updateConfigStatus(id !== 'apiModel');
+    if (id !== 'apiKey') saveConfig();
+  });
+  $('clearApiKeyBtn').addEventListener('click', () => { $('apiKey').value = ''; updateConfigStatus(true); });
+  updateConfigStatus();
+  saveConfig();
+
+  $('verifyApiBtn').addEventListener('click', async () => {
+    if (controller || imageReading) return;
+    controller = new AbortController();
+    setBusy(true, true);
+    $('apiVerificationStatus').textContent = '正在验证地址和密钥，获取可用模型…';
+    $('apiModelOptions').replaceChildren();
+    try {
+      const models = await discoverModels({ endpoint: $('apiEndpoint').value, apiKey: $('apiKey').value, signal: controller.signal });
+      if (controller.signal.aborted) return;
+      for (const model of models) {
+        const option = document.createElement('option');
+        option.value = model;
+        $('apiModelOptions').append(option);
+      }
+      if (!models.includes($('apiModel').value)) $('apiModel').value = models[0];
+      saveConfig();
+      $('apiConfigStatus').textContent = `连接成功 · ${models.length} 个模型`;
+      $('apiVerificationStatus').textContent = `已获取 ${models.length} 个模型，当前选择 ${$('apiModel').value}。可点击模型框改选；图片理解和 JSON 输出能力需通过实际识别确认。`;
+    } catch (error) {
+      $('apiConfigStatus').textContent = '验证未通过';
+      $('apiVerificationStatus').textContent = error.message;
+    } finally {
+      controller = null;
+      setBusy(false);
+    }
+  });
 
   $('recognizeBtn').addEventListener('click', async () => {
     if (controller || imageReading) return;
