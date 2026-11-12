@@ -26,38 +26,62 @@
     button, input, select { font: inherit; }
     button { cursor: pointer; }
     .shell { width: min(1400px, calc(100% - 40px)); margin: 0 auto; }
-    .topbar { padding: 24px 0 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-    .eyebrow { margin: 0 0 7px; color: var(--green); font-size: 12px; font-weight: 750; letter-spacing: .08em; }
+    .topbar { padding: 14px 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .eyebrow { margin: 0 0 4px; color: var(--green); font-size: 11px; font-weight: 750; letter-spacing: .08em; }
     h1, h2, h3, p { margin: 0; }
-    h1 { font-size: clamp(25px, 3vw, 36px); letter-spacing: -.02em; line-height: 1.15; }
-    .subtitle { margin-top: 10px; color: var(--muted); font-size: 14px; max-width: 650px; }
+    h1 { font-size: 25px; line-height: 1.15; }
+    .subtitle { margin-top: 5px; color: var(--muted); font-size: 12px; max-width: 650px; }
     .header-actions { display: flex; gap: 10px; align-items: center; }
     .rate-pill { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--muted); font-size: 12px; white-space: nowrap; }
     .rate-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
     .rate-dot.live { background: var(--green); }
-    .layout { display: grid; grid-template-columns: minmax(300px, 350px) minmax(0, 1fr); gap: 18px; padding-bottom: 34px; }
+    .layout { display: grid; grid-template-columns: minmax(320px, 390px) minmax(0, 1fr); gap: 14px; padding-bottom: 16px; align-items: start; }
     .panel { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: var(--shadow); }
-    .panel-head { padding: 19px 20px 15px; border-bottom: 1px solid var(--line); }
+    .panel-head { padding: 11px 14px 9px; border-bottom: 1px solid var(--line); }
     .panel-head h2 { font-size: 17px; }
     .panel-head p { margin-top: 5px; color: var(--muted); font-size: 12px; }
-    .form-body { padding: 18px 20px 20px; }
-    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; }
-    .field { display: grid; gap: 6px; }
+    .form-body { padding: 10px 14px 12px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field { display: grid; gap: 4px; }
     .field.full { grid-column: 1 / -1; }
     label { color: #465366; font-size: 12px; font-weight: 700; }
-    input, select { width: 100%; min-height: 40px; padding: 0 11px; color: var(--ink); border: 1px solid #cbd3dd; border-radius: 7px; background: #fff; outline: none; }
+    input, select { width: 100%; min-height: 34px; padding: 0 9px; color: var(--ink); border: 1px solid #cbd3dd; border-radius: 6px; background: #fff; outline: none; }
     input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47, 93, 168, .12); }
     .unit-input { position: relative; }
     .unit-input input { padding-right: 42px; }
     .unit { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: var(--muted); font-size: 11px; pointer-events: none; }
-    .form-note { margin-top: 14px; padding: 10px 11px; border: 1px solid #f3dfb4; border-radius: 7px; background: var(--amber-soft); color: #795014; font-size: 11px; }
-    .actions { display: flex; gap: 8px; margin-top: 18px; }
-    .btn { min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font-size: 13px; font-weight: 700; }
+    .form-note { margin-top: 8px; padding: 7px 8px; border: 1px solid #f3dfb4; border-radius: 6px; background: var(--amber-soft); color: #795014; font-size: 10px; }
+    .actions { display: flex; gap: 7px; margin-top: 9px; }
+    .btn { min-height: 34px; padding: 0 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 700; }
     .btn.primary { flex: 1; border-color: var(--green); background: var(--green); color: #fff; }
     .btn.primary:hover { background: #066b4c; }
     .btn:hover { border-color: #aab5c3; background: #f8fafc; }
+    .smart-fill { padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fbfcfd; }
+    .smart-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .smart-heading strong { font-size: 12px; }
+    .smart-heading span, .smart-help { color: var(--muted); font-size: 10px; }
+    .smart-inputs { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: end; }
+    .smart-inputs textarea { min-width: 0; min-height: 54px; padding: 7px 8px; resize: vertical; border: 1px solid #cbd3dd; border-radius: 6px; font: inherit; font-size: 11px; line-height: 1.4; }
+    .smart-actions { display: grid; gap: 5px; }
+    .smart-actions .btn { white-space: nowrap; }
+    .smart-actions input[type=file] { display: none; }
+    .smart-help { margin-top: 4px; }
+    .smart-status { min-height: 14px; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .smart-preview { display: none; padding: 8px 14px 10px; border-bottom: 1px solid var(--line); }
+    .smart-preview.visible { display: block; }
+    .preview-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; }
+    .preview-head strong { font-size:11px; }
+    .preview-fields { display:grid; grid-template-columns:1fr 1fr; gap:5px 8px; }
+    .preview-field { display:grid; grid-template-columns:72px minmax(0,1fr); align-items:center; gap:4px; }
+    .preview-field label { font-size:10px; white-space:nowrap; }
+    .preview-field input, .preview-field select { min-height:27px; padding:0 6px; font-size:11px; }
+    .preview-lists { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; font-size:10px; }
+    .preview-lists span { color:var(--muted); }
+    .preview-lists .warning { color:var(--amber); }
+    .preview-buttons { display:flex; gap:6px; }
+    .preview-buttons .btn { min-height:27px; padding:0 8px; font-size:10px; }
     .results { min-width: 0; }
-    .results-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 18px 20px 14px; }
+    .results-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 11px 14px 9px; }
     .results-head h2 { font-size: 18px; }
     .results-head p { margin-top: 4px; color: var(--muted); font-size: 12px; }
     .derived { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; }
@@ -66,21 +90,21 @@
     .metric b { display: block; margin-top: 2px; font-size: 13px; }
     .season-badge { display: inline-block; margin-top: 3px; padding: 1px 5px; border-radius: 4px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 700; }
     .season-badge.peak { background: var(--amber-soft); color: var(--amber); }
-    .country-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 20px 20px; }
+    .country-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 14px 10px; }
     .country-card { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
-    .country-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; background: var(--soft); border-bottom: 1px solid var(--line); }
+    .country-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--soft); border-bottom: 1px solid var(--line); }
     .country-name { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 800; }
     .flag { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 6px; background: #fff; border: 1px solid var(--line); font-size: 16px; }
     .currency { color: var(--muted); font-size: 11px; }
-    .country-body { padding: 12px 14px 14px; }
-    .cost-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #edf0f4; }
+    .country-body { padding: 6px 10px 8px; }
+    .cost-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid #edf0f4; }
     .cost-row:last-child { border-bottom: 0; }
     .cost-label { color: #465366; font-size: 12px; }
     .cost-label small { display: block; margin-top: 2px; color: #99a3b1; font-size: 10px; }
     .cost-value { color: #596678; font-size: 12px; font-weight: 750; text-align: right; }
     .cost-value.pending { color: var(--amber); font-weight: 650; }
     .cost-detail { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 450; line-height: 1.4; text-align: right; }
-    .fx-section { margin: 0 20px 20px; padding: 14px; border: 1px solid #ccd9ef; border-radius: 9px; background: var(--blue-soft); }
+    .fx-section { margin: 0 14px 10px; padding: 9px; border: 1px solid #ccd9ef; border-radius: 7px; background: var(--blue-soft); }
     .fx-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .fx-title strong { font-size: 13px; }
     .fx-actions { display: flex; align-items: center; gap: 8px; }
@@ -88,16 +112,17 @@
     .fx-refresh { min-height: 28px; padding: 0 9px; border: 1px solid #b9cbe8; border-radius: 6px; background: #fff; color: var(--blue); font-size: 11px; font-weight: 700; }
     .fx-refresh:hover { background: #f6f9ff; border-color: var(--blue); }
     .fx-refresh:disabled { cursor: wait; opacity: .65; }
-    .fx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
-    .fx-item { padding: 9px; border: 1px solid rgba(47, 93, 168, .16); border-radius: 7px; background: rgba(255,255,255,.78); }
+    .fx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+    .fx-item { padding: 5px 7px; border: 1px solid rgba(47, 93, 168, .16); border-radius: 6px; background: rgba(255,255,255,.78); }
     .fx-item span { display: block; color: var(--muted); font-size: 10px; }
     .fx-item b { display: block; margin-top: 2px; font-size: 13px; }
-    .status-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px 20px; }
+    .status-bar { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 14px 8px; }
     .status { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 5px; background: var(--soft); color: var(--muted); font-size: 10px; }
     .status i { width: 6px; height: 6px; border-radius: 50%; background: #9ca7b5; }
     .status.waiting i { background: var(--amber); }
-    .footnote { padding: 0 20px 20px; color: #8994a3; font-size: 10px; }
+    .footnote { padding: 0 14px 10px; color: #8994a3; font-size: 9px; }
     @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .form-body { max-width: 640px; } }
+    @media (min-width: 1280px) { .country-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 640px) { .shell { width: min(100% - 24px, 560px); } .topbar { display: block; } .header-actions { margin-top: 16px; } .rate-pill { width: 100%; } .results-head { display: block; } .derived { justify-content: flex-start; margin-top: 12px; } .country-grid { grid-template-columns: 1fr; padding-left: 14px; padding-right: 14px; } .fx-section, .status-bar, .footnote { margin-left: 14px; margin-right: 14px; padding-left: 0; padding-right: 0; } .fx-section { padding: 12px; } .fx-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -115,6 +140,25 @@
     <section class="layout">
       <aside class="panel">
         <div class="panel-head"><h2>产品参数</h2><p>录入包装尺寸、重量和售价后按配送日期计算。</p></div>
+        <section class="smart-fill" aria-label="智能识别填写">
+          <div class="smart-heading"><strong>智能识别填写</strong><span>识别后确认再填入</span></div>
+          <div class="smart-inputs"><textarea id="smartText" aria-label="粘贴产品参数文字" placeholder="粘贴产品描述、尺寸、重量、售价和配送日期"></textarea><div class="smart-actions"><button class="btn" type="button" id="recognizeTextBtn">识别文字</button><label class="btn" for="smartImage">上传图片</label><input id="smartImage" type="file" accept="image/*"></div></div>
+          <p class="smart-help">图片在本机识别，首次使用需联网加载 OCR。</p><p class="smart-status" id="smartStatus" role="status"></p>
+        </section>
+        <section class="smart-preview" id="smartPreview" aria-label="识别结果">
+          <div class="preview-head"><strong>识别结果（可修改）</strong><div class="preview-buttons"><button class="btn primary" type="button" id="applyRecognizedBtn">填入表单</button><button class="btn" type="button" id="discardRecognizedBtn">清除结果</button></div></div>
+          <div class="preview-fields">
+            <div class="preview-field"><label for="previewProductName">产品名称</label><input id="previewProductName" data-key="productName" maxlength="60"></div>
+            <div class="preview-field"><label for="previewLength">包装长 mm</label><input id="previewLength" data-key="length" type="number" min="0" step="0.1"></div>
+            <div class="preview-field"><label for="previewWidth">包装宽 mm</label><input id="previewWidth" data-key="width" type="number" min="0" step="0.1"></div>
+            <div class="preview-field"><label for="previewHeight">包装高 mm</label><input id="previewHeight" data-key="height" type="number" min="0" step="0.1"></div>
+            <div class="preview-field"><label for="previewWeight">重量 g</label><input id="previewWeight" data-key="weight" type="number" min="0" step="0.01"></div>
+            <div class="preview-field"><label for="previewPrice">售价 USD</label><input id="previewPrice" data-key="price" type="number" min="0" step="0.01"></div>
+            <div class="preview-field"><label for="previewShippingMode">头程方式</label><select id="previewShippingMode" data-key="shippingMode"><option value="">未识别</option><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
+            <div class="preview-field"><label for="previewFeeDate">配送日期</label><input id="previewFeeDate" data-key="feeDate" type="date"></div>
+          </div>
+          <div class="preview-lists"><span id="recognizedList"></span><span id="missingList"></span><span class="warning" id="uncertainList"></span></div>
+        </section>
         <form class="form-body" id="calculatorForm">
           <div class="field-grid">
             <div class="field full"><label for="productName">产品名称（可选）</label><input id="productName" name="productName" placeholder="例如：ohuhu36色丙烯马克笔" maxlength="60"></div>
@@ -147,7 +191,12 @@
   </main>
   <script type="module">
     import { calculateUsFba, getUsFeeSeason } from './fba-calculator.mjs';
+    import { parseProductDetails } from './product-parser.mjs';
     const form = document.querySelector('#calculatorForm');
+    const smartPreview = document.querySelector('#smartPreview');
+    const smartStatus = document.querySelector('#smartStatus');
+    const fieldLabels = { productName: '产品名称', length: '包装长', width: '包装宽', height: '包装高', weight: '包装重量', price: '售价（USD）', shippingMode: '头程方式', feeDate: 'FBA配送日期' };
+    let recognizedDraft = null;
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
     function updateDerived() {
@@ -247,6 +296,62 @@
       }
     }
     document.querySelector('#refreshRatesBtn').addEventListener('click', loadRates);
+    document.querySelector('#recognizeTextBtn').addEventListener('click', () => {
+      const text = document.querySelector('#smartText').value.trim();
+      if (!text) {
+        smartStatus.textContent = '请先粘贴产品参数文字。';
+        return;
+      }
+      showRecognized(parseProductDetails(text));
+      smartStatus.textContent = '文字识别完成，请检查结果后填入表单。';
+    });
+    document.querySelector('#smartImage').addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      smartStatus.textContent = '正在加载本地 OCR 识别库…';
+      let worker;
+      try {
+        const { createWorker } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/+esm');
+        worker = await createWorker('chi_sim+eng');
+        smartStatus.textContent = '正在识别图片文字…';
+        const result = await worker.recognize(file);
+        const text = result.data.text.trim();
+        if (!text) throw new Error('empty OCR result');
+        document.querySelector('#smartText').value = text;
+        showRecognized(parseProductDetails(text));
+        smartStatus.textContent = '图片识别完成，请检查结果后填入表单。';
+      } catch {
+        smartStatus.textContent = '图片识别失败，请确认网络可用，或改用文字粘贴。';
+      } finally {
+        if (worker) await worker.terminate();
+        event.target.value = '';
+      }
+    });
+    document.querySelector('#applyRecognizedBtn').addEventListener('click', () => {
+      if (!recognizedDraft) return;
+      const values = Object.fromEntries(Object.keys(fieldLabels).map(key => [key, document.querySelector(`[data-key="${key}"]`).value.trim()]));
+      Object.entries(values).forEach(([key, value]) => {
+        if (value) document.querySelector(`#${key}`).value = value;
+      });
+      updateDerived();
+      smartStatus.textContent = '已填入表单，请确认参数后再计算。';
+    });
+    document.querySelector('#discardRecognizedBtn').addEventListener('click', clearRecognized);
+    function showRecognized(result) {
+      recognizedDraft = result;
+      Object.keys(fieldLabels).forEach(key => {
+        document.querySelector(`[data-key="${key}"]`).value = result.values[key] || '';
+      });
+      document.querySelector('#recognizedList').textContent = result.recognized.length ? `已识别：${result.recognized.join('、')}` : '已识别：无';
+      document.querySelector('#missingList').textContent = result.missing.length ? `缺少：${result.missing.join('、')}` : '缺少：无';
+      document.querySelector('#uncertainList').textContent = result.uncertain.length ? `待确认：${result.uncertain.join('；')}` : '待确认：无';
+      smartPreview.classList.add('visible');
+    }
+    function clearRecognized() {
+      recognizedDraft = null;
+      smartPreview.classList.remove('visible');
+      smartStatus.textContent = '';
+    }
     updateDerived();
     loadRates();
   </script>
