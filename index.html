@@ -83,7 +83,11 @@
     .fx-section { margin: 0 20px 20px; padding: 14px; border: 1px solid #ccd9ef; border-radius: 9px; background: var(--blue-soft); }
     .fx-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .fx-title strong { font-size: 13px; }
+    .fx-actions { display: flex; align-items: center; gap: 8px; }
     .fx-title span { color: var(--muted); font-size: 10px; }
+    .fx-refresh { min-height: 28px; padding: 0 9px; border: 1px solid #b9cbe8; border-radius: 6px; background: #fff; color: var(--blue); font-size: 11px; font-weight: 700; }
+    .fx-refresh:hover { background: #f6f9ff; border-color: var(--blue); }
+    .fx-refresh:disabled { cursor: wait; opacity: .65; }
     .fx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
     .fx-item { padding: 9px; border: 1px solid rgba(47, 93, 168, .16); border-radius: 7px; background: rgba(255,255,255,.78); }
     .fx-item span { display: block; color: var(--muted); font-size: 10px; }
@@ -135,7 +139,7 @@
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><span class="currency">GBP</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><span class="currency">CAD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
         </div>
-        <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><span id="fxUpdated">获取中</span></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
+        <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><div class="fx-actions"><span id="fxUpdated">获取中</span><button class="fx-refresh" type="button" id="refreshRatesBtn">更新汇率</button></div></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
         <div class="status-bar"><span class="status waiting"><i></i>美国 FBA：2026/2027 费率已接入</span><span class="status waiting"><i></i>英国、德国、加拿大 FBA：待接入</span><span class="status waiting"><i></i>头程与非 FBA 尾程：待补充</span></div>
         <p class="footnote">计算器不额外叠加 3.5% 费率。美国表未覆盖的日期会显示待补；英国、德国和加拿大费率接入后也按表列配送费计算。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p>
       </section>
@@ -199,9 +203,12 @@
     }
     async function loadRates() {
       const status = document.querySelector('#rateStatus');
+      const refreshButton = document.querySelector('#refreshRatesBtn');
+      refreshButton.disabled = true;
+      refreshButton.textContent = '更新中…';
       const rateUrls = [
-        'https://api.frankfurter.dev/v1/latest?base=USD&symbols=GBP,CAD,EUR',
-        'https://cdn.jsdelivr.net/gh/irfanokr/currency-api@main/v1/currencies/usd.min.json'
+        `https://api.frankfurter.dev/v1/latest?base=USD&symbols=GBP,CAD,EUR&_=${Date.now()}`,
+        `https://cdn.jsdelivr.net/gh/irfanokr/currency-api@main/v1/currencies/usd.min.json?_=${Date.now()}`
       ];
       try {
         let data;
@@ -234,8 +241,12 @@
       } catch {
         document.querySelector('#fxUpdated').textContent = '暂时无法获取';
         status.textContent = '汇率获取失败';
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = '更新汇率';
       }
     }
+    document.querySelector('#refreshRatesBtn').addEventListener('click', loadRates);
     updateDerived();
     loadRates();
   </script>
