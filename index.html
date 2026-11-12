@@ -23,7 +23,7 @@
     }
     * { box-sizing: border-box; }
     body { margin: 0; color: var(--ink); background: #f1f4f7; font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; line-height: 1.45; }
-    button, input, select { font: inherit; }
+    button, input, select, textarea { font: inherit; }
     button { cursor: pointer; }
     .shell { width: min(1400px, calc(100% - 40px)); margin: 0 auto; }
     .topbar { padding: 14px 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -41,11 +41,11 @@
     .panel-head h2 { font-size: 17px; }
     .panel-head p { margin-top: 5px; color: var(--muted); font-size: 12px; }
     .form-body { padding: 10px 14px 12px; }
-    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .field { display: grid; gap: 4px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .field { display: grid; gap: 4px; min-width: 0; align-content: start; }
     .field.full { grid-column: 1 / -1; }
     label { color: #465366; font-size: 12px; font-weight: 700; }
-    input, select { width: 100%; min-height: 34px; padding: 0 9px; color: var(--ink); border: 1px solid #cbd3dd; border-radius: 6px; background: #fff; outline: none; }
+    input, select { width: 100%; min-width: 0; min-height: 34px; padding: 0 9px; color: var(--ink); border: 1px solid #cbd3dd; border-radius: 6px; background: #fff; outline: none; font-size: 13px; }
     input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47, 93, 168, .12); }
     .unit-input { position: relative; }
     .unit-input input { padding-right: 42px; }
@@ -64,24 +64,29 @@
     .smart-inputs textarea { min-width: 0; min-height: 54px; padding: 7px 8px; resize: vertical; border: 1px solid #cbd3dd; border-radius: 6px; font: inherit; font-size: 11px; line-height: 1.4; }
     .smart-actions { display: grid; gap: 5px; }
     .smart-actions .btn { white-space: nowrap; }
-    .smart-actions input[type=file] { display: none; }
     .smart-help { margin-top: 4px; }
     .smart-status { min-height: 14px; margin-top: 3px; color: var(--muted); font-size: 10px; }
-    .smart-preview { display: none; padding: 8px 14px 10px; border-bottom: 1px solid var(--line); }
-    .smart-preview.visible { display: block; }
-    .preview-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; }
-    .preview-head strong { font-size:11px; }
-    .preview-fields { display:grid; grid-template-columns:1fr 1fr; gap:5px 8px; }
-    .preview-field { display:grid; grid-template-columns:72px minmax(0,1fr); align-items:center; gap:4px; }
-    .preview-field label { font-size:10px; white-space:nowrap; }
-    .preview-field input, .preview-field select { min-height:27px; padding:0 6px; font-size:11px; }
-    .preview-lists { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; font-size:10px; }
-    .preview-lists span { color:var(--muted); }
-    .preview-lists .warning { color:var(--amber); }
-    .preview-buttons { display:flex; gap:6px; }
-    .preview-buttons .btn { min-height:27px; padding:0 8px; font-size:10px; }
+    .api-settings { margin-bottom: 8px; font-size: 11px; }
+    .api-settings summary { cursor: pointer; color: var(--blue); }
+    .api-settings summary span { color: var(--muted); margin-left: 6px; font-size: 10px; }
+    .api-fields { display: grid; gap: 6px; margin-top: 8px; }
+    .api-fields label { font-size: 11px; }
+    .api-key-row { display: flex; gap: 6px; }
+    .api-key-row .btn { white-space: nowrap; }
+    .image-preview { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+    .image-preview img { width: 96px; height: 44px; object-fit: contain; border: 1px solid var(--line); background: white; }
+    .image-preview span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-size: 10px; }
+    .recognition-summary { margin-top: 6px; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+    .recognition-notes { margin: 4px 0 0; padding-left: 16px; color: var(--amber); font-size: 11px; }
+    .field-feedback { color: var(--green); font-size: 10px; overflow-wrap: anywhere; }
+    #calculatorForm label { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px; align-items: baseline; }
+    .field-feedback[data-state=uncertain] { color: var(--amber); }
+    .field-feedback[data-state=missing] { color: var(--muted); }
+    [hidden] { display: none !important; }
+    button:disabled { cursor: wait; opacity: .6; }
+    textarea:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
     .results { min-width: 0; }
-    .results-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 11px 14px 9px; }
+    .results-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 11px 14px 9px; }
     .results-head h2 { font-size: 18px; }
     .results-head p { margin-top: 4px; color: var(--muted); font-size: 12px; }
     .derived { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; }
@@ -122,7 +127,7 @@
     .status.waiting i { background: var(--amber); }
     .footnote { padding: 0 14px 10px; color: #8994a3; font-size: 9px; }
     @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .form-body { max-width: 640px; } }
-    @media (min-width: 1280px) { .country-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (min-width: 1280px) { .country-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .field-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } #calculatorForm label { font-size: 11px; } #calculatorForm input { font-size: 12px; } }
     @media (max-width: 640px) { .shell { width: min(100% - 24px, 560px); } .topbar { display: block; } .header-actions { margin-top: 16px; } .rate-pill { width: 100%; } .results-head { display: block; } .derived { justify-content: flex-start; margin-top: 12px; } .country-grid { grid-template-columns: 1fr; padding-left: 14px; padding-right: 14px; } .fx-section, .status-bar, .footnote { margin-left: 14px; margin-right: 14px; padding-left: 0; padding-right: 0; } .fx-section { padding: 12px; } .fx-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -141,37 +146,34 @@
       <aside class="panel">
         <div class="panel-head"><h2>产品参数</h2><p>录入包装尺寸、重量和售价后按配送日期计算。</p></div>
         <section class="smart-fill" aria-label="智能识别填写">
-          <div class="smart-heading"><strong>智能识别填写</strong><span>识别后确认再填入</span></div>
-          <div class="smart-inputs"><textarea id="smartText" aria-label="粘贴产品参数文字" placeholder="粘贴产品描述、尺寸、重量、售价和配送日期"></textarea><div class="smart-actions"><button class="btn" type="button" id="recognizeTextBtn">识别文字</button><label class="btn" for="smartImage">上传图片</label><input id="smartImage" type="file" accept="image/*"></div></div>
-          <p class="smart-help">图片在本机识别，首次使用需联网加载 OCR。</p><p class="smart-status" id="smartStatus" role="status"></p>
-        </section>
-        <section class="smart-preview" id="smartPreview" aria-label="识别结果">
-          <div class="preview-head"><strong>识别结果（可修改）</strong><div class="preview-buttons"><button class="btn primary" type="button" id="applyRecognizedBtn">填入表单</button><button class="btn" type="button" id="discardRecognizedBtn">清除结果</button></div></div>
-          <div class="preview-fields">
-            <div class="preview-field"><label for="previewProductName">产品名称</label><input id="previewProductName" data-key="productName" maxlength="60"></div>
-            <div class="preview-field"><label for="previewLength">包装长 mm</label><input id="previewLength" data-key="length" type="number" min="0" step="0.1"></div>
-            <div class="preview-field"><label for="previewWidth">包装宽 mm</label><input id="previewWidth" data-key="width" type="number" min="0" step="0.1"></div>
-            <div class="preview-field"><label for="previewHeight">包装高 mm</label><input id="previewHeight" data-key="height" type="number" min="0" step="0.1"></div>
-            <div class="preview-field"><label for="previewWeight">重量 g</label><input id="previewWeight" data-key="weight" type="number" min="0" step="0.01"></div>
-            <div class="preview-field"><label for="previewPrice">售价 USD</label><input id="previewPrice" data-key="price" type="number" min="0" step="0.01"></div>
-            <div class="preview-field"><label for="previewShippingMode">头程方式</label><select id="previewShippingMode" data-key="shippingMode"><option value="">未识别</option><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
-            <div class="preview-field"><label for="previewFeeDate">配送日期</label><input id="previewFeeDate" data-key="feeDate" type="date"></div>
-          </div>
-          <div class="preview-lists"><span id="recognizedList"></span><span id="missingList"></span><span class="warning" id="uncertainList"></span></div>
+          <div class="smart-heading"><strong>智能识别填写</strong><span>文字 + 图片一起识别</span></div>
+          <details class="api-settings" id="apiSettings">
+            <summary>API 设置<span id="apiConfigStatus">尚未填写</span></summary>
+            <div class="api-fields">
+              <div class="field"><label for="apiEndpoint">接口地址（兼容 OpenAI）</label><input id="apiEndpoint" type="url" placeholder="https://你的服务商/v1" autocomplete="off" spellcheck="false"></div>
+              <div class="field"><label for="apiModel">模型名称（需支持图片理解和 JSON 输出）</label><input id="apiModel" placeholder="填写服务商提供的模型名称" autocomplete="off" spellcheck="false"></div>
+              <div class="field"><label for="apiKey">API Key（仅本次页面使用）</label><div class="api-key-row"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴你的 API Key"><button class="btn" id="clearApiKeyBtn" type="button">清除密钥</button></div></div>
+            </div>
+            <p class="smart-help">密钥不会保存或写入网站代码。接口需允许本网站跨域访问。</p>
+          </details>
+          <div class="smart-inputs"><textarea id="smartText" aria-label="粘贴产品参数文字" maxlength="12000" placeholder="例如：96色滚珠笔，长260，宽190，高100，重1640，卖62.99美元。也可粘贴截图，并补充要求。"></textarea><div class="smart-actions"><button class="btn primary" type="button" id="recognizeBtn">智能识别</button><button class="btn" type="button" id="uploadImageBtn">选择图片</button><input id="smartImage" type="file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn" type="button" id="cancelRecognitionBtn" hidden>取消识别</button></div></div>
+          <div class="image-preview" id="imagePreview" hidden><img id="sourceImage" alt="待识别的原始图片"><span id="sourceImageName"></span><button class="btn" type="button" id="removeImageBtn">移除</button></div>
+          <p class="smart-help">缺省单位：尺寸 mm、重量 g。点击识别会把文字和图片发送至你设置的 API。</p>
+          <p class="smart-status" id="smartStatus" role="status"></p>
+          <p class="recognition-summary" id="recognitionSummary" hidden></p><ul class="recognition-notes" id="recognitionNotes" hidden></ul>
         </section>
         <form class="form-body" id="calculatorForm">
           <div class="field-grid">
             <div class="field full"><label for="productName">产品名称（可选）</label><input id="productName" name="productName" placeholder="例如：ohuhu36色丙烯马克笔" maxlength="60"></div>
-            <div class="field"><label for="length">包装长</label><div class="unit-input"><input id="length" name="length" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="width">包装宽</label><div class="unit-input"><input id="width" name="width" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="height">包装高</label><div class="unit-input"><input id="height" name="height" type="number" min="0" step="0.1" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="length">包装长</label><div class="unit-input"><input id="length" name="length" type="number" min="0" step="0.01" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="width">包装宽</label><div class="unit-input"><input id="width" name="width" type="number" min="0" step="0.01" placeholder="0"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="height">包装高</label><div class="unit-input"><input id="height" name="height" type="number" min="0" step="0.01" placeholder="0"><span class="unit">mm</span></div></div>
             <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.01" placeholder="0"><span class="unit">g</span></div></div>
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
-            <div class="field"><label for="shippingMode">头程方式</label><select id="shippingMode" name="shippingMode"><option value="both">空运 + 海运</option><option value="air">只看空运</option><option value="sea">只看海运</option></select></div>
-            <div class="field full"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date" value="2026-11-10"></div>
+            <div class="field"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date" value="2026-11-10"></div>
           </div>
           <div class="form-note">美国尺寸档按包装三边自动匹配小号标准尺寸 1 或大号标准尺寸；计费重量取包装实重与体积重（包装体积 ÷ 5000）的较大值。四国都不另加 3.5%。</div>
-          <div class="actions"><button class="btn primary" type="submit">计算 FBA 费用</button><button class="btn" type="button" id="clearBtn">清空</button></div>
+          <div class="actions"><button class="btn primary" type="submit">确认参数并计算 FBA</button><button class="btn" type="button" id="clearBtn">清空</button></div>
         </form>
       </aside>
 
@@ -191,12 +193,8 @@
   </main>
   <script type="module">
     import { calculateUsFba, getUsFeeSeason } from './fba-calculator.mjs';
-    import { parseProductDetails } from './product-parser.mjs';
+    import { initRecognition } from './recognition-ui.mjs';
     const form = document.querySelector('#calculatorForm');
-    const smartPreview = document.querySelector('#smartPreview');
-    const smartStatus = document.querySelector('#smartStatus');
-    const fieldLabels = { productName: '产品名称', length: '包装长', width: '包装宽', height: '包装高', weight: '包装重量', price: '售价（USD）', shippingMode: '头程方式', feeDate: 'FBA配送日期' };
-    let recognizedDraft = null;
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
     function updateDerived() {
@@ -214,7 +212,7 @@
     }
     form.addEventListener('input', () => {
       updateDerived();
-      if (['length', 'width', 'height', 'weight', 'price'].every(id => number(id) > 0) && document.querySelector('#feeDate').value) calculateFba();
+      resetResult('参数已修改，请确认后再计算。');
     });
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -249,6 +247,11 @@
       document.querySelector('#resultHint').textContent = fee.status === 'ok'
         ? `${fee.tier} · 计费重 ${fee.billedWeightLb} lb · 美国费率期间 ${fee.ratePeriod}`
         : fee.reason;
+    }
+    function resetResult(message) {
+      document.querySelector('#usFbaValue').textContent = '待计算';
+      document.querySelector('#usFbaValue').classList.add('pending');
+      document.querySelector('#resultHint').textContent = message;
     }
     async function loadRates() {
       const status = document.querySelector('#rateStatus');
@@ -296,62 +299,10 @@
       }
     }
     document.querySelector('#refreshRatesBtn').addEventListener('click', loadRates);
-    document.querySelector('#recognizeTextBtn').addEventListener('click', () => {
-      const text = document.querySelector('#smartText').value.trim();
-      if (!text) {
-        smartStatus.textContent = '请先粘贴产品参数文字。';
-        return;
-      }
-      showRecognized(parseProductDetails(text));
-      smartStatus.textContent = '文字识别完成，请检查结果后填入表单。';
-    });
-    document.querySelector('#smartImage').addEventListener('change', async event => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      smartStatus.textContent = '正在加载本地 OCR 识别库…';
-      let worker;
-      try {
-        const { createWorker } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/+esm');
-        worker = await createWorker('chi_sim+eng');
-        smartStatus.textContent = '正在识别图片文字…';
-        const result = await worker.recognize(file);
-        const text = result.data.text.trim();
-        if (!text) throw new Error('empty OCR result');
-        document.querySelector('#smartText').value = text;
-        showRecognized(parseProductDetails(text));
-        smartStatus.textContent = '图片识别完成，请检查结果后填入表单。';
-      } catch {
-        smartStatus.textContent = '图片识别失败，请确认网络可用，或改用文字粘贴。';
-      } finally {
-        if (worker) await worker.terminate();
-        event.target.value = '';
-      }
-    });
-    document.querySelector('#applyRecognizedBtn').addEventListener('click', () => {
-      if (!recognizedDraft) return;
-      const values = Object.fromEntries(Object.keys(fieldLabels).map(key => [key, document.querySelector(`[data-key="${key}"]`).value.trim()]));
-      Object.entries(values).forEach(([key, value]) => {
-        if (value) document.querySelector(`#${key}`).value = value;
-      });
+    initRecognition(form, () => {
       updateDerived();
-      smartStatus.textContent = '已填入表单，请确认参数后再计算。';
+      resetResult('识别结果已填入，请核对左侧参数并补齐缺项，再点击确认计算。');
     });
-    document.querySelector('#discardRecognizedBtn').addEventListener('click', clearRecognized);
-    function showRecognized(result) {
-      recognizedDraft = result;
-      Object.keys(fieldLabels).forEach(key => {
-        document.querySelector(`[data-key="${key}"]`).value = result.values[key] || '';
-      });
-      document.querySelector('#recognizedList').textContent = result.recognized.length ? `已识别：${result.recognized.join('、')}` : '已识别：无';
-      document.querySelector('#missingList').textContent = result.missing.length ? `缺少：${result.missing.join('、')}` : '缺少：无';
-      document.querySelector('#uncertainList').textContent = result.uncertain.length ? `待确认：${result.uncertain.join('；')}` : '待确认：无';
-      smartPreview.classList.add('visible');
-    }
-    function clearRecognized() {
-      recognizedDraft = null;
-      smartPreview.classList.remove('visible');
-      smartStatus.textContent = '';
-    }
     updateDerived();
     loadRates();
   </script>
