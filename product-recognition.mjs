@@ -52,8 +52,20 @@ export function normalizeEndpoint(input) {
   return url.href;
 }
 
-export async function discoverModels({ endpoint, apiKey, signal }, fetchImpl = fetch) {
-  const url = normalizeEndpoint(endpoint).replace(/\/chat\/completions$/, '/models');
+function requestEndpoint(endpoint, relayEndpoint, route) {
+  if (!relayEndpoint?.trim()) return normalizeEndpoint(endpoint).replace(/\/chat\/completions$/, route.replace(/^\/v1/, ''));
+  let url;
+  try { url = new URL(relayEndpoint.trim()); } catch { throw new Error('网页转发地址无效，请检查部署后的 Worker 地址。'); }
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if ((url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) || url.username || url.password || url.search || url.hash) {
+    throw new Error('网页转发地址必须使用 HTTPS，且不能包含查询参数或账户信息。');
+  }
+  url.pathname = `${url.pathname.replace(/\/+$/, '') || ''}${route}`;
+  return url.href;
+}
+
+export async function discoverModels({ endpoint, relayEndpoint = '', apiKey, signal }, fetchImpl = fetch) {
+  const url = requestEndpoint(endpoint, relayEndpoint, '/v1/models');
   if (!apiKey?.trim()) throw new Error('请先填写 API Key，再验证连接。');
   const controller = new AbortController();
   const abort = () => controller.abort();
@@ -145,8 +157,8 @@ export function normalizeRecognition(raw) {
   return { values, fields, notes: raw.notes.slice(0, 5).map(note => note.slice(0, 300)) };
 }
 
-export async function recognizeProduct({ endpoint, model, apiKey, text = '', image = '', signal }, fetchImpl = fetch) {
-  const url = normalizeEndpoint(endpoint);
+export async function recognizeProduct({ endpoint, relayEndpoint = '', model, apiKey, text = '', image = '', signal }, fetchImpl = fetch) {
+  const url = requestEndpoint(endpoint, relayEndpoint, '/v1/chat/completions');
   if (!model?.trim() || !apiKey?.trim()) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
   if (!text.trim() && !image) throw new Error('请先输入产品描述或选择一张图片。');
   if (text.length > 12000) throw new Error('文字过长，请缩减至 12000 字以内。');

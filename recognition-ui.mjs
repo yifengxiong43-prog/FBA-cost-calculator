@@ -1,4 +1,5 @@
 import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs';
+import { RELAY_ENDPOINT } from './relay-config.mjs';
 
 export function initRecognition(form, onRecognized) {
   const $ = id => document.getElementById(id);
@@ -98,10 +99,13 @@ export function initRecognition(form, onRecognized) {
     if (typeof saved?.endpoint === 'string') $('apiEndpoint').value = saved.endpoint;
     if (typeof saved?.model === 'string') $('apiModel').value = saved.model;
   } catch { /* Keep the defaults if storage is unavailable or damaged. */ }
+  let storedApiKey = '';
+  try { storedApiKey = localStorage.getItem('art-cost-desk-api-key') || ''; } catch { /* Key remains empty. */ }
+  if (storedApiKey) $('apiKey').value = storedApiKey;
   function saveConfig() {
     try {
       // Explicit allowlist: never persist the API key.
-      localStorage.setItem(storageKey, JSON.stringify({ endpoint: $('apiEndpoint').value.trim(), model: $('apiModel').value.trim() }));
+      localStorage.setItem(storageKey, JSON.stringify({ endpoint: $('apiEndpoint').value.trim(), model: $('apiModel').value.trim(), relayEndpoint: RELAY_ENDPOINT }));
       $('apiStorageStatus').textContent = '地址和模型已保存在当前浏览器；密钥仅本次使用。接口需允许跨域访问。';
     } catch {
       $('apiStorageStatus').textContent = '浏览器禁止保存设置，刷新后需重新填写；密钥仅本次使用。';
@@ -115,8 +119,9 @@ export function initRecognition(form, onRecognized) {
   for (const id of ['apiEndpoint', 'apiModel', 'apiKey']) $(id).addEventListener('input', () => {
     updateConfigStatus(id !== 'apiModel');
     if (id !== 'apiKey') saveConfig();
+    else { try { localStorage.setItem('art-cost-desk-api-key', $('apiKey').value); } catch { /* Continue for this page. */ } }
   });
-  $('clearApiKeyBtn').addEventListener('click', () => { $('apiKey').value = ''; updateConfigStatus(true); });
+  $('clearApiKeyBtn').addEventListener('click', () => { $('apiKey').value = ''; try { localStorage.removeItem('art-cost-desk-api-key'); } catch { /* Continue for this page. */ } updateConfigStatus(true); });
   updateConfigStatus();
   saveConfig();
 
@@ -127,7 +132,7 @@ export function initRecognition(form, onRecognized) {
     $('apiVerificationStatus').textContent = '正在验证地址和密钥，获取可用模型…';
     $('apiModelOptions').replaceChildren();
     try {
-      const models = await discoverModels({ endpoint: $('apiEndpoint').value, apiKey: $('apiKey').value, signal: controller.signal });
+      const models = await discoverModels({ endpoint: $('apiEndpoint').value, relayEndpoint: RELAY_ENDPOINT, apiKey: $('apiKey').value, signal: controller.signal });
       if (controller.signal.aborted) return;
       for (const model of models) {
         const option = document.createElement('option');
@@ -149,7 +154,7 @@ export function initRecognition(form, onRecognized) {
 
   $('recognizeBtn').addEventListener('click', async () => {
     if (controller || imageReading) return;
-    const config = { endpoint: $('apiEndpoint').value.trim(), model: $('apiModel').value.trim(), apiKey: $('apiKey').value.trim() };
+      const config = { endpoint: $('apiEndpoint').value.trim(), relayEndpoint: RELAY_ENDPOINT, model: $('apiModel').value.trim(), apiKey: $('apiKey').value.trim() };
     try {
       normalizeEndpoint(config.endpoint);
       if (!config.model || !config.apiKey) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
@@ -218,6 +223,6 @@ export function initRecognition(form, onRecognized) {
     $('recognitionNotes').hidden = true;
     status.textContent = '';
   });
-  // No storage or URL parameters contain the key; clear it when leaving the document.
-  window.addEventListener('pagehide', () => { $('apiKey').value = ''; controller?.abort(); });
+  // The user opted in to browser persistence. The key stays local to this browser and is never sent to our code repository.
+  window.addEventListener('pagehide', () => { controller?.abort(); });
 }

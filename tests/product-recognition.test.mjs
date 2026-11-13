@@ -15,6 +15,14 @@ test('discovers actual model IDs from a base or chat URL using authenticated GET
   }
 });
 
+test('uses the relay for browser requests while preserving the provider endpoint setting', async () => {
+  const models = await discoverModels({ endpoint: 'https://sub.geekper.com/v1', relayEndpoint: 'https://relay.example.workers.dev', apiKey: 'test-key' }, async (url) => {
+    assert.equal(url, 'https://relay.example.workers.dev/v1/models');
+    return Response.json({ data: [{ id: 'relay-model' }] });
+  });
+  assert.deepEqual(models, ['relay-model']);
+});
+
 test('model verification explains auth, website HTML, unavailable lists and network errors', async () => {
   const config = { endpoint: 'https://provider.example/v1', apiKey: 'test-key' };
   for (const code of [401, 403, 404, 429, 500]) {
