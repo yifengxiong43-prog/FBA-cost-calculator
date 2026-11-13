@@ -37,6 +37,9 @@ test('uses the server-selected model currently displayed instead of a stale save
 
 test('recognizes parameter-like chat messages as form updates while leaving general questions alone', () => {
   assert.equal(looksLikeProductInput('我希望在2027年3月15日上架'), true);
+  assert.equal(looksLikeProductInput('按2027-03-15算FBA'), true);
+  assert.equal(looksLikeProductInput('日期改成2027/3/15'), true);
+  assert.equal(looksLikeProductInput('FBA是什么？'), false);
   assert.equal(looksLikeProductInput('这个费用为什么这么高？'), false);
   assert.equal(looksLikeProductInput('', true), true);
 });

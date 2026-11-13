@@ -1,4 +1,4 @@
-import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs';
+import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs?v=20261113-date';
 import { RELAY_ENDPOINT, RELAY_CONFIG_ENDPOINT } from './relay-config.mjs';
 import { readProductFile } from './file-reader.mjs';
 

@@ -3,7 +3,7 @@ export const CHAT_SYSTEM_PROMPT = `你是 ART COST DESK 的跨境成本助手。
 
 export function looksLikeProductInput(text, hasImage = false) {
   if (hasImage) return true;
-  return /(\d{4}年?\s*\d{1,2}月\s*\d{1,2}日?|\d+(?:\.\d+)?\s*(?:mm|毫米|cm|厘米|kg|千克|g|克|lb|磅|美元|美金|usd|\$)|包装|长宽高|重量|售价|价格|配送|上架|尺寸)/i.test(text || '');
+  return /(\d{4}年?\s*\d{1,2}月\s*\d{1,2}[日号]?|\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d+(?:\.\d+)?\s*(?:mm|毫米|cm|厘米|kg|千克|g|克|lb|磅|美元|美金|usd|\$)|包装|长宽高|重量|售价|价格|配送|上架|尺寸)/i.test(text || '');
 }
 
 export function recognizedFieldKeys(fields = {}) {

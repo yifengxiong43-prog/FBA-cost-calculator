@@ -62,6 +62,35 @@ function missingFields() {
 }
 const identified = (value, unit, evidence) => ({ value, unit, status: 'recognized', evidence, note: '' });
 
+test('explicit delivery-fee calculation dates fill feeDate even when the model omits it', async () => {
+  const config = { endpoint: 'https://provider.example/v1', model: 'vision', apiKey: 'test-key' };
+  for (const text of ['我要计算2027年3月15号的运输配送费用', '我想计算2027年3月15日的亚马逊配送费用', '按2027-03-15算FBA', 'FBA配送日期改为2027/3/15', '日期改成2027年3月15号']) {
+    const raw = missingFields();
+    raw.notes = ['未提供 FBA 配送日期，请补充。', '包装重量未提供。'];
+    const result = await recognizeProduct({ ...config, text }, async () => Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(raw) } }] }));
+    assert.equal(result.values.feeDate, '2027-03-15', text);
+    assert.equal(result.fields.feeDate.status, 'recognized');
+    assert.ok(text.includes(result.fields.feeDate.evidence));
+    assert.deepEqual(result.notes, ['包装重量未提供。']);
+  }
+});
+
+test('the user-selected calculation date takes precedence over a date read from an attachment', async () => {
+  const raw = missingFields();
+  raw.fields.feeDate = identified('2026-11-13', null, '附件日期 2026-11-13');
+  const result = await recognizeProduct({ endpoint: 'https://provider.example/v1', model: 'vision', apiKey: 'test-key', text: '我要计算2027年3月15号的运输配送费用', fileText: '日期：2026-11-13' },
+    async () => Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(raw) } }] }));
+  assert.equal(result.values.feeDate, '2027-03-15');
+});
+
+test('date fallback does not guess incomplete, invalid, conflicting or unrelated dates', async () => {
+  for (const text of ['按3月15号算FBA', '明天配送', '按2027年2月30日算FBA', '2027年3月15日或2027年3月16日配送', '生产日期2027年3月15日，请计算FBA费用', '不要改成2027年3月15日', '如果2027年3月15日配送，费用会变吗？', '可能2027年3月15日配送']) {
+    const result = await recognizeProduct({ endpoint: 'https://provider.example/v1', model: 'vision', apiKey: 'test-key', text },
+      async () => Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(missingFields()) } }] }));
+    assert.equal(result.values.feeDate, '', text);
+  }
+});
+
 test('accepts a base URL or full compatible chat endpoint without leaking credentials into the URL', () => {
   assert.equal(normalizeEndpoint('https://provider.example/v1/'), 'https://provider.example/v1/chat/completions');
   assert.equal(normalizeEndpoint('https://provider.example/v1/chat/completions'), 'https://provider.example/v1/chat/completions');

@@ -525,7 +525,7 @@
   <dialog class="api-dialog" id="apiDialog" aria-labelledby="apiDialogTitle"><div class="api-dialog-head"><h2 id="apiDialogTitle">API 设置</h2><button class="api-dialog-close" id="closeApiSettingsBtn" type="button" aria-label="关闭 API 设置">×</button></div><div class="api-dialog-body"><details class="api-settings" id="apiSettings" open><summary>API 设置<span id="apiConfigStatus">尚未填写</span></summary><div class="api-fields"><div class="field"><label for="apiEndpoint">接口地址（自动保存）</label><input id="apiEndpoint" type="url" value="https://sub.geekper.com/v1" placeholder="https://你的服务商/v1" autocomplete="off" spellcheck="false"></div><div class="field"><label for="apiModel">模型（验证后自动获取，可改选）</label><input id="apiModel" list="apiModelOptions" placeholder="点击下方按钮自动获取，也可手动填写" autocomplete="off" spellcheck="false"><datalist id="apiModelOptions"></datalist></div><div class="field"><label for="apiKey">API Key（保存在当前浏览器）</label><div class="api-key-row"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴你的 API Key"><button class="btn" id="clearApiKeyBtn" type="button">清除密钥</button></div></div></div><button class="btn" id="verifyApiBtn" type="button">验证连接并获取模型</button><p class="smart-help" id="apiVerificationStatus" role="status"></p><p class="smart-help" id="apiStorageStatus">地址和模型自动保存在当前浏览器；Key 不会上传到本网站。接口需允许跨域访问。</p></details><p class="smart-help" id="managedApiStatus" hidden>服务器已配置 AI 服务，API Key 不会发送到浏览器。</p></div></dialog>
   <script type="module">
     import { calculateUsFba, calculateCanadaFba, getLocalDateIso, getUsFeeSeason } from './fba-calculator.mjs';
-    import { initRecognition } from './recognition-ui.mjs';
+    import { initRecognition } from './recognition-ui.mjs?v=20261113-date';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
@@ -721,6 +721,6 @@
     loadRates();
   </script>
   <script type="module" src="./file-reader.bundle.js"></script>
-  <script type="module" src="./chatbot.bundle.js?v=20261113-online-1"></script>
+  <script type="module" src="./chatbot.bundle.js?v=20261113-date"></script>
 </body>
 </html>
