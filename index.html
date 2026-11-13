@@ -84,10 +84,6 @@
     .recognition-summary { margin-top: 6px; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
     .recognition-notes { margin: 4px 0 0; padding-left: 16px; color: var(--amber); font-size: 11px; }
     .assistant-chat { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); }
-    .assistant-chat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-    .assistant-chat-head strong { font-size: 12px; }
-    .assistant-chat-head span { color: var(--muted); font-size: 10px; }
-    .assistant-chat-head-actions { display: flex; align-items: center; gap: 6px; }
     .assistant-image-button { min-height: 26px; padding: 0 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--blue); font-size: 10px; font-weight: 700; }
     .assistant-image-button:hover { border-color: var(--blue); background: var(--blue-soft); }
     .assistant-thread { height: 224px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
@@ -210,9 +206,6 @@
     .btn.primary:hover { background: #115847; }
     .btn:hover { border-color: #aebdce; background: #f8fafc; }
     .assistant-chat { margin-top: 13px; padding-top: 12px; border-top-color: #dfe6ee; }
-    .assistant-chat-head { margin-bottom: 8px; }
-    .assistant-chat-head strong { font-size: 13px; }
-    .assistant-chat-head span { font-size: 10px; }
     .assistant-image-button { min-height: 28px; border-radius: 7px; font-size: 10px; }
     .assistant-thread { height: 190px; border-color: #d4dee9; border-radius: 9px; box-shadow: inset 0 1px 2px rgba(23, 42, 64, .03); }
     .assistant-viewport { padding: 9px; }
@@ -281,14 +274,9 @@
     .smart-heading strong { font-size: 12px; }
     .smart-help { margin-top: 3px; font-size: 9px; }
     .assistant-chat { margin-top: 7px; padding-top: 7px; }
-    .assistant-chat-head { margin-bottom: 5px; align-items: center; }
-    .assistant-chat-head strong { font-size: 11px; }
-    .assistant-chat-head span { display: none; }
-    .assistant-chat-head-actions { margin-left: auto; }
     .assistant-image-button { display: none; }
     .assistant-thread { height: 82px; border-radius: 8px; }
     .assistant-thread:has(.assistant-message-row) { height: 142px; }
-    .assistant-thread.is-drawer { position: fixed; z-index: 30; right: 24px; bottom: 24px; width: min(420px, calc(100vw - 32px)); height: min(560px, calc(100vh - 48px)); box-shadow: 0 18px 60px rgba(16, 31, 49, .28); }
     .assistant-viewport { padding: 7px; }
     .assistant-welcome { font-size: 9px; }
     .assistant-welcome strong { font-size: 10px; }
@@ -298,7 +286,6 @@
     .assistant-attachment { display: grid; place-items: center; align-self: center; justify-self: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #64748b; font-size: 14px; line-height: 0; }
     .assistant-attachment:hover { background: var(--soft); color: var(--blue); }
     .assistant-send { align-self: center; min-height: 30px; padding: 0 10px; }
-    .assistant-drawer-button { min-height: 24px; padding: 0 6px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--blue); font-size: 9px; }
     .form-body { flex: 1 1 auto; min-height: 0; padding: 9px 14px 11px; overflow-y: auto; }
     .field-grid { gap: 7px; }
     .field { gap: 3px; }
@@ -386,9 +373,8 @@
     .smart-heading strong { font-size: 12px; }
     .smart-heading span { font-size: 9px; }
     .assistant-chat { margin-top: 5px; padding-top: 5px; }
-    .assistant-chat-head { min-height: 22px; margin-bottom: 3px; justify-content: flex-end; }
-    .assistant-thread { height: 240px; }
-    .assistant-thread:has(.assistant-message-row) { height: 240px; }
+    .assistant-thread { height: 265px; }
+    .assistant-thread:has(.assistant-message-row) { height: 265px; }
     .assistant-attachment-tray { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; height: 44px; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
     .assistant-attachment-tray:not(:has(.image-preview:not([hidden]), .file-preview:not([hidden]), .smart-status:not(:empty))) { display: none; }
     .assistant-attachment-tray .image-preview, .assistant-attachment-tray .file-preview { flex: 0 0 178px; display: flex; align-items: center; gap: 5px; height: 44px; min-width: 0; margin: 0; padding: 2px 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--soft); }
@@ -399,7 +385,6 @@
     .assistant-attachment-tray .image-preview button:hover, .assistant-attachment-tray .file-preview button:hover { color: var(--ink); background: #e6ebf1; }
     .assistant-attachment-tray .smart-status { flex: 0 0 150px; margin: 0; min-height: 0; max-height: 40px; overflow: hidden; font-size: 10px; line-height: 1.35; }
     .assistant-attachment-tray .smart-status:empty { display: none; }
-    .assistant-drawer-button { min-height: 22px; }
     .results-head { display: block; padding: 12px 16px 10px; }
     .results-head h2 { font-size: 18px; }
     .results-head > div:first-child { margin-bottom: 10px; }
@@ -437,8 +422,8 @@
     .result-notes summary { width: fit-content; margin-left: auto; padding: 5px 0; cursor: pointer; font-size: 10px; }
     .result-notes[open] .result-notes-content { max-height: 130px; overflow-y: auto; }
     @media (max-width: 1180px) { .product-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 980px) { .topbar { flex-basis: auto; min-height: 68px; } .layout { grid-template-columns: 1fr; } .assistant-thread, .assistant-thread:has(.assistant-message-row) { height: 220px; } .fx-section { flex-wrap: wrap; } .fx-grid { flex-basis: 100%; order: 3; } }
-    @media (max-width: 640px) { .topbar { padding: 7px 0; } .header-actions { margin-top: 5px; } .assistant-thread, .assistant-thread:has(.assistant-message-row) { height: 180px; } .product-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fx-section { min-height: 0; } .fx-grid { flex-wrap: wrap; justify-content: flex-start; gap: 8px 14px; } .status-bar { grid-template-columns: 1fr; } }
+    @media (max-width: 980px) { .topbar { flex-basis: auto; min-height: 68px; } .layout { grid-template-columns: 1fr; } .assistant-thread, .assistant-thread:has(.assistant-message-row) { height: 245px; } .fx-section { flex-wrap: wrap; } .fx-grid { flex-basis: 100%; order: 3; } }
+    @media (max-width: 640px) { .topbar { padding: 7px 0; } .header-actions { margin-top: 5px; } .assistant-thread, .assistant-thread:has(.assistant-message-row) { height: 205px; } .product-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fx-section { min-height: 0; } .fx-grid { flex-wrap: wrap; justify-content: flex-start; gap: 8px 14px; } .status-bar { grid-template-columns: 1fr; } }
     @media (min-width: 981px) {
       .results { height: 100%; overflow-y: auto; }
       .results-head { flex: 0 0 auto; }
@@ -490,7 +475,6 @@
           <p class="smart-status" id="smartStatus" role="status"></p>
           <p class="recognition-summary" id="recognitionSummary" hidden></p><ul class="recognition-notes" id="recognitionNotes" hidden></ul>
           <section class="assistant-chat" aria-label="成本助手">
-            <div class="assistant-chat-head"><div class="assistant-chat-head-actions"><button class="assistant-drawer-button" id="assistantDrawerBtn" type="button" aria-expanded="false">展开对话</button></div></div>
             <div id="assistantChatRoot"></div>
           </section>
         </section>
@@ -572,13 +556,6 @@
     });
     document.querySelector('#closeApiSettingsBtn').addEventListener('click', () => apiDialog.close?.());
     apiDialog.addEventListener('click', event => { if (event.target === apiDialog) apiDialog.close?.(); });
-    document.querySelector('#assistantDrawerBtn').addEventListener('click', event => {
-      const thread = document.querySelector('.assistant-thread');
-      if (!thread) return;
-      const open = thread.classList.toggle('is-drawer');
-      event.currentTarget.textContent = open ? '收起对话' : '展开对话';
-      event.currentTarget.setAttribute('aria-expanded', String(open));
-    });
     function updateAnalysis({ us, ca } = {}) {
       const entries = [];
       if (us?.status === 'ok') entries.push({ name: '美国', value: us.total, currency: 'USD', usd: us.total });
