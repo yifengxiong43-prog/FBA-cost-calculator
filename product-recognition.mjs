@@ -64,9 +64,9 @@ function requestEndpoint(endpoint, relayEndpoint, route) {
   return url.href;
 }
 
-export async function discoverModels({ endpoint, relayEndpoint = '', apiKey, signal }, fetchImpl = fetch) {
+export async function discoverModels({ endpoint, relayEndpoint = '', apiKey, managedRelay = false, signal }, fetchImpl = fetch) {
   const url = requestEndpoint(endpoint, relayEndpoint, '/v1/models');
-  if (!apiKey?.trim()) throw new Error('请先填写 API Key，再验证连接。');
+  if (!apiKey?.trim() && !managedRelay) throw new Error('请先填写 API Key，再验证连接。');
   const controller = new AbortController();
   const abort = () => controller.abort();
   const timeout = setTimeout(abort, 20000);
@@ -75,7 +75,7 @@ export async function discoverModels({ endpoint, relayEndpoint = '', apiKey, sig
   try {
     const response = await fetchImpl(url, {
       method: 'GET', credentials: 'omit', redirect: 'error', cache: 'no-store', signal: controller.signal,
-      headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' }
+      headers: { Accept: 'application/json', ...(apiKey?.trim() ? { Authorization: `Bearer ${apiKey.trim()}` } : {}) }
     });
     if (!response.ok) {
       const reasons = { 401: 'API Key 无效或已过期。', 403: '密钥没有访问权限。',
@@ -157,9 +157,9 @@ export function normalizeRecognition(raw) {
   return { values, fields, notes: raw.notes.slice(0, 5).map(note => note.slice(0, 300)) };
 }
 
-export async function recognizeProduct({ endpoint, relayEndpoint = '', model, apiKey, text = '', image = '', signal }, fetchImpl = fetch) {
+export async function recognizeProduct({ endpoint, relayEndpoint = '', model, apiKey, managedRelay = false, text = '', image = '', signal }, fetchImpl = fetch) {
   const url = requestEndpoint(endpoint, relayEndpoint, '/v1/chat/completions');
-  if (!model?.trim() || !apiKey?.trim()) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
+  if (!model?.trim() || (!apiKey?.trim() && !managedRelay)) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
   if (!text.trim() && !image) throw new Error('请先输入产品描述或选择一张图片。');
   if (text.length > 12000) throw new Error('文字过长，请缩减至 12000 字以内。');
   if (image && (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image) || image.length > 14 * 1024 * 1024)) {
@@ -175,7 +175,7 @@ export async function recognizeProduct({ endpoint, relayEndpoint = '', model, ap
   try {
     const response = await fetchImpl(url, {
       method: 'POST', credentials: 'omit', redirect: 'error', cache: 'no-store', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey.trim()}` },
+      headers: { 'Content-Type': 'application/json', ...(apiKey?.trim() ? { Authorization: `Bearer ${apiKey.trim()}` } : {}) },
       body: JSON.stringify({ model: model.trim(), messages: [{ role: 'system', content: EXTRACTION_PROMPT }, { role: 'user', content }],
         response_format: { type: 'json_object' }, max_tokens: 3000, stream: false })
     });

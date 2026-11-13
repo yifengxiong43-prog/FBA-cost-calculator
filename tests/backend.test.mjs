@@ -27,6 +27,21 @@ test('relay forwards the user key without logging or exposing it and returns ups
   assert.equal(captured.options.headers.Authorization, 'Bearer test-secret');
 });
 
+test('managed relay uses the server secret when the browser sends no key', async () => {
+  const managedEnv = { ...env, PROVIDER_API_KEY: 'server-secret', PROVIDER_MODEL: 'vision-model' };
+  const config = await handleRequest(new Request('https://relay.example.workers.dev/config', { headers: { Origin: origin } }), managedEnv);
+  assert.deepEqual(await config.json(), { managed: true, model: 'vision-model' });
+
+  let captured;
+  const request = new Request('https://relay.example.workers.dev/v1/models', { headers: { Origin: origin } });
+  const response = await handleRequest(request, managedEnv, async (url, options) => {
+    captured = { url, options };
+    return Response.json({ data: [{ id: 'vision-model' }] });
+  });
+  assert.equal(response.status, 200);
+  assert.equal(captured.options.headers.Authorization, 'Bearer server-secret');
+});
+
 test('relay rejects other origins, arbitrary paths, malformed requests and oversized bodies', async () => {
   const badOrigin = await handleRequest(new Request('https://relay.example.workers.dev/v1/models', { headers: { Origin: 'https://evil.example', Authorization: 'Bearer key' } }), env);
   assert.equal(badOrigin.status, 403);

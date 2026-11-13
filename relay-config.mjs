@@ -3,3 +3,6 @@ const isLocal = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '[::
 export const RELAY_ENDPOINT = isLocal
   ? `${window.location.origin}/proxy`
   : 'https://art-cost-desk-relay.art-cost-desk.workers.dev';
+export const RELAY_CONFIG_ENDPOINT = isLocal
+  ? `${window.location.origin}/proxy/config`
+  : 'https://art-cost-desk-relay.art-cost-desk.workers.dev/config';

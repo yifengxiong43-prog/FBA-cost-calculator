@@ -33,6 +33,10 @@ export async function handleRequest(request, env = {}, fetchImpl = fetch) {
   const fail = (code, status) => reply({ error: { code } }, status);
   const url = new URL(request.url);
   if (request.method === 'GET' && url.pathname === '/health') return reply({ status: 'ok', service: 'art-cost-desk-relay' });
+  if (request.method === 'GET' && url.pathname === '/config') {
+    if (origin !== allowed) return fail('ORIGIN_NOT_ALLOWED', 403);
+    return reply({ managed: Boolean(env.PROVIDER_API_KEY?.trim()), model: env.PROVIDER_MODEL?.trim() || '' });
+  }
   if (origin !== allowed) return fail('ORIGIN_NOT_ALLOWED', 403);
   if (url.search || !['/v1/models', '/v1/chat/completions'].includes(url.pathname)) return fail('NOT_FOUND', 404);
   const method = url.pathname === '/v1/models' ? 'GET' : 'POST';
@@ -43,7 +47,8 @@ export async function handleRequest(request, env = {}, fetchImpl = fetch) {
       'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, Content-Type, Accept', 'Access-Control-Max-Age': '600' } });
   }
   if (request.method !== method) return fail('METHOD_NOT_ALLOWED', 405);
-  const authorization = request.headers.get('Authorization') || '';
+  const managedKey = env.PROVIDER_API_KEY?.trim();
+  const authorization = managedKey ? `Bearer ${managedKey}` : request.headers.get('Authorization') || '';
   if (!/^Bearer [\x21-\x7e]{1,4096}$/.test(authorization)) return fail('KEY_REQUIRED', 401);
   let body;
   if (method === 'POST') {

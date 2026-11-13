@@ -156,11 +156,12 @@
             </div>
             <button class="btn" id="verifyApiBtn" type="button">验证连接并获取模型</button>
             <p class="smart-help" id="apiVerificationStatus" role="status"></p>
-            <p class="smart-help" id="apiStorageStatus">地址、模型和 API Key 自动保存在当前浏览器；Key 不会上传到本网站。接口需允许跨域访问。</p>
+            <p class="smart-help" id="apiStorageStatus">地址和模型自动保存在当前浏览器；Key 不会上传到本网站。接口需允许跨域访问。</p>
           </details>
+          <p class="smart-help" id="managedApiStatus" hidden>服务器已配置 AI 服务，API Key 不会发送到浏览器。</p>
           <div class="smart-inputs"><textarea id="smartText" aria-label="粘贴产品参数文字" maxlength="12000" placeholder="例如：96色滚珠笔，长260，宽190，高100，重1640，卖62.99美元。也可粘贴截图，并补充要求。"></textarea><div class="smart-actions"><button class="btn primary" type="button" id="recognizeBtn">智能识别</button><button class="btn" type="button" id="uploadImageBtn">选择图片</button><input id="smartImage" type="file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn" type="button" id="cancelRecognitionBtn" hidden>取消识别</button></div></div>
           <div class="image-preview" id="imagePreview" hidden><img id="sourceImage" alt="待识别的原始图片"><span id="sourceImageName"></span><button class="btn" type="button" id="removeImageBtn">移除</button></div>
-          <p class="smart-help">缺省单位：尺寸 mm、重量 g。点击识别会把文字和图片发送至你设置的 API。</p>
+          <p class="smart-help">缺省单位：尺寸 mm、重量 g。点击识别会把文字和图片发送至已配置的 AI 服务。</p>
           <p class="smart-status" id="smartStatus" role="status"></p>
           <p class="recognition-summary" id="recognitionSummary" hidden></p><ul class="recognition-notes" id="recognitionNotes" hidden></ul>
         </section>

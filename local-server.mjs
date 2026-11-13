@@ -7,6 +7,8 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const host = '127.0.0.1';
 const port = Number(process.env.PORT || 4177);
 const upstream = 'https://sub.geekper.com';
+const managedKey = process.env.PROVIDER_API_KEY?.trim();
+const managedModel = process.env.PROVIDER_MODEL?.trim() || '';
 const maxBody = 15 * 1024 * 1024;
 const allowedFiles = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
@@ -36,9 +38,12 @@ function readBody(req) {
 }
 
 async function proxy(req, res, pathname) {
+  if (pathname === '/proxy/config' && req.method === 'GET') {
+    return send(res, 200, { managed: Boolean(managedKey), model: managedModel }, { 'Content-Type': 'application/json' });
+  }
   const route = pathname === '/proxy/v1/models' ? 'models' : pathname === '/proxy/v1/chat/completions' ? 'chat/completions' : null;
   if (!route || req.method !== (route === 'models' ? 'GET' : 'POST')) return send(res, 404, { error: { code: 'NOT_FOUND' } }, { 'Content-Type': 'application/json' });
-  const authorization = req.headers.authorization || '';
+  const authorization = managedKey ? `Bearer ${managedKey}` : req.headers.authorization || '';
   if (!/^Bearer [\x21-\x7e]{1,4096}$/.test(authorization)) return send(res, 401, { error: { code: 'KEY_REQUIRED' } }, { 'Content-Type': 'application/json' });
   let body;
   if (route !== 'models') {

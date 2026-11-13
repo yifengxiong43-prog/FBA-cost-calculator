@@ -1,11 +1,11 @@
 import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs';
-import { RELAY_ENDPOINT } from './relay-config.mjs';
+import { RELAY_ENDPOINT, RELAY_CONFIG_ENDPOINT } from './relay-config.mjs';
 
 export function initRecognition(form, onRecognized) {
   const $ = id => document.getElementById(id);
   const status = $('smartStatus');
   const feedback = {};
-  let imageData = '', imageReading = false, controller = null, states = null;
+  let imageData = '', imageReading = false, controller = null, states = null, managedRelay = false;
   let imageVersion = 0;
   for (const key of Object.keys(FIELD_LABELS)) {
     const note = document.createElement('small');
@@ -112,6 +112,12 @@ export function initRecognition(form, onRecognized) {
     }
   }
   function updateConfigStatus(clearModels = false) {
+    if (managedRelay) {
+      $('apiConfigStatus').textContent = '服务器已配置';
+      $('apiVerificationStatus').textContent = '';
+      if (clearModels) $('apiModelOptions').replaceChildren();
+      return;
+    }
     $('apiConfigStatus').textContent = $('apiKey').value.trim() ? '待验证连接' : '请填入 Key 后验证';
     $('apiVerificationStatus').textContent = '';
     if (clearModels) $('apiModelOptions').replaceChildren();
@@ -125,6 +131,30 @@ export function initRecognition(form, onRecognized) {
   updateConfigStatus();
   saveConfig();
 
+  const relayReady = (async () => {
+    try {
+      const response = await fetch(RELAY_CONFIG_ENDPOINT, { credentials: 'omit', redirect: 'error', cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) return;
+      const config = await response.json();
+      if (config?.managed !== true) return;
+      let managedModel = typeof config.model === 'string' ? config.model.trim() : '';
+      if (!managedModel && $('apiModel').value.trim()) managedModel = $('apiModel').value.trim();
+      if (!managedModel) {
+        const models = await discoverModels({ endpoint: $('apiEndpoint').value, relayEndpoint: RELAY_ENDPOINT, apiKey: '', managedRelay: true });
+        managedModel = models[0] || '';
+      }
+      if (!managedModel) return;
+      managedRelay = true;
+      $('apiModel').value = managedModel;
+      $('apiSettings').hidden = true;
+      $('managedApiStatus').hidden = false;
+      $('apiConfigStatus').textContent = '服务器已配置';
+      $('apiStorageStatus').textContent = 'API Key 仅保存在服务器，不会发送到浏览器。';
+    } catch {
+      // Fall back to the manual provider settings when the managed relay is unavailable.
+    }
+  })();
+
   $('verifyApiBtn').addEventListener('click', async () => {
     if (controller || imageReading) return;
     controller = new AbortController();
@@ -132,7 +162,7 @@ export function initRecognition(form, onRecognized) {
     $('apiVerificationStatus').textContent = '正在验证地址和密钥，获取可用模型…';
     $('apiModelOptions').replaceChildren();
     try {
-      const models = await discoverModels({ endpoint: $('apiEndpoint').value, relayEndpoint: RELAY_ENDPOINT, apiKey: $('apiKey').value, signal: controller.signal });
+      const models = await discoverModels({ endpoint: $('apiEndpoint').value, relayEndpoint: RELAY_ENDPOINT, apiKey: $('apiKey').value, managedRelay, signal: controller.signal });
       if (controller.signal.aborted) return;
       for (const model of models) {
         const option = document.createElement('option');
@@ -154,10 +184,11 @@ export function initRecognition(form, onRecognized) {
 
   $('recognizeBtn').addEventListener('click', async () => {
     if (controller || imageReading) return;
-      const config = { endpoint: $('apiEndpoint').value.trim(), relayEndpoint: RELAY_ENDPOINT, model: $('apiModel').value.trim(), apiKey: $('apiKey').value.trim() };
+    await relayReady;
+    const config = { endpoint: $('apiEndpoint').value.trim(), relayEndpoint: RELAY_ENDPOINT, model: $('apiModel').value.trim(), apiKey: managedRelay ? '' : $('apiKey').value.trim(), managedRelay };
     try {
       normalizeEndpoint(config.endpoint);
-      if (!config.model || !config.apiKey) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
+      if (!config.model || (!managedRelay && !config.apiKey)) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
     } catch (error) {
       $('apiSettings').open = true;
       status.textContent = error.message;

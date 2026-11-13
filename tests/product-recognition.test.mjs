@@ -23,6 +23,26 @@ test('uses the relay for browser requests while preserving the provider endpoint
   assert.deepEqual(models, ['relay-model']);
 });
 
+test('managed relay discovers models without a browser API key', async () => {
+  const models = await discoverModels({ endpoint: 'https://sub.geekper.com/v1', relayEndpoint: 'https://relay.example.workers.dev', apiKey: '', managedRelay: true }, async (url, options) => {
+    assert.equal(url, 'https://relay.example.workers.dev/v1/models');
+    assert.equal(options.headers.Authorization, undefined);
+    return Response.json({ data: [{ id: 'managed-model' }] });
+  });
+  assert.deepEqual(models, ['managed-model']);
+});
+
+test('managed relay sends recognition requests without a browser API key', async () => {
+  let sent;
+  const result = await recognizeProduct({ endpoint: 'https://sub.geekper.com/v1', relayEndpoint: 'https://relay.example.workers.dev', model: 'managed-model', apiKey: '', managedRelay: true, text: '96色马克笔' }, async (url, options) => {
+    sent = { url, options };
+    return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(missingFields()) } }] }));
+  });
+  assert.equal(sent.url, 'https://relay.example.workers.dev/v1/chat/completions');
+  assert.equal(sent.options.headers.Authorization, undefined);
+  assert.equal(result.fields.price.status, 'missing');
+});
+
 test('model verification explains auth, website HTML, unavailable lists and network errors', async () => {
   const config = { endpoint: 'https://provider.example/v1', apiKey: 'test-key' };
   for (const code of [401, 403, 404, 429, 500]) {
