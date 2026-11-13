@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateUsFba, getUsFeeSeason } from '../fba-calculator.mjs';
+import { calculateUsFba, getLocalDateIso, getUsFeeSeason } from '../fba-calculator.mjs';
+
+test('formats the local calendar date for the default delivery date', () => {
+  assert.equal(getLocalDateIso(new Date(2026, 10, 13, 12, 0, 0)), '2026-11-13');
+  assert.equal(getLocalDateIso(new Date(2027, 0, 2, 12, 0, 0)), '2027-01-02');
+});
 
 test('classifies the seasonal rate window across the year boundary', () => {
   assert.deepEqual(getUsFeeSeason('2026-10-14'), { season: '淡季', ratePeriod: '2026-01-15 至 2026-10-14' });

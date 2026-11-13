@@ -13,6 +13,11 @@ const US_RATES = {
 const SMALL_STANDARD_MAX_LB = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
 const LARGE_STANDARD_MAX_LB = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3];
 const LB_PER_KG = 1 / 0.45359237;
+export function getLocalDateIso(date = new Date()) {
+  const pad = value => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function getUsFeeSeason(date) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return null;
   const [year, month, day] = date.split('-').map(Number);

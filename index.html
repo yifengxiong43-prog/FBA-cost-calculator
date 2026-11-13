@@ -172,7 +172,7 @@
             <div class="field"><label for="height">包装高</label><div class="unit-input"><input id="height" name="height" type="number" min="0" step="0.01" placeholder="0"><span class="unit">mm</span></div></div>
             <div class="field"><label for="weight">包装重量</label><div class="unit-input"><input id="weight" name="weight" type="number" min="0" step="0.01" placeholder="0"><span class="unit">g</span></div></div>
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
-            <div class="field"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date" value="2026-11-10"></div>
+            <div class="field"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date"></div>
           </div>
           <div class="form-note">美国尺寸档按包装三边自动匹配小号标准尺寸 1 或大号标准尺寸；计费重量取包装实重与体积重（包装体积 ÷ 5000）的较大值。四国都不另加 3.5%。</div>
           <div class="actions"><button class="btn primary" type="submit">确认参数并计算 FBA</button><button class="btn" type="button" id="clearBtn">清空</button></div>
@@ -180,7 +180,7 @@
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">2026-11-10</b><small class="season-badge peak" id="seasonBadge">旺季</small></div></div></div>
+        <div class="results-head"><div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">—</b><small class="season-badge peak" id="seasonBadge">—</small></div></div></div>
         <div class="country-grid">
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><span class="currency">USD</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
           <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><span class="currency">EUR</span></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待重新整理</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">海运头程<small>产品到 FBA 仓</small></div><strong class="cost-value pending">待配置</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
@@ -194,11 +194,13 @@
     </section>
   </main>
   <script type="module">
-    import { calculateUsFba, getUsFeeSeason } from './fba-calculator.mjs';
+    import { calculateUsFba, getLocalDateIso, getUsFeeSeason } from './fba-calculator.mjs';
     import { initRecognition } from './recognition-ui.mjs';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
     const format = (value, digits = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: digits });
+    const today = getLocalDateIso();
+    document.querySelector('#feeDate').value = today;
     function updateDerived() {
       const volume = number('length') * number('width') * number('height');
       const airWeight = volume / 5000;
@@ -223,7 +225,7 @@
     });
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
-      document.querySelector('#feeDate').value = '2026-11-10';
+      document.querySelector('#feeDate').value = today;
       updateDerived();
       document.querySelector('#resultHint').textContent = '请填写产品参数并选择配送日期。';
       document.querySelector('#usFbaValue').textContent = '待计算';
