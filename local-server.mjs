@@ -20,6 +20,7 @@ const allowedFiles = new Map([
   ['/relay-config.mjs', ['relay-config.mjs', 'text/javascript; charset=utf-8']],
   ['/fba-calculator.mjs', ['fba-calculator.mjs', 'text/javascript; charset=utf-8']],
   ['/sea-freight.mjs', ['sea-freight.mjs', 'text/javascript; charset=utf-8']],
+  ['/non-fba.mjs', ['non-fba.mjs', 'text/javascript; charset=utf-8']],
   ['/chatbot.bundle.js', ['chatbot.bundle.js', 'text/javascript; charset=utf-8']],
   ['/ohuhu-marker.svg', ['ohuhu-marker.svg', 'image/svg+xml']]
 ]);

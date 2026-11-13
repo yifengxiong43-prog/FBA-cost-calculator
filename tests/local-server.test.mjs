@@ -40,3 +40,10 @@ test('serves the sea freight calculator module to the browser', async () => {
   assert.match(response.headers.get('content-type'), /^text\/javascript/);
   assert.match(await response.text(), /export function calculateSeaFreight/);
 });
+
+test('serves the non-FBA calculator module to the browser', async () => {
+  const response = await fetch(`http://127.0.0.1:${port}/non-fba.mjs?v=20261113-tail`);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /^text\/javascript/);
+  assert.match(await response.text(), /export function calculateUsNonFba/);
+});

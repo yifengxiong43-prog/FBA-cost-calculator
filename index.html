@@ -131,6 +131,7 @@
     .cost-label { color: #465366; font-size: 12px; }
     .cost-label small { display: block; margin-top: 2px; color: #99a3b1; font-size: 10px; }
     .cost-value { color: #596678; font-size: 12px; font-weight: 750; text-align: right; }
+    .tail-detail { max-width: 190px; overflow-wrap: anywhere; line-height: 1.5; }
     .cost-value.pending { color: var(--amber); font-weight: 650; }
     .cost-detail { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 450; line-height: 1.4; text-align: right; }
     .fx-section { margin: 0 14px 10px; padding: 9px; border: 1px solid #ccd9ef; border-radius: 7px; background: var(--blue-soft); }
@@ -496,13 +497,13 @@
       <section class="panel results" aria-live="polite">
         <div class="results-head"><div><div class="section-kicker">COST SNAPSHOT</div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric-group product-metrics"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">—</b><small class="season-badge peak" id="seasonBadge">—</small></div></div></div></div>
         <div class="country-grid">
-          <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><div class="country-meta"><span class="currency">USD</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="usSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="usSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><div class="country-meta"><span class="currency">EUR</span><span class="country-status">待补充</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="deSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="deSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><div class="country-meta"><span class="currency">GBP</span><span class="country-status">待补充</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="gbSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="gbSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
-          <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><div class="country-meta"><span class="currency">CAD</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending" id="caFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="caSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="caSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待配置</strong></div></div></article>
+          <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><div class="country-meta"><span class="currency">USD</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="usSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="usSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>Zone 6 · 两项取高</small><small class="tail-detail" id="usTailDetail"></small></div><strong class="cost-value pending" id="usTailValue">待计算</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><div class="country-meta"><span class="currency">EUR</span><span class="country-status">待补充</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="deSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="deSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>基础价＋按kg计费</small><small class="tail-detail" id="deTailDetail"></small></div><strong class="cost-value pending" id="deTailValue">待计算</strong></div></div></article>
+          <article class="country-card"><div class="country-head"><div class="country-name"><span class="flag">🇬🇧</span>英国</div><div class="country-meta"><span class="currency">GBP</span><span class="country-status">待补充</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="gbSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="gbSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待补充</strong></div></div></article>
+          <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇨🇦</span>加拿大</div><div class="country-meta"><span class="currency">CAD</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊配送费</small></div><strong class="cost-value pending" id="caFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="caSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending" id="caSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>第三方仓发货</small></div><strong class="cost-value pending">待补充</strong></div></div></article>
         </div>
         <section class="fx-section"><div class="fx-title"><strong>实时汇率 · USD 基准</strong><div class="fx-actions"><span id="fxUpdated">获取中</span><button class="fx-refresh" type="button" id="refreshRatesBtn">更新汇率</button></div></div><div class="fx-grid"><div class="fx-item"><span>美国 · USD</span><b>1.0000</b></div><div class="fx-item"><span>德国 · EUR</span><b id="fxEUR">—</b></div><div class="fx-item"><span>英国 · GBP</span><b id="fxGBP">—</b></div><div class="fx-item"><span>加拿大 · CAD</span><b id="fxCAD">—</b></div></div></section>
-        <details class="result-notes"><summary>费用资料与说明</summary><div class="result-notes-content"><div class="status-bar"><span class="status waiting"><i></i>美国 FBA：2026 非旺季、2026 旺季、2027 非旺季已接入</span><span class="status waiting"><i></i>加拿大 FBA：2026 非旺季、2026 旺季、2027 非旺季已接入</span><span class="status waiting"><i></i>四国海运：淡旺季参考价已接入；英德 FBA、空运、非 FBA 尾程：待补充</span></div><p class="footnote">计算器不额外叠加资料中提到的 3.5% 附加费。美国和加拿大未覆盖的日期或尺寸档会显示待补，不套用相邻年份费率。海运来源：美德英加头程计算-陈畅.xlsx，40HQ / 63.5 m³；报价随行情变动，仅供参考，原表未注明有效年份。按用户确认的季节区间选择报价；不额外推算装柜损耗或附加费。美元分摊金额按页面当前汇率折算为各国币种；汇率不可用时保留 USD。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p></div></details>
+        <details class="result-notes"><summary>费用资料与说明</summary><div class="result-notes-content"><div class="status-bar"><span class="status waiting"><i></i>美国 FBA：2026 非旺季、2026 旺季、2027 非旺季已接入</span><span class="status waiting"><i></i>加拿大 FBA：2026 非旺季、2026 旺季、2027 非旺季已接入</span><span class="status waiting"><i></i>四国海运：淡旺季参考价已接入；美德非 FBA 尾程已接入；英德 FBA、空运、英加非 FBA 尾程：待补充</span></div><p class="footnote">计算器不额外叠加资料中提到的 3.5% 附加费。美国和加拿大未覆盖的日期或尺寸档会显示待补，不套用相邻年份费率。海运来源：美德英加头程计算-陈畅.xlsx，40HQ / 63.5 m³；报价随行情变动，仅供参考，原表未注明有效年份。按用户确认的季节区间选择报价；不额外推算装柜损耗或附加费。美元分摊金额按页面当前汇率折算为各国币种；汇率不可用时保留 USD。非 FBA 尾程来源：美、德非FBA尾程算法-甘咏珊.pdf。美国按用户指定的估算口径，比较 Zone 6 重量价格与 Cubic 体积价格并取高；Cubic 按立方英尺换算（mm³ ÷ 28,316,846.592），上限0.6 ft³，重量上限20lb，超过任一表范围不出最终报价；该取高方式不代表已核验的承运商结算规则。德国按8.54＋包装重量kg×0.42＋0.6欧元计算，公斤数不向上取整。资料未注明生效年份、淡旺季差异及德国尺寸重量上限，尾程结果为当前资料参考值，不按 FBA 日期推算年度涨价或旺季附加费。汇率来源：Frankfurter API（ECB），备用 irfanokr/currency-api。</p></div></details>
       </section>
     </section>
   </main>
@@ -510,6 +511,7 @@
   <script type="module">
     import { calculateUsFba, calculateCanadaFba, getLocalDateIso, getUsFeeSeason } from './fba-calculator.mjs';
     import { calculateSeaFreight } from './sea-freight.mjs?v=20261113-sea';
+    import { calculateUsNonFba, calculateGermanyNonFba } from './non-fba.mjs?v=20261113-tail';
     import { initRecognition } from './recognition-ui.mjs?v=20261113-date';
     const form = document.querySelector('#calculatorForm');
     const number = id => Number(document.querySelector(`#${id}`).value) || 0;
@@ -539,11 +541,13 @@
       event.preventDefault();
       updateDerived();
       calculateSea();
+      calculateTail();
       calculateFba();
     });
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
       resetSea();
+      resetTail();
       document.querySelector('#feeDate').value = today;
       updateDerived();
       document.querySelector('#resultHint').textContent = '请填写产品参数并选择配送日期。';
@@ -636,6 +640,41 @@
           + (canConvert && currency !== 'USD' ? `；1 USD = ${rate} ${currency}` : '');
       }
     }
+    function resetTail() {
+      for (const country of ['us', 'de']) {
+        const value = document.querySelector(`#${country}TailValue`);
+        value.textContent = '待计算';
+        value.classList.add('pending');
+        value.removeAttribute('title');
+        document.querySelector(`#${country}TailDetail`).textContent = '';
+      }
+    }
+    function calculateTail() {
+      resetTail();
+      const weightG = number('weight');
+      if (!Number.isFinite(weightG) || weightG <= 0) return;
+      const de = calculateGermanyNonFba({ billedWeightG: weightG });
+      const deValue = document.querySelector('#deTailValue');
+      deValue.textContent = `${de.total.toFixed(2)} EUR/件`;
+      deValue.classList.remove('pending');
+      document.querySelector('#deTailDetail').textContent = `8.54＋${de.weightKg}kg×0.42＋0.6 · 参考价`;
+      const dimensionsMm = ['length', 'width', 'height'].map(number);
+      const usValue = document.querySelector('#usTailValue');
+      if (dimensionsMm.some(value => !Number.isFinite(value) || value <= 0)) {
+        usValue.textContent = '请补充尺寸';
+        return;
+      }
+      const us = calculateUsNonFba({ weightG, dimensionsMm });
+      usValue.classList.toggle('pending', us.status !== 'ok');
+      if (us.status !== 'ok') {
+        usValue.textContent = '超出报价范围';
+        document.querySelector('#usTailDetail').textContent = us.reason;
+        return;
+      }
+      usValue.textContent = `${us.total.toFixed(2)} USD/件`;
+      document.querySelector('#usTailDetail').textContent = `重量 $${us.weightFee.toFixed(2)} / 体积 $${us.volumeFee.toFixed(2)} · 按${us.basis === 'volume' ? '体积' : '重量'} · 参考价`;
+      usValue.title = `Zone 6：重量档 ${us.weightTier}，体积 ${us.volumeFt3.toFixed(6)} ft³（${us.volumeTier}），两项价格取高。`;
+    }
     function calculateFba() {
       const result = document.querySelector('#usFbaValue');
       if (['length', 'width', 'height', 'weight', 'price'].some(id => number(id) <= 0) || !document.querySelector('#feeDate').value) {
@@ -670,6 +709,7 @@
     }
     function resetResult(message) {
       resetSea();
+      resetTail();
       document.querySelector('#usFbaValue').textContent = '待计算';
       document.querySelector('#usFbaValue').classList.add('pending');
       document.querySelector('#caFbaValue').textContent = '待计算';
