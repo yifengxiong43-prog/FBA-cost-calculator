@@ -33,3 +33,10 @@ test('forwards authenticated model checks to the upstream service', async () => 
   assert.equal(response.status, 401);
   assert.match(body, /Invalid API key/i);
 });
+
+test('serves the sea freight calculator module to the browser', async () => {
+  const response = await fetch(`http://127.0.0.1:${port}/sea-freight.mjs?v=20261113-sea`);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /^text\/javascript/);
+  assert.match(await response.text(), /export function calculateSeaFreight/);
+});
