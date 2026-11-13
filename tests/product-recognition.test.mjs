@@ -151,6 +151,28 @@ test('sends raw image plus user text to the chosen endpoint, never putting the A
   assert.equal(JSON.stringify(sent.body).includes(config.apiKey), false);
 });
 
+test('sends file text together with the user description without putting the API key in the prompt', async () => {
+  const config = { endpoint: 'https://provider.example/v1', model: 'text-model', apiKey: 'test-only-not-a-real-key' };
+  let sent;
+  await recognizeProduct({ ...config, text: '使用零售价', fileName: '参数表.csv', fileText: '产品名称,重量(g),售价\n马克笔,800,19.99' }, async (_url, options) => {
+    sent = JSON.parse(options.body);
+    return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(missingFields()) } }] }));
+  });
+  assert.match(sent.messages[1].content[0].text, /使用零售价/);
+  assert.match(sent.messages[1].content[0].text, /参数表\.csv/);
+  assert.match(sent.messages[1].content[0].text, /马克笔,800,19\.99/);
+  assert.equal(JSON.stringify(sent).includes(config.apiKey), false);
+});
+
+test('accepts a file as the only recognition source', async () => {
+  let sent;
+  await recognizeProduct({ endpoint: 'https://provider.example/v1', model: 'text-model', apiKey: 'test-key', fileText: '重量(g),800' }, async (_url, options) => {
+    sent = JSON.parse(options.body);
+    return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(missingFields()) } }] }));
+  });
+  assert.match(sent.messages[1].content[0].text, /重量\(g\),800/);
+});
+
 test('API errors, refusals, truncated JSON, and network failures report a clear error without echoing provider content', async () => {
   const config = { endpoint: 'https://provider.example/v1', model: 'vision-model', apiKey: 'test-key', text: 'test' };
   for (const status of [401, 429, 400, 500]) {

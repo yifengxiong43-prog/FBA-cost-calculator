@@ -1,11 +1,13 @@
 import { FIELD_LABELS, normalizeEndpoint, recognizeProduct, discoverModels } from './product-recognition.mjs';
 import { RELAY_ENDPOINT, RELAY_CONFIG_ENDPOINT } from './relay-config.mjs';
+import { readProductFile } from './file-reader.mjs';
 
 export function initRecognition(form, onRecognized) {
   const $ = id => document.getElementById(id);
   const status = $('smartStatus');
   const feedback = {};
-  let imageData = '', imageReading = false, controller = null, states = null, managedRelay = false;
+  let imageData = '', imageReading = false, fileText = '', fileName = '', fileReading = false, controller = null, states = null, managedRelay = false;
+  window.__artCostDeskManagedRelay = false;
   let imageVersion = 0;
   for (const key of Object.keys(FIELD_LABELS)) {
     const note = document.createElement('small');
@@ -26,10 +28,13 @@ export function initRecognition(form, onRecognized) {
   }
 
   function setBusy(busy, verifying = false) {
-    const ids = ['smartText', 'smartImage', 'uploadImageBtn', 'removeImageBtn', 'apiEndpoint', 'apiModel', 'apiKey', 'clearApiKeyBtn', 'verifyApiBtn'];
-    for (const id of ids) $(id).disabled = busy;
+    const ids = ['smartText', 'smartImage', 'smartFile', 'uploadImageBtn', 'uploadFileBtn', 'assistantUploadBtn', 'assistantFileUploadBtn', 'removeImageBtn', 'removeFileBtn', 'apiEndpoint', 'apiModel', 'apiKey', 'clearApiKeyBtn', 'verifyApiBtn'];
+    for (const id of ids) {
+      const element = $(id);
+      if (element) element.disabled = busy;
+    }
     for (const input of form.querySelectorAll('input, button')) input.disabled = busy;
-    $('recognizeBtn').disabled = busy || imageReading;
+    $('recognizeBtn').disabled = busy || imageReading || fileReading;
     $('recognizeBtn').textContent = busy && !verifying ? '识别中…' : '智能识别';
     $('verifyApiBtn').textContent = verifying ? '正在验证…' : '验证连接并获取模型';
     $('cancelRecognitionBtn').textContent = verifying ? '取消验证' : '取消识别';
@@ -44,7 +49,19 @@ export function initRecognition(form, onRecognized) {
     $('sourceImage').removeAttribute('src');
     $('smartImage').value = '';
     $('imagePreview').hidden = true;
-    $('recognizeBtn').disabled = Boolean(controller);
+    $('recognizeBtn').disabled = Boolean(controller) || fileReading;
+    window.__artCostDeskImageData = '';
+  }
+
+  function resetFile() {
+    fileText = '';
+    fileName = '';
+    fileReading = false;
+    $('smartFile').value = '';
+    $('filePreview').hidden = true;
+    $('sourceFileName').textContent = '';
+    window.__artCostDeskFileText = '';
+    window.__artCostDeskFileName = '';
   }
 
   async function selectImage(file) {
@@ -70,27 +87,65 @@ export function initRecognition(form, onRecognized) {
       await decoded.decode();
       if (version !== imageVersion) return;
       imageData = data;
+      window.__artCostDeskImageData = data;
       $('sourceImage').src = data;
       $('sourceImageName').textContent = file.name || '粘贴的截图';
       $('imagePreview').hidden = false;
-      status.textContent = '图片已就绪，可在文字框补充要求，再点击智能识别。';
+      status.textContent = '图片已添加，可补充识别要求';
     } catch {
       if (version === imageVersion) status.textContent = '图片无法读取，请更换一张清晰的截图。';
     } finally {
       if (version === imageVersion) {
         imageReading = false;
-        $('recognizeBtn').disabled = false;
+        $('recognizeBtn').disabled = fileReading;
       }
+    }
+  }
+
+  async function selectFile(file) {
+    if (!file || controller) return;
+    resetFile();
+    fileReading = true;
+    $('recognizeBtn').disabled = true;
+    status.textContent = '正在读取文件…';
+    try {
+      const result = await readProductFile(file);
+      fileText = result.text;
+      fileName = result.fileName;
+      window.__artCostDeskFileText = fileText;
+      window.__artCostDeskFileName = fileName;
+      $('sourceFileName').textContent = `${fileName} · 已读取 ${result.characters.toLocaleString()} 字`;
+      $('filePreview').hidden = false;
+      status.textContent = '文件已就绪，可与文字和图片一起识别。';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      fileReading = false;
+      $('recognizeBtn').disabled = Boolean(controller) || imageReading;
     }
   }
 
   $('uploadImageBtn').addEventListener('click', () => $('smartImage').click());
   $('smartImage').addEventListener('change', event => selectImage(event.target.files?.[0]));
+  $('uploadFileBtn').addEventListener('click', () => $('smartFile').click());
+  $('smartFile').addEventListener('change', event => selectFile(event.target.files?.[0]));
+  // The chat header is rendered by React after this module initializes; delegate these clicks from the document.
+  document.addEventListener('click', event => {
+    if (event.target.closest('#assistantUploadBtn')) $('uploadImageBtn').click();
+    if (event.target.closest('#assistantFileUploadBtn')) $('uploadFileBtn').click();
+  });
   $('smartText').addEventListener('paste', event => {
-    const file = Array.from(event.clipboardData?.files || []).find(file => file.type.startsWith('image/'));
-    if (file) { event.preventDefault(); selectImage(file); }
+    const files = Array.from(event.clipboardData?.files || []);
+    const image = files.find(file => file.type.startsWith('image/'));
+    const attachment = files.find(file => !file.type.startsWith('image/'));
+    if (image || attachment) {
+      event.preventDefault();
+      if (image) selectImage(image);
+      if (attachment) selectFile(attachment);
+    }
   });
   $('removeImageBtn').addEventListener('click', () => { resetImage(); status.textContent = '已移除图片。'; });
+  $('removeFileBtn').addEventListener('click', () => { resetFile(); status.textContent = '已移除文件。'; });
   $('cancelRecognitionBtn').addEventListener('click', () => controller?.abort());
 
   const storageKey = 'art-cost-desk-api-config';
@@ -145,6 +200,7 @@ export function initRecognition(form, onRecognized) {
       }
       if (!managedModel) return;
       managedRelay = true;
+      window.__artCostDeskManagedRelay = true;
       $('apiModel').value = managedModel;
       $('apiSettings').hidden = true;
       $('managedApiStatus').hidden = false;
@@ -182,8 +238,8 @@ export function initRecognition(form, onRecognized) {
     }
   });
 
-  $('recognizeBtn').addEventListener('click', async () => {
-    if (controller || imageReading) return;
+  async function runRecognition({ text = $('smartText').value, image = imageData, fileText: providedFileText = fileText, fileName: providedFileName = fileName, preserveExisting = false, signal } = {}) {
+    if (controller || imageReading || fileReading) return;
     await relayReady;
     const config = { endpoint: $('apiEndpoint').value.trim(), relayEndpoint: RELAY_ENDPOINT, model: $('apiModel').value.trim(), apiKey: managedRelay ? '' : $('apiKey').value.trim(), managedRelay };
     try {
@@ -191,21 +247,27 @@ export function initRecognition(form, onRecognized) {
       if (!config.model || (!managedRelay && !config.apiKey)) throw new Error('请先填写 API Key 和支持图片理解的模型名称。');
     } catch (error) {
       $('apiSettings').open = true;
+      const dialog = $('apiDialog');
+      if (dialog && !dialog.open) {
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.setAttribute('open', '');
+      }
       status.textContent = error.message;
       return;
     }
-    if (!$('smartText').value.trim() && !imageData) { status.textContent = '请先输入产品描述或选择一张图片。'; return; }
+    if (!text.trim() && !image && !providedFileText.trim()) throw new Error('请先输入产品描述、选择图片或选择文件。');
     controller = new AbortController();
+    signal?.addEventListener('abort', () => controller?.abort(), { once: true });
     setBusy(true);
     status.textContent = '正在理解产品参数，请稍候…';
     try {
-      const result = await recognizeProduct({ ...config, text: $('smartText').value, image: imageData, signal: controller.signal });
+      const result = await recognizeProduct({ ...config, text, image, fileText: providedFileText, fileName: providedFileName, signal: controller.signal });
       if (controller.signal.aborted) return;
       states = {};
       for (const key of Object.keys(FIELD_LABELS)) {
         const field = result.fields[key];
-        // Replace all fields so a new product cannot inherit old price, weight or date.
-        $(key).value = result.values[key];
+        // Full recognition clears absent fields; assistant edits preserve existing values.
+        if (!preserveExisting || field.status === 'recognized') $(key).value = result.values[key];
         states[key] = field.status;
         feedback[key].hidden = false;
         feedback[key].dataset.state = field.status;
@@ -225,17 +287,30 @@ export function initRecognition(form, onRecognized) {
       $('recognitionNotes').hidden = result.notes.length === 0;
       updateSummary();
       $('apiConfigStatus').textContent = '连接成功';
-      $('apiSettings').open = false;
+      $('apiSettings').open = true;
       status.textContent = '已填入下方参数，请检查并补齐缺项，确认后再计算。';
       onRecognized();
+      return result;
     } catch (error) {
+      if (signal?.aborted) throw new Error('已取消识别。');
       status.textContent = error.message;
+      throw error;
     } finally {
       config.apiKey = '';
       controller = null;
       setBusy(false);
     }
+  }
+
+  $('recognizeBtn').addEventListener('click', async () => {
+    try {
+      await runRecognition();
+    } catch {
+      // The inline status contains the actionable error.
+    }
   });
+
+  window.__artCostDeskRecognize = options => runRecognition(options);
 
   form.addEventListener('input', event => {
     const key = event.target.id;

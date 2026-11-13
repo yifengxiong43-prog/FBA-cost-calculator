@@ -1,4 +1,4 @@
-// Fixed upstream: this service cannot proxy arbitrary URLs or use a shared API key.
+// Fixed upstream; the provider key stays in the Worker's secret binding.
 const UPSTREAM = 'https://sub.geekper.com';
 const MAX_REQUEST = 15 * 1024 * 1024;
 const MAX_RESPONSE = 4 * 1024 * 1024;
@@ -56,12 +56,17 @@ export async function handleRequest(request, env = {}, fetchImpl = fetch) {
     if (Number(request.headers.get('Content-Length')) > MAX_REQUEST) return fail('PAYLOAD_TOO_LARGE', 413);
     try {
       body = JSON.parse(await readLimited(request.body, MAX_REQUEST));
+      const extraction = body?.response_format?.type === 'json_object' && body?.max_tokens === 3000;
+      const chat = body?.response_format == null && body?.max_tokens === 800 && body?.temperature === 0.4;
       if (!body || typeof body.model !== 'string' || !body.model.trim() || body.model.length > 200 ||
-        !Array.isArray(body.messages) || body.messages.length !== 2 || body.stream !== false ||
-        body.response_format?.type !== 'json_object' || body.max_tokens !== 3000) return fail('INVALID_REQUEST', 400);
-      // Only forward fields used by the product extractor, never client URLs/headers/tools.
+        !Array.isArray(body.messages) || body.messages.length < 2 || body.stream !== false || (!extraction && !chat) ||
+        !body.messages.every(message => message && ['system', 'user', 'assistant'].includes(message.role) &&
+          (typeof message.content === 'string' || (extraction && Array.isArray(message.content) && message.content.length > 0 &&
+            message.content.every(part => part && (part.type === 'text' && typeof part.text === 'string' ||
+              part.type === 'image_url' && typeof part.image_url?.url === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(part.image_url.url))))))) return fail('INVALID_REQUEST', 400);
+      // Forward only the fields used by the extractor or assistant.
       body = JSON.stringify({ model: body.model, messages: body.messages, stream: false,
-        response_format: { type: 'json_object' }, max_tokens: 3000 });
+        ...(extraction ? { response_format: { type: 'json_object' }, max_tokens: 3000 } : { max_tokens: 800, temperature: 0.4 }) });
     } catch (error) { return fail(error.message === 'too_large' ? 'PAYLOAD_TOO_LARGE' : 'INVALID_JSON', error.message === 'too_large' ? 413 : 400); }
   }
   const controller = new AbortController();
@@ -71,7 +76,7 @@ export async function handleRequest(request, env = {}, fetchImpl = fetch) {
   if (request.signal.aborted) controller.abort();
   try {
     const upstream = await fetchImpl(`${UPSTREAM}${url.pathname}`, { method, body, signal: controller.signal,
-      redirect: 'error', headers: { Authorization: authorization, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) } });
+      redirect: 'manual', headers: { Authorization: authorization, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) } });
     if (!upstream.ok) {
       await upstream.body?.cancel();
       return fail('UPSTREAM_ERROR', upstream.status >= 400 && upstream.status < 600 ? upstream.status : 502);
@@ -87,4 +92,8 @@ export async function handleRequest(request, env = {}, fetchImpl = fetch) {
   }
 }
 
-export default { fetch: handleRequest };
+export default {
+  fetch(request, env) {
+    return handleRequest(request, env);
+  }
+};

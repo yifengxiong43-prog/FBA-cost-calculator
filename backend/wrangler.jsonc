@@ -3,6 +3,6 @@
   "main": "worker.mjs",
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
-  "vars": { "ALLOWED_ORIGIN": "https://yifengxiong43-prog.github.io", "PROVIDER_MODEL": "" },
+  "vars": { "ALLOWED_ORIGIN": "https://yifengxiong43-prog.github.io", "PROVIDER_MODEL": "gpt-5.5" },
   "observability": { "enabled": false }
 }

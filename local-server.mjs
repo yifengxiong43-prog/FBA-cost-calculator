@@ -15,8 +15,11 @@ const allowedFiles = new Map([
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/product-recognition.mjs', ['product-recognition.mjs', 'text/javascript; charset=utf-8']],
   ['/recognition-ui.mjs', ['recognition-ui.mjs', 'text/javascript; charset=utf-8']],
+  ['/file-reader.mjs', ['file-reader.mjs', 'text/javascript; charset=utf-8']],
+  ['/file-reader.bundle.js', ['file-reader.bundle.js', 'text/javascript; charset=utf-8']],
   ['/relay-config.mjs', ['relay-config.mjs', 'text/javascript; charset=utf-8']],
   ['/fba-calculator.mjs', ['fba-calculator.mjs', 'text/javascript; charset=utf-8']],
+  ['/chatbot.bundle.js', ['chatbot.bundle.js', 'text/javascript; charset=utf-8']],
   ['/ohuhu-marker.svg', ['ohuhu-marker.svg', 'image/svg+xml']]
 ]);
 

@@ -1,0 +1,22 @@
+{
+  "name": "art-cost-desk-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:chat": "esbuild src/chatbot.jsx --bundle --format=esm --outfile=chatbot.bundle.js --loader:.jsx=jsx --target=es2020",
+    "build:file-reader": "esbuild src/file-reader-entry.mjs --bundle --format=esm --outfile=file-reader.bundle.js --target=es2020",
+    "build": "npm run build:chat && npm run build:file-reader",
+    "test": "node --test tests/*.mjs"
+  },
+  "dependencies": {
+    "@assistant-ui/react": "^0.15.36",
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^6.5.438",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

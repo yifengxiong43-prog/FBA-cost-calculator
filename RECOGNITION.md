@@ -4,10 +4,10 @@
 通过 GET `/models` 获取实际模型列表，保留已有的有效选择，否则自动选中返回的首个模型；可点击模型框改选，也可手动填写。
 验证仅确认模型列表接口的连通性与权限，不能保证所选模型支持图片或 JSON，实际识别时继续验证输出。
 默认地址为 `https://sub.geekper.com/v1`；`/dashboard/v1` 返回管理网页，不能作为 API 地址。网页通过已部署的转发 Worker 访问服务商，避免 GitHub Pages 的跨域限制。
-当前 Worker 已发布并能正常处理浏览器预检；若服务商屏蔽 Cloudflare 出口，验证会显示上游不可用，需要服务商放行该出口或改用可访问上游的后端平台。
+线上通过 `https://art-cost-desk-api.pages.dev` 访问 API，再由 Cloudflare 服务绑定调用已保存密钥的 Worker；新浏览器无需填写 API Key。模型从后端 `/config` 获取。
 接口地址可以是 `https://服务商/v1` 或完整的 `/chat/completions` 地址。
 模型需同时支持图片理解和 JSON 输出；API 服务商需允许本站跨域请求（CORS）。
-此 GitHub Pages 页面由浏览器直接访问用户指定的接口。若已部署转发 Worker，浏览器只访问 Worker，再由 Worker 请求固定服务商地址。
+GitHub Pages 页面只访问 API 入口，Worker 请求固定服务商地址。聊天和图文参数提取均经过此后端。
 地址、模型和用户明确选择保存的 API Key 自动保存在当前浏览器，刷新后恢复；清理网站数据或更换浏览器后需重新设置。Key 不写入代码、不上传到仓库；“清除密钥”会删除它。
 
 输入自然语言、选择 PNG/JPG/WebP 图片（最多 10 MB），或向文字框粘贴截图。
