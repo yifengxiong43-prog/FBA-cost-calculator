@@ -99,6 +99,14 @@ test('natural language identifies name and price, defaulting unitless dimensions
   assert.deepEqual([result.values.length, result.values.width, result.values.height, result.values.weight], ['260', '190', '100', '1640']);
 });
 
+test('defaults an unmarked selling price to USD', () => {
+  const raw = missingFields();
+  raw.fields.price = identified(19.99, null, '售价19.99');
+  const result = normalizeRecognition(raw);
+  assert.equal(result.values.price, '19.99');
+  assert.equal(result.fields.price.status, 'recognized');
+});
+
 test('converts source units deterministically and keeps valid dates', () => {
   const raw = missingFields();
   raw.fields.length = identified(30, 'cm', '30cm');
