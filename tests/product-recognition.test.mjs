@@ -51,17 +51,17 @@ test('accepts a base URL or full compatible chat endpoint without leaking creden
   }
 });
 
-test('the user table maps dimension and gram columns but does not choose between retail and transaction prices', () => {
+test('the user table maps dimensions and defaults to retail price when both prices are present', () => {
   const raw = missingFields();
   raw.fields.length = identified(260, 'mm', '长(mm) 260');
   raw.fields.width = identified(190, 'mm', '宽(mm) 190');
   raw.fields.height = identified(100, 'mm', '高(mm) 100');
   raw.fields.weight = identified(1640, 'g', '重量(g) 1640');
-  raw.fields.price = { value: null, unit: 'USD', status: 'uncertain', evidence: '零售价 $62.99；成交价 $52.99', note: '请选择零售价或成交价，并确认 $ 的币种。' };
+  raw.fields.price = identified(62.99, 'USD', '零售价 $62.99；成交价 $52.99');
   const result = normalizeRecognition(raw);
   assert.deepEqual([result.values.length, result.values.width, result.values.height, result.values.weight], ['260', '190', '100', '1640']);
-  assert.equal(result.values.price, '');
-  assert.equal(result.fields.price.status, 'uncertain');
+  assert.equal(result.values.price, '62.99');
+  assert.equal(result.fields.price.status, 'recognized');
   assert.equal(result.values.feeDate, '');
 });
 
@@ -118,6 +118,7 @@ test('sends raw image plus user text to the chosen endpoint, never putting the A
   assert.equal(sent.options.credentials, 'omit');
   assert.equal(sent.options.redirect, 'error');
   assert.equal(sent.body.response_format.type, 'json_object');
+  assert.match(sent.body.messages[0].content, /同时存在.*默认采用零售价/);
   assert.deepEqual(sent.body.messages[1].content[1], { type: 'image_url', image_url: { url: image } });
   assert.equal(JSON.stringify(sent.body).includes(config.apiKey), false);
 });

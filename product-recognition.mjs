@@ -35,7 +35,7 @@ const EXTRACTION_PROMPT = `你是产品包装参数提取器。直接理解用�
 3. 数字字段 value 必须为数字；尺寸 unit 使用 mm/cm/m/in；重量 g/kg/lb/oz；售价使用真实币种代码 USD/CNY/CAD/AUD 等。未知币种为 null。只有美元可进入 USD 售价框，不做汇率换算。
 4. 产品名称可以从“96色滚珠笔，长260，宽190，高100，卖62.99美元”这样的自由描述中提取。日期返回 YYYY-MM-DD，仅配送日期有效，不把生产日期、网页日期或当前日期当配送日期。缺失年份、相对日期无法明确时标为 uncertain。
 5. 表格必须按表头对应列读取。例如 重量(g)=1640、磅(lb)=3.61 是同一重量的两种表示，优先保留 g 的值；长(mm)=260、宽(mm)=190、高(mm)=100 可直接提取。核对字段，不能把成本当售价或把产品净重当包装重量。
-6. 零售价和成交价同时存在，或多行/多产品未指定目标时，不随意挑选。相关字段 value=null，status=uncertain，在 note/evidence 中列出候选值及原因；用户明确指定“按成交价”“使用零售价”等则遵从。单独的 $ 未明确币种时也要确认，不能自动当 USD。
+6. 零售价和成交价同时存在时，默认采用零售价；只有用户明确指定“按成交价”或“使用成交价”时才选择成交价。多行/多产品未指定目标时仍不随意挑选，相关字段 value=null，status=uncertain，在 note/evidence 中列出候选值及原因。单独的 $ 未明确币种时也要确认，不能自动当 USD。
 7. 每个 recognized 字段必须有 evidence，简短引用输入文字或图片表头+单元格；不可臆造。未提供 value=null,status=missing；模糊、冲突、看不清的 value=null,status=uncertain，note 说明原因。不要把空白填成 0，不要补日期、名称、重量或价格。
 8. productName、feeDate 的 unit=null。note 与 notes 使用简短中文，notes 只写跨字段的必要提醒。除默认 mm/g 规则外不得自行猜测。
 JSON schema：${JSON.stringify(schema)}`;
