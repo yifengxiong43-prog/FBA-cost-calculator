@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateUsFba, getLocalDateIso, getUsFeeSeason } from '../fba-calculator.mjs';
+import { calculateCanadaFba, calculateUsFba, getLocalDateIso, getUsFeeSeason } from '../fba-calculator.mjs';
 
 test('formats the local calendar date for the default delivery date', () => {
   assert.equal(getLocalDateIso(new Date(2026, 10, 13, 12, 0, 0)), '2026-11-13');
@@ -33,8 +33,8 @@ test('automatically matches large standard and rounds billable weight up by 4 oz
     dimensionsMm: [450, 350, 100], weightG: 1500, dimensionalWeightG: 1500,
     priceUsd: 51, date: '2026-10-14'
   });
-  assert.equal(result.billedWeightLb, 3.5);
-  assert.equal(result.total, 7.39);
+  assert.equal(result.billedWeightLb, 7);
+  assert.equal(result.total, 8.51);
 });
 
 test('selects a different US rate table for 2027 dates', () => {
@@ -43,23 +43,39 @@ test('selects a different US rate table for 2027 dates', () => {
   assert.equal(calculateUsFba({ ...input, date: '2027-01-15' }).total, 2.64);
 });
 
-test('does not extrapolate rates into dates absent from the supplied tables', () => {
+test('does not extrapolate US rates into dates absent from the supplied tables', () => {
   const input = { dimensionsMm: [200, 150, 80], weightG: 500, dimensionalWeightG: 500, priceUsd: 20 };
-  for (const date of ['2026-10-15', '2027-01-14', '2027-10-15']) {
+  for (const date of ['2025-10-15', '2027-10-15']) {
     const result = calculateUsFba({ ...input, date });
     assert.equal(result.status, 'missing_rate');
     assert.equal(result.total, null);
   }
 });
 
-test('identifies peak-season dates even when the matching fee table is unavailable', () => {
+test('uses the imported US peak-season table', () => {
   const result = calculateUsFba({
     dimensionsMm: [200, 150, 18], weightG: 50, dimensionalWeightG: 40,
     priceUsd: 9.99, date: '2026-11-10'
   });
-  assert.equal(result.status, 'missing_rate');
+  assert.equal(result.status, 'ok');
+  assert.equal(result.total, 2.62);
   assert.equal(result.season, '旺季');
   assert.equal(result.ratePeriod, '2026-10-15 至 2027-01-14');
+});
+
+test('calculates Canada peak and 2027 non-peak rates separately', () => {
+  const input = { dimensionsMm: [300, 200, 50], weightG: 800, sizeTier: 'large' };
+  const peak = calculateCanadaFba({ ...input, date: '2026-11-13' });
+  const nextYear = calculateCanadaFba({ ...input, date: '2027-02-10' });
+  assert.equal(peak.total, 8.43);
+  assert.equal(nextYear.total, 8.07);
+  assert.equal(peak.shippingWeightG, 800);
+});
+
+test('Canada uses the larger of actual and dimensional weight and rounds up by 100 grams', () => {
+  const result = calculateCanadaFba({ dimensionsMm: [300, 300, 60], weightG: 900, sizeTier: 'large', date: '2027-02-10' });
+  assert.equal(result.shippingWeightG, 1100);
+  assert.equal(result.total, 8.71);
 });
 
 test('reports weights beyond the large standard rate table instead of extrapolating', () => {
