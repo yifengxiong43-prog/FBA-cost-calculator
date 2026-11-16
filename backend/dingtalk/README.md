@@ -16,7 +16,7 @@ $env:PROVIDER_MODEL="gpt-5.5"
 npm start
 ```
 
-也可以复制 `.env.example` 为 `.env` 后，由部署平台注入这些环境变量。服务不会读取或提交 `.env`，也不会把密钥发到网页。
+也可以复制 `.env.example` 为 `.env`，本地启动时服务会自动读取它。`.env` 已被 Git 忽略，不会提交；也不会把密钥发到网页。
 
 ## 钉钉后台设置
 

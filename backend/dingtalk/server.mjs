@@ -1,4 +1,5 @@
 import http from 'node:http';
+import fs from 'node:fs';
 import { URL, pathToFileURL } from 'node:url';
 import { calculateCanadaFba, calculateUsFba, getUsFeeSeason } from '../../fba-calculator.mjs';
 import { calculateSeaFreight } from '../../sea-freight.mjs';
@@ -289,7 +290,22 @@ function envConfig(env = process.env) {
   };
 }
 
+function loadDotEnv() {
+  try {
+    const content = fs.readFileSync(new URL('.env', import.meta.url), 'utf8');
+    for (const line of content.split(/\r?\n/)) {
+      const match = line.match(/^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+      if (!match || match[1] in process.env) continue;
+      const value = match[2].replace(/^(['"])(.*)\1$/, '$2');
+      process.env[match[1]] = value;
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  loadDotEnv();
   const config = envConfig();
   const server = createHttpServer({ config });
   server.listen(config.port, () => console.log(`Cost API listening on http://127.0.0.1:${config.port}`));
