@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createChatRequest, getStoredChatConfig, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
+import { createChatRequest, firstMissingFormFieldKey, getStoredChatConfig, looksLikeCalculationRequest, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
 
 test('serializes assistant-ui messages into OpenAI-compatible chat messages', () => {
   assert.deepEqual(toChatMessages([
@@ -51,4 +51,12 @@ test('reports only fields that were confidently recognized for assistant updates
 test('reports missing form fields without treating zero values as complete', () => {
   assert.deepEqual(missingFormFieldKeys({ length: 300, width: 200, height: 50, weight: 800, price: 19.99, feeDate: '2027-02-10' }), []);
   assert.deepEqual(missingFormFieldKeys({ length: 300, width: 0, height: 50, weight: 800, price: '', feeDate: '' }), ['width', 'price', 'feeDate']);
+});
+
+test('identifies the first missing field and explicit calculation requests', () => {
+  assert.equal(firstMissingFormFieldKey({ length: 300, width: '', height: 50, weight: 800, price: 19.99, feeDate: '2027-02-10' }), 'width');
+  assert.equal(firstMissingFormFieldKey({ length: 300, width: 200, height: 50, weight: 800, price: 19.99, feeDate: '2027-02-10' }), '');
+  assert.equal(looksLikeCalculationRequest('参数完整了，帮我计算费用'), true);
+  assert.equal(looksLikeCalculationRequest('开始计算'), true);
+  assert.equal(looksLikeCalculationRequest('这个费用为什么这么高？'), false);
 });

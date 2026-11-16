@@ -10,7 +10,7 @@ import {
 } from '@assistant-ui/react';
 import { RELAY_ENDPOINT } from '../relay-config.mjs';
 import { FIELD_LABELS } from '../product-recognition.mjs';
-import { createChatRequest, getStoredChatConfig, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys } from '../chatbot-config.mjs';
+import { createChatRequest, firstMissingFormFieldKey, getStoredChatConfig, looksLikeCalculationRequest, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys } from '../chatbot-config.mjs';
 
 const apiConfig = () => getStoredChatConfig(window.localStorage, {
   endpoint: document.querySelector('#apiEndpoint')?.value,
@@ -25,7 +25,7 @@ function currentFormValues() {
 
 function missingReply(missing) {
   return missing.length
-    ? `还缺少：${missing.map(key => missingLabels[key]).join('、')}。请继续补充，识别完成后先核对下方表单，再点击“确认参数并计算费用”。`
+    ? `还缺少${missingLabels[missing[0]]}，请先补充这一项。`
     : '参数已完整识别。请核对下方表单，确认无误后点击“确认参数并计算费用”。';
 }
 
@@ -39,6 +39,14 @@ const chatModel = {
     const missingBefore = missingFormFieldKeys(currentFormValues());
     if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
       return { content: [{ type: 'text', text: missingReply(missingBefore) }] };
+    }
+    if (looksLikeCalculationRequest(latestText)) {
+      if (missingBefore.length) return { content: [{ type: 'text', text: missingReply(missingBefore) }] };
+      if (typeof window.__artCostDeskCalculate === 'function') {
+        window.__artCostDeskCalculate();
+        return { content: [{ type: 'text', text: '参数已完整，已开始计算。请查看右侧四国费用结果。' }] };
+      }
+      return { content: [{ type: 'text', text: '参数已完整，请点击下方“确认参数并计算费用”。' }] };
     }
     if (looksLikeProductInput(latestText, Boolean(image) || Boolean(fileText)) && typeof window.__artCostDeskRecognize === 'function') {
       try {
