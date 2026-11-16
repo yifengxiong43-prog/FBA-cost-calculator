@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createChatRequest, firstMissingFormFieldKey, getStoredChatConfig, looksLikeCalculationRequest, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
+import { answerCostQuestion, buildChatContext, createChatRequest, firstMissingFormFieldKey, getStoredChatConfig, looksLikeCalculationRequest, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
 
 test('serializes assistant-ui messages into OpenAI-compatible chat messages', () => {
   assert.deepEqual(toChatMessages([
@@ -59,4 +59,25 @@ test('identifies the first missing field and explicit calculation requests', () 
   assert.equal(looksLikeCalculationRequest('参数完整了，帮我计算费用'), true);
   assert.equal(looksLikeCalculationRequest('开始计算'), true);
   assert.equal(looksLikeCalculationRequest('这个费用为什么这么高？'), false);
+});
+
+test('includes the current form and real country results in the model context', () => {
+  const context = buildChatContext({
+    form: { weight: '800', feeDate: '2027-02-10' },
+    rates: { CAD: 1.37 },
+    countries: [{ name: '美国', currency: 'USD', total: 5.98, totalUsd: 5.98, complete: false, components: [{ label: 'FBA 费用', display: '$5.98 USD', amount: 5.98, currency: 'USD' }] }]
+  });
+  const request = createChatRequest({ endpoint: 'https://provider.example/v1', model: 'chat', apiKey: 'key', messages: [], context });
+  assert.match(request.body.messages[0].content, /2027-02-10/);
+  assert.match(request.body.messages[0].content, /5\.98/);
+});
+
+test('answers country comparisons from supplied results and refuses to invent missing totals', () => {
+  const snapshot = { countries: [
+    { name: '美国', totalUsd: 5.98, complete: false, components: [{ label: 'FBA 费用', display: '$5.98 USD', amount: 5.98 }] },
+    { name: '德国', totalUsd: 4.2, complete: false, components: [{ label: 'FBA 费用', display: '€4.20 EUR', amount: 4.2 }] }
+  ] };
+  assert.match(answerCostQuestion('哪个国家更便宜？', snapshot), /德国/);
+  assert.match(answerCostQuestion('为什么美国费用更高？', snapshot), /5\.98/);
+  assert.match(answerCostQuestion('哪个国家更便宜？', { countries: [] }), /没有可引用/);
 });
