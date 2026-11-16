@@ -275,6 +275,7 @@ export function initRecognition(form, onRecognized) {
           : field.status === 'missing' ? '未提供'
             : `待确认：${field.note || field.evidence || '请根据原始材料手动填写。'}`;
         const container = $(key).closest('.field');
+        container.classList.toggle('recognized-field', field.status === 'recognized');
         (field.status === 'uncertain' ? container : container.querySelector('label')).append(feedback[key]);
         feedback[key].title = field.evidence;
       }
@@ -316,6 +317,7 @@ export function initRecognition(form, onRecognized) {
     const key = event.target.id;
     if (!states || !feedback[key]) return;
     states[key] = event.target.value.trim() ? 'edited' : 'missing';
+    $(key).closest('.field').classList.remove('recognized-field');
     feedback[key].dataset.state = states[key];
     feedback[key].textContent = states[key] === 'edited' ? '手动填写' : '未填写';
     $(key).closest('.field').querySelector('label').append(feedback[key]);

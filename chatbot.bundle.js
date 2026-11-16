@@ -57117,6 +57117,9 @@ function missingFormFieldKeys(values = {}) {
     return !Number.isFinite(number) || number <= 0;
   });
 }
+function looksLikeCalculationRequest(text) {
+  return /(?:帮我|请|开始|确认|直接)?(?:计算|算一下|算算|算吧).*(?:费用|成本|FBA|运费)?|(?:开始|确认)(?:计算|测算)|按这个算/.test(String(text || ""));
+}
 function textFromMessage(message) {
   return (message?.content || []).filter((part) => part?.type === "text" && typeof part.text === "string").map((part) => part.text).join("\n").trim();
 }
@@ -57164,7 +57167,7 @@ function currentFormValues() {
   return Object.fromEntries(["length", "width", "height", "weight", "price", "feeDate"].map((key) => [key, document.querySelector(`#${key}`)?.value || ""]));
 }
 function missingReply(missing) {
-  return missing.length ? `\u8FD8\u7F3A\u5C11\uFF1A${missing.map((key) => missingLabels[key]).join("\u3001")}\u3002\u8BF7\u7EE7\u7EED\u8865\u5145\uFF0C\u8BC6\u522B\u5B8C\u6210\u540E\u5148\u6838\u5BF9\u4E0B\u65B9\u8868\u5355\uFF0C\u518D\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002` : "\u53C2\u6570\u5DF2\u5B8C\u6574\u8BC6\u522B\u3002\u8BF7\u6838\u5BF9\u4E0B\u65B9\u8868\u5355\uFF0C\u786E\u8BA4\u65E0\u8BEF\u540E\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002";
+  return missing.length ? `\u8FD8\u7F3A\u5C11${missingLabels[missing[0]]}\uFF0C\u8BF7\u5148\u8865\u5145\u8FD9\u4E00\u9879\u3002` : "\u53C2\u6570\u5DF2\u5B8C\u6574\u8BC6\u522B\u3002\u8BF7\u6838\u5BF9\u4E0B\u65B9\u8868\u5355\uFF0C\u786E\u8BA4\u65E0\u8BEF\u540E\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002";
 }
 var chatModel = {
   async run({ messages, abortSignal }) {
@@ -57175,6 +57178,14 @@ var chatModel = {
     const missingBefore = missingFormFieldKeys(currentFormValues());
     if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
       return { content: [{ type: "text", text: missingReply(missingBefore) }] };
+    }
+    if (looksLikeCalculationRequest(latestText)) {
+      if (missingBefore.length) return { content: [{ type: "text", text: missingReply(missingBefore) }] };
+      if (typeof window.__artCostDeskCalculate === "function") {
+        window.__artCostDeskCalculate();
+        return { content: [{ type: "text", text: "\u53C2\u6570\u5DF2\u5B8C\u6574\uFF0C\u5DF2\u5F00\u59CB\u8BA1\u7B97\u3002\u8BF7\u67E5\u770B\u53F3\u4FA7\u56DB\u56FD\u8D39\u7528\u7ED3\u679C\u3002" }] };
+      }
+      return { content: [{ type: "text", text: "\u53C2\u6570\u5DF2\u5B8C\u6574\uFF0C\u8BF7\u70B9\u51FB\u4E0B\u65B9\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002" }] };
     }
     if (looksLikeProductInput(latestText, Boolean(image) || Boolean(fileText)) && typeof window.__artCostDeskRecognize === "function") {
       try {

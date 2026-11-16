@@ -20,6 +20,14 @@ export function missingFormFieldKeys(values = {}) {
   });
 }
 
+export function firstMissingFormFieldKey(values = {}) {
+  return missingFormFieldKeys(values)[0] || '';
+}
+
+export function looksLikeCalculationRequest(text) {
+  return /(?:帮我|请|开始|确认|直接)?(?:计算|算一下|算算|算吧).*(?:费用|成本|FBA|运费)?|(?:开始|确认)(?:计算|测算)|按这个算/.test(String(text || ''));
+}
+
 export function textFromMessage(message) {
   return (message?.content || [])
     .filter(part => part?.type === 'text' && typeof part.text === 'string')
