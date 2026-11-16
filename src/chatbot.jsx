@@ -181,7 +181,10 @@ function ConfirmationCard({ data }) {
 }
 
 function AssistantMessage() {
-  const text = useAuiState(state => state.message.text || '');
+  const text = useAuiState(state => state.message.content
+    ?.filter(part => part?.type === 'text')
+    .map(part => part.text)
+    .join('') || '');
   const confirmation = parseConfirmation(text);
   return <MessagePrimitive.Root className="assistant-message-row assistant-message-agent"><div className="assistant-bubble">{confirmation ? <ConfirmationCard data={confirmation} /> : <MessagePrimitive.Parts />}</div></MessagePrimitive.Root>;
 }
