@@ -7464,11 +7464,11 @@ var ArtCostReports = (() => {
                   function getCurveValue(t, curve) {
                     return (curve[0] || 0) + (curve[1] || 0) * t + (curve[2] || 0) * t * t + (curve[3] || 0) * t * t * t;
                   }
-                  function isEqual(number, ref) {
-                    return Math.abs(number - ref) < 1e-10;
+                  function isEqual(number2, ref) {
+                    return Math.abs(number2 - ref) < 1e-10;
                   }
-                  function isNotEqual(number, ref) {
-                    return Math.abs(number - ref) >= 1e-10;
+                  function isNotEqual(number2, ref) {
+                    return Math.abs(number2 - ref) >= 1e-10;
                   }
                   function validateNumber(n) {
                     return n > -1e21 && n < 1e21 ? Math.round(n * 1e6) / 1e6 : 0;
@@ -8345,17 +8345,17 @@ var ArtCostReports = (() => {
                     this.getPercent = function(key, initial) {
                       let value = this.attr(key);
                       let parser = new StringParser((value || "").trim()), temp1, temp2;
-                      let number = parser.matchNumber();
-                      if (!number) {
+                      let number2 = parser.matchNumber();
+                      if (!number2) {
                         return initial;
                       }
                       if (parser.match("%")) {
-                        number *= 0.01;
+                        number2 *= 0.01;
                       }
                       if (parser.matchAll()) {
                         return initial;
                       }
-                      return Math.max(0, Math.min(1, number));
+                      return Math.max(0, Math.min(1, number2));
                     };
                     this.chooseValue = function(args) {
                       for (let i = 0; i < arguments.length; i++) {
@@ -31717,11 +31717,11 @@ var ArtCostReports = (() => {
                     }
                     break;
                   }
-                  const number = Number.parseFloat(value);
-                  if (Number.isNaN(number)) {
+                  const number2 = Number.parseFloat(value);
+                  if (Number.isNaN(number2)) {
                     return [cursor, null];
                   }
-                  return [i - 1, number];
+                  return [i - 1, number2];
                 };
                 const pdfkit_browser_parse = function(path) {
                   const pathData = [];
@@ -31771,32 +31771,32 @@ var ArtCostReports = (() => {
                       return pathData;
                     }
                     let newCursor = i;
-                    let number = null;
+                    let number2 = null;
                     if (command === "A" || command === "a") {
                       const position = args.length;
                       if (position === 0 || position === 1) {
                         if (c !== "+" && c !== "-") {
-                          [newCursor, number] = readNumber(path, i);
+                          [newCursor, number2] = readNumber(path, i);
                         }
                       }
                       if (position === 2 || position === 5 || position === 6) {
-                        [newCursor, number] = readNumber(path, i);
+                        [newCursor, number2] = readNumber(path, i);
                       }
                       if (position === 3 || position === 4) {
                         if (c === "0") {
-                          number = 0;
+                          number2 = 0;
                         }
                         if (c === "1") {
-                          number = 1;
+                          number2 = 1;
                         }
                       }
                     } else {
-                      [newCursor, number] = readNumber(path, i);
+                      [newCursor, number2] = readNumber(path, i);
                     }
-                    if (number == null) {
+                    if (number2 == null) {
                       return pathData;
                     }
-                    args.push(number);
+                    args.push(number2);
                     canHaveComma = true;
                     hadComma = false;
                     i = newCursor;
@@ -51070,8 +51070,8 @@ Row data: ${stringifyNode(rowData)}`);
                 "use strict";
                 var trunc = __webpack_require__2(2537);
                 module2.exports = function(argument) {
-                  var number = +argument;
-                  return number !== number || number === 0 ? 0 : trunc(number);
+                  var number2 = +argument;
+                  return number2 !== number2 || number2 === 0 ? 0 : trunc(number2);
                 };
               },
               /***/
@@ -51246,8 +51246,8 @@ Row data: ${stringifyNode(rowData)}`);
   }
   function numberOrNull(value) {
     if (value === null || value === void 0 || value === "") return null;
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
+    const number2 = Number(value);
+    return Number.isFinite(number2) ? number2 : null;
   }
   function resultStatus(document2, id) {
     if (!id) return "\u5F85\u63A5\u5165";
@@ -73172,6 +73172,8 @@ Row data: ${stringifyNode(rowData)}`);
   var import_vfs_fonts = __toESM(require_vfs_fonts(), 1);
   var reportFontName = "Roboto";
   var money = (value) => value === null || value === void 0 ? "\u5F85\u8865\u5145" : Number(value).toFixed(2);
+  var number = (value, digits = 3) => value === null || value === void 0 || !Number.isFinite(Number(value)) ? "\u5F85\u8865\u5145" : Number(value).toLocaleString("en-US", { maximumFractionDigits: digits });
+  var amountWithUnit = (value, currency, suffix = "/\u4EF6") => value === null || value === void 0 ? "\u5F85\u8865\u5145" : `${money(value)} ${currency}${suffix}`;
   var datePart = (value) => String(value || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10).replaceAll("-", "");
   var safeName = (value) => String(value || "\u672A\u547D\u540D\u4EA7\u54C1").replace(/[\\/:*?"<>|]/g, "_").trim() || "\u672A\u547D\u540D\u4EA7\u54C1";
   function downloadBlob(blob, filename) {
@@ -73209,11 +73211,45 @@ Row data: ${stringifyNode(rowData)}`);
       ["\u5305\u88C5\u4F53\u79EF (mm\xB3)", snapshot.volumeMm3 ?? "\u5F85\u8865\u5145"],
       ["\u7A7A\u8FD0\u8BA1\u8D39\u91CD (g)", snapshot.airChargeableWeightG ?? "\u5F85\u8865\u5145"]
     ];
-    const rows = [["\u56FD\u5BB6", "\u5F53\u5730\u5E01\u79CD", "FBA\u8D39\u7528", "\u7A7A\u8FD0\u5934\u7A0B", "\u6D77\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B", "\u5F53\u524D\u53EF\u8BA1\u7B97\u8D39\u7528\u5408\u8BA1", "\u6298\u7B97USD", "\u6570\u636E\u72B6\u6001"]];
+    const rows = [[
+      "\u4EA7\u54C1\u540D\u79F0",
+      "\u56FD\u5BB6",
+      "FBA\u914D\u9001\u65E5\u671F",
+      "\u5B63\u8282",
+      "\u552E\u4EF7 (USD)",
+      "\u5305\u88C5\u91CD\u91CF (g)",
+      "\u5305\u88C5\u91CD\u91CF (kg)",
+      "\u5305\u88C5\u91CD\u91CF (lb)",
+      "\u5305\u88C5\u957F (mm)",
+      "\u5305\u88C5\u5BBD (mm)",
+      "\u5305\u88C5\u9AD8 (mm)",
+      "\u5305\u88C5\u4F53\u79EF (mm\xB3)",
+      "\u7A7A\u8FD0\u8BA1\u8D39\u91CD (g)",
+      "\u5F53\u5730\u5E01\u79CD",
+      "FBA\u8D39\u7528 (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
+      "\u7A7A\u8FD0\u5934\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
+      "\u6D77\u8FD0\u5934\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
+      "\u975EFBA\u5C3E\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
+      "\u5F53\u524D\u53EF\u8BA1\u7B97\u8D39\u7528\u5408\u8BA1 (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
+      "\u6298\u7B97USD (USD/\u4EF6)",
+      "\u6570\u636E\u72B6\u6001"
+    ]];
     for (const country of snapshot.countries) {
       const values = Object.fromEntries(country.components.map((component) => [component.label, component]));
       rows.push([
+        snapshot.form.productName || "\u5F85\u8865\u5145",
         country.name,
+        snapshot.form.feeDate || "\u5F85\u8865\u5145",
+        snapshot.seasonLabel || "\u5F85\u8865\u5145",
+        snapshot.priceUsd === null ? "\u5F85\u8865\u5145" : snapshot.priceUsd,
+        snapshot.form.weight === "" ? "\u5F85\u8865\u5145" : Number(snapshot.form.weight),
+        snapshot.weightKg === null ? "\u5F85\u8865\u5145" : snapshot.weightKg,
+        snapshot.weightLb === null ? "\u5F85\u8865\u5145" : snapshot.weightLb,
+        snapshot.form.length === "" ? "\u5F85\u8865\u5145" : Number(snapshot.form.length),
+        snapshot.form.width === "" ? "\u5F85\u8865\u5145" : Number(snapshot.form.width),
+        snapshot.form.height === "" ? "\u5F85\u8865\u5145" : Number(snapshot.form.height),
+        snapshot.volumeMm3 ?? "\u5F85\u8865\u5145",
+        snapshot.airChargeableWeightG ?? "\u5F85\u8865\u5145",
         country.currency,
         values.FBA\u8D39\u7528?.status === "\u5DF2\u8BA1\u7B97" ? values.FBA\u8D39\u7528.amount : values.FBA\u8D39\u7528?.status || "\u5F85\u8865\u5145",
         values.\u7A7A\u8FD0\u5934\u7A0B?.status === "\u5DF2\u8BA1\u7B97" ? values.\u7A7A\u8FD0\u5934\u7A0B.amount : values.\u7A7A\u8FD0\u5934\u7A0B?.status || "\u5F85\u8865\u5145",
@@ -73228,15 +73264,50 @@ Row data: ${stringifyNode(rowData)}`);
       ["\u8BA1\u7B97\u8BF4\u660E", ""],
       ["\u53EF\u6BD4\u8F83\u5B8C\u6574\u603B\u6210\u672C", snapshot.comparable ? "\u662F" : "\u5426"],
       ["\u6700\u4F4E\u6210\u672C\u56FD\u5BB6", snapshot.lowestCountry || "\u5F53\u524D\u5404\u56FD\u8D39\u7528\u9879\u76EE\u5C1A\u672A\u5168\u90E8\u63A5\u5165\uFF0C\u6682\u65F6\u4E0D\u80FD\u6BD4\u8F83\u5B8C\u6574\u603B\u6210\u672C\u3002"],
-      ["\u6C47\u7387", `USD/EUR ${snapshot.rates.EUR ?? "\u5F85\u8865\u5145"}\uFF1BUSD/GBP ${snapshot.rates.GBP ?? "\u5F85\u8865\u5145"}\uFF1BUSD/CAD ${snapshot.rates.CAD ?? "\u5F85\u8865\u5145"}`],
+      ["\u6C47\u7387", `1 USD = ${snapshot.rates.EUR ?? "\u5F85\u8865\u5145"} EUR\uFF1B1 USD = ${snapshot.rates.GBP ?? "\u5F85\u8865\u5145"} GBP\uFF1B1 USD = ${snapshot.rates.CAD ?? "\u5F85\u8865\u5145"} CAD`],
       ["\u6C47\u7387\u66F4\u65B0\u65F6\u95F4", snapshot.rateUpdated],
       ["\u6C47\u7387\u6765\u6E90", snapshot.rateSource],
       ["\u5F85\u8865\u5145\u9879\u76EE", snapshot.missingItems.length ? snapshot.missingItems.join("\u3001") : "\u65E0"],
       ["\u8BF4\u660E", "\u672C\u62A5\u544A\u4EC5\u4F5C\u4E3A\u6D4B\u7B97\u53C2\u8003\uFF0C\u91D1\u989D\u6765\u81EA\u7F51\u9875\u5F53\u524D\u8BA1\u7B97\u7ED3\u679C\u5FEB\u7167\u3002"]
     ];
-    utils.book_append_sheet(book, utils.aoa_to_sheet(product), "\u4EA7\u54C1\u53C2\u6570");
-    utils.book_append_sheet(book, utils.aoa_to_sheet(rows), "\u56DB\u56FD\u8D39\u7528");
-    utils.book_append_sheet(book, utils.aoa_to_sheet(notes), "\u8BA1\u7B97\u8BF4\u660E");
+    const productSheet = utils.aoa_to_sheet(product);
+    productSheet["!cols"] = [{ wch: 24 }, { wch: 34 }];
+    productSheet["!rows"] = [{ hpt: 28 }];
+    productSheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    const feesSheet = utils.aoa_to_sheet(rows);
+    feesSheet["!cols"] = [
+      { wch: 22 },
+      { wch: 10 },
+      { wch: 14 },
+      { wch: 10 },
+      { wch: 13 },
+      { wch: 14 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 18 },
+      { wch: 17 },
+      { wch: 12 },
+      { wch: 23 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 27 },
+      { wch: 31 },
+      { wch: 20 },
+      { wch: 12 }
+    ];
+    feesSheet["!rows"] = [{ hpt: 36 }];
+    feesSheet["!autofilter"] = { ref: `A1:U${rows.length}` };
+    feesSheet["!freeze"] = { xSplit: 2, ySplit: 1 };
+    const notesSheet = utils.aoa_to_sheet(notes);
+    notesSheet["!cols"] = [{ wch: 22 }, { wch: 90 }];
+    notesSheet["!rows"] = [{ hpt: 28 }];
+    notesSheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    utils.book_append_sheet(book, productSheet, "\u4EA7\u54C1\u53C2\u6570");
+    utils.book_append_sheet(book, feesSheet, "\u56DB\u56FD\u8D39\u7528");
+    utils.book_append_sheet(book, notesSheet, "\u8BA1\u7B97\u8BF4\u660E");
     return book;
   }
   function exportExcel(snapshot, { save = true } = {}) {
@@ -73246,8 +73317,9 @@ Row data: ${stringifyNode(rowData)}`);
     return data;
   }
   function row(country) {
-    const values = Object.fromEntries(country.components.map((component) => [component.label, component]));
-    return [country.name, country.currency, ...["FBA\u8D39\u7528", "\u7A7A\u8FD0\u5934\u7A0B", "\u6D77\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B"].map((label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? money(values[label].amount) : values[label]?.status || "\u5F85\u8865\u5145"), country.total === null ? country.status : money(country.total), country.totalUsd === null ? country.status : `${money(country.totalUsd)} USD`, country.status];
+    const values = Object.fromEntries(country.components.map((component2) => [component2.label, component2]));
+    const component = (label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? amountWithUnit(values[label].amount, country.currency) : values[label]?.status || "\u5F85\u8865\u5145";
+    return [country.name, country.currency, ...["FBA\u8D39\u7528", "\u7A7A\u8FD0\u5934\u7A0B", "\u6D77\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B"].map(component), country.total === null ? country.status : amountWithUnit(country.total, country.currency), country.totalUsd === null ? country.status : amountWithUnit(country.totalUsd, "USD"), country.status];
   }
   function buildPdfDefinition(snapshot) {
     if (import_vfs_fonts.default?.pdfMake?.vfs) import_pdfmake.default.vfs = import_vfs_fonts.default.pdfMake.vfs;
@@ -73257,12 +73329,17 @@ Row data: ${stringifyNode(rowData)}`);
       ["\u62A5\u544A\u751F\u6210\u65F6\u95F4", snapshot.generatedAt],
       ["FBA\u914D\u9001\u65E5\u671F", snapshot.form.feeDate || "\u5F85\u8865\u5145"],
       ["\u5B63\u8282", snapshot.seasonLabel || "\u5F85\u8865\u5145"],
-      ["\u5C3A\u5BF8 (mm)", `${snapshot.form.length || "\u5F85\u8865\u5145"} \xD7 ${snapshot.form.width || "\u5F85\u8865\u5145"} \xD7 ${snapshot.form.height || "\u5F85\u8865\u5145"}`],
-      ["\u91CD\u91CF", snapshot.weightKg === null ? "\u5F85\u8865\u5145" : `${snapshot.form.weight}g / ${snapshot.weightKg.toFixed(3)}kg / ${snapshot.weightLb.toFixed(3)}lb`],
-      ["\u552E\u4EF7", snapshot.priceUsd === null ? "\u5F85\u8865\u5145" : `${money(snapshot.priceUsd)} USD`],
-      ["\u4F53\u79EF / \u7A7A\u8FD0\u8BA1\u8D39\u91CD", `${snapshot.volumeMm3 ?? "\u5F85\u8865\u5145"} mm\xB3 / ${snapshot.airChargeableWeightG ?? "\u5F85\u8865\u5145"} g`]
+      ["\u5305\u88C5\u957F", snapshot.form.length === "" ? "\u5F85\u8865\u5145" : `${number(Number(snapshot.form.length), 2)} mm`],
+      ["\u5305\u88C5\u5BBD", snapshot.form.width === "" ? "\u5F85\u8865\u5145" : `${number(Number(snapshot.form.width), 2)} mm`],
+      ["\u5305\u88C5\u9AD8", snapshot.form.height === "" ? "\u5F85\u8865\u5145" : `${number(Number(snapshot.form.height), 2)} mm`],
+      ["\u5305\u88C5\u91CD\u91CF", snapshot.weightKg === null ? "\u5F85\u8865\u5145" : `${number(Number(snapshot.form.weight), 2)} g`],
+      ["\u91CD\u91CF\u6362\u7B97", snapshot.weightKg === null ? "\u5F85\u8865\u5145" : `${number(snapshot.weightKg, 3)} kg / ${number(snapshot.weightLb, 3)} lb`],
+      ["\u552E\u4EF7", snapshot.priceUsd === null ? "\u5F85\u8865\u5145" : amountWithUnit(snapshot.priceUsd, "USD", "")],
+      ["\u5305\u88C5\u4F53\u79EF", snapshot.volumeMm3 === null ? "\u5F85\u8865\u5145" : `${number(snapshot.volumeMm3, 0)} mm\xB3`],
+      ["\u7A7A\u8FD0\u8BA1\u8D39\u91CD", snapshot.airChargeableWeightG === null ? "\u5F85\u8865\u5145" : `${number(snapshot.airChargeableWeightG, 2)} g`]
     ];
-    const table = [["\u56FD\u5BB6", "\u5E01\u79CD", "FBA", "\u7A7A\u8FD0", "\u6D77\u8FD0", "\u5C3E\u7A0B", "\u5408\u8BA1", "USD", "\u72B6\u6001"], ...snapshot.countries.map(row)];
+    const table = [["\u56FD\u5BB6", "\u5E01\u79CD", "FBA (\u5E01/\u4EF6)", "\u7A7A\u8FD0 (\u5E01/\u4EF6)", "\u6D77\u8FD0 (\u5E01/\u4EF6)", "\u5C3E\u7A0B (\u5E01/\u4EF6)", "\u5408\u8BA1 (\u5E01/\u4EF6)", "USD/\u4EF6", "\u72B6\u6001"], ...snapshot.countries.map(row)];
+    const tableRows = table.map((cells, index) => index === 0 ? cells.map((text) => ({ text, style: "tableHeader" })) : cells.map((text, column) => ({ text, style: column === 0 ? "countryName" : "tableCell" })));
     return {
       pageSize: "A4",
       pageOrientation: "portrait",
@@ -73273,10 +73350,10 @@ Row data: ${stringifyNode(rowData)}`);
         { text: "\u57FA\u672C\u4FE1\u606F\u4E0E\u4EA7\u54C1\u53C2\u6570", style: "heading" },
         { table: { widths: [115, "*"], body: productRows }, layout: "lightHorizontalLines" },
         { text: "\u56DB\u56FD\u8D39\u7528\u7ED3\u679C", style: "heading" },
-        { table: { headerRows: 1, widths: [52, 35, 48, 48, 48, 48, 52, 52, "*"], body: table }, layout: "lightHorizontalLines" },
+        { table: { headerRows: 1, widths: [40, 29, 53, 53, 53, 53, 57, 50, "*"], body: tableRows }, layout: "lightHorizontalLines" },
         { text: "\u6C47\u7387\u4E0E\u8BA1\u7B97\u8BF4\u660E", style: "heading" },
         { ul: [
-          `USD/EUR\uFF1A${snapshot.rates.EUR ?? "\u5F85\u8865\u5145"}\uFF1BUSD/GBP\uFF1A${snapshot.rates.GBP ?? "\u5F85\u8865\u5145"}\uFF1BUSD/CAD\uFF1A${snapshot.rates.CAD ?? "\u5F85\u8865\u5145"}`,
+          `1 USD = ${snapshot.rates.EUR ?? "\u5F85\u8865\u5145"} EUR\uFF1B1 USD = ${snapshot.rates.GBP ?? "\u5F85\u8865\u5145"} GBP\uFF1B1 USD = ${snapshot.rates.CAD ?? "\u5F85\u8865\u5145"} CAD`,
           `\u6C47\u7387\u66F4\u65B0\u65F6\u95F4\uFF1A${snapshot.rateUpdated}\uFF1B\u6765\u6E90\uFF1A${snapshot.rateSource}`,
           `\u65FA\u6DE1\u5B63\u89C4\u5219\uFF1A${snapshot.seasonLabel || "\u5F85\u8865\u5145"}`,
           `\u5F85\u8865\u5145\u9879\u76EE\uFF1A${snapshot.missingItems.length ? snapshot.missingItems.join("\u3001") : "\u65E0"}`,
@@ -73284,7 +73361,13 @@ Row data: ${stringifyNode(rowData)}`);
           "\u672C\u62A5\u544A\u4EC5\u4F5C\u4E3A\u6D4B\u7B97\u53C2\u8003\uFF0C\u91D1\u989D\u6765\u81EA\u7F51\u9875\u5F53\u524D\u8BA1\u7B97\u7ED3\u679C\u5FEB\u7167\u3002"
         ] }
       ],
-      styles: { title: { fontSize: 18, bold: true, margin: [0, 0, 0, 14] }, heading: { fontSize: 11, bold: true, margin: [0, 14, 0, 6] } }
+      styles: {
+        title: { fontSize: 18, bold: true, color: "#087f5b", margin: [0, 0, 0, 14] },
+        heading: { fontSize: 11, bold: true, color: "#182230", margin: [0, 14, 0, 6] },
+        tableHeader: { bold: true, color: "#ffffff", fillColor: "#087f5b", alignment: "center", margin: [3, 4, 3, 4] },
+        countryName: { bold: true, color: "#182230", fillColor: "#f0f8f4", margin: [3, 4, 3, 4] },
+        tableCell: { margin: [3, 4, 3, 4] }
+      }
     };
   }
   function exportPdf(snapshot, { save = true } = {}) {
