@@ -13,6 +13,7 @@
     "@assistant-ui/react": "^0.15.36",
     "dexie": "^4.4.7",
     "fake-indexeddb": "^6.2.8",
+    "fflate": "0.8.3",
     "mammoth": "^1.13.0",
     "pdfjs-dist": "^6.5.438",
     "pdfmake": "^0.3.14",

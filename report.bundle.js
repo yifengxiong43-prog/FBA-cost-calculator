@@ -33,10 +33,10 @@ var ArtCostReports = (() => {
       })(exports, (function() {
         "use strict";
         var extendStatics = function(d, b) {
-          extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
-            d2.__proto__ = b2;
-          } || function(d2, b2) {
-            for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
+          extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b3) {
+            d2.__proto__ = b3;
+          } || function(d2, b3) {
+            for (var p in b3) if (Object.prototype.hasOwnProperty.call(b3, p)) d2[p] = b3[p];
           };
           return extendStatics(d, b);
         };
@@ -648,10 +648,10 @@ var ArtCostReports = (() => {
             if (arguments.length === 1)
               return this.then(null, onRejected);
             var type2 = arguments[0], handler = arguments[1];
-            return typeof type2 === "function" ? this.then(null, function(err) {
-              return err instanceof type2 ? handler(err) : PromiseReject(err);
-            }) : this.then(null, function(err) {
-              return err && err.name === type2 ? handler(err) : PromiseReject(err);
+            return typeof type2 === "function" ? this.then(null, function(err2) {
+              return err2 instanceof type2 ? handler(err2) : PromiseReject(err2);
+            }) : this.then(null, function(err2) {
+              return err2 && err2.name === type2 ? handler(err2) : PromiseReject(err2);
             });
           },
           finally: function(onFinally) {
@@ -659,9 +659,9 @@ var ArtCostReports = (() => {
               return DexiePromise.resolve(onFinally()).then(function() {
                 return value;
               });
-            }, function(err) {
+            }, function(err2) {
               return DexiePromise.resolve(onFinally()).then(function() {
-                return PromiseReject(err);
+                return PromiseReject(err2);
               });
             });
           },
@@ -1171,7 +1171,7 @@ var ArtCostReports = (() => {
               if (mode === "readwrite")
                 try {
                   trans.idbtrans.commit();
-                } catch (_a2) {
+                } catch (_a3) {
                 }
               return mode === "readonly" ? result : trans._completion.then(function() {
                 return result;
@@ -1248,7 +1248,7 @@ var ArtCostReports = (() => {
               case "Array":
                 return compareArrays(a, b);
             }
-          } catch (_a2) {
+          } catch (_a3) {
           }
           return NaN;
         }
@@ -1297,8 +1297,8 @@ var ArtCostReports = (() => {
             keys3 = keys3.filter(function(_, i) {
               return !res.failures[i];
             });
-          return Promise.all(yProps.map(function(_a2) {
-            var updatesTable = _a2.updatesTable;
+          return Promise.all(yProps.map(function(_a3) {
+            var updatesTable = _a3.updatesTable;
             return keys3 ? table.db.table(updatesTable).where("k").anyOf(keys3).delete() : table.db.table(updatesTable).clear();
           })).then(function() {
             return res;
@@ -1309,7 +1309,7 @@ var ArtCostReports = (() => {
             this["@@propmod"] = spec;
           }
           PropModification3.prototype.execute = function(value) {
-            var _a2;
+            var _a3;
             var spec = this["@@propmod"];
             if (spec.add !== void 0) {
               var term = spec.add;
@@ -1321,7 +1321,7 @@ var ArtCostReports = (() => {
               if (typeof term === "bigint") {
                 try {
                   return BigInt(value) + term;
-                } catch (_b) {
+                } catch (_b2) {
                   return BigInt(0) + term;
                 }
               }
@@ -1345,7 +1345,7 @@ var ArtCostReports = (() => {
               }
               throw new TypeError("Invalid subtrahend ".concat(subtrahend_1));
             }
-            var prefixToReplace = (_a2 = spec.replacePrefix) === null || _a2 === void 0 ? void 0 : _a2[0];
+            var prefixToReplace = (_a3 = spec.replacePrefix) === null || _a3 === void 0 ? void 0 : _a3[0];
             if (prefixToReplace && typeof value === "string" && value.startsWith(prefixToReplace)) {
               return spec.replacePrefix[1] + value.substring(prefixToReplace.length);
             }
@@ -1390,9 +1390,9 @@ var ArtCostReports = (() => {
               }, { trans, transless: PSD.transless || PSD }) : tempTransaction(this.db, mode, [this.name], checkTableInTransaction);
               if (task2) {
                 p._consoleTask = task2;
-                p = p.catch(function(err) {
-                  console.trace(err);
-                  return rejection(err);
+                p = p.catch(function(err2) {
+                  console.trace(err2);
+                  return rejection(err2);
                 });
               }
               return p;
@@ -1447,8 +1447,8 @@ var ArtCostReports = (() => {
             function equals(a, b) {
               return cmp2(a, b) === 0;
             }
-            var _a2 = keyPaths.reduce(function(_a3, keyPath) {
-              var prevIndex = _a3[0], prevFilterFn = _a3[1];
+            var _a3 = keyPaths.reduce(function(_a4, keyPath) {
+              var prevIndex = _a4[0], prevFilterFn = _a4[1];
               var index = idxByName[keyPath];
               var value = indexOrCrit[keyPath];
               return [
@@ -1462,7 +1462,7 @@ var ArtCostReports = (() => {
                   return equals(value, getByKeyPath(x, keyPath));
                 }) : prevFilterFn
               ];
-            }, [null, null]), idx = _a2[0], filterFunction = _a2[1];
+            }, [null, null]), idx = _a3[0], filterFunction = _a3[1];
             return idx ? this.where(idx.name).equals(indexOrCrit[idx.keyPath]).filter(filterFunction) : compoundIndex ? this.filter(filterFunction) : this.where(keyPaths).equals("");
           };
           Table2.prototype.filter = function(filterFunction) {
@@ -1493,7 +1493,7 @@ var ArtCostReports = (() => {
             return this.toCollection().reverse();
           };
           Table2.prototype.mapToClass = function(constructor) {
-            var _a2 = this, db = _a2.db, tableName = _a2.name;
+            var _a3 = this, db = _a3.db, tableName = _a3.name;
             this.schema.mappedClass = constructor;
             if (constructor.prototype instanceof Entity2) {
               constructor = (function(_super) {
@@ -1547,7 +1547,7 @@ var ArtCostReports = (() => {
           };
           Table2.prototype.add = function(obj, key) {
             var _this = this;
-            var _a2 = this.schema.primKey, auto = _a2.auto, keyPath = _a2.keyPath;
+            var _a3 = this.schema.primKey, auto = _a3.auto, keyPath = _a3.keyPath;
             var objToAdd = obj;
             if (keyPath && auto) {
               objToAdd = workaroundForUndefinedPrimKey(keyPath)(obj);
@@ -1605,7 +1605,7 @@ var ArtCostReports = (() => {
           };
           Table2.prototype.put = function(obj, key) {
             var _this = this;
-            var _a2 = this.schema.primKey, auto = _a2.auto, keyPath = _a2.keyPath;
+            var _a3 = this.schema.primKey, auto = _a3.auto, keyPath = _a3.keyPath;
             var objToAdd = obj;
             if (keyPath && auto) {
               objToAdd = workaroundForUndefinedPrimKey(keyPath)(obj);
@@ -1668,7 +1668,7 @@ var ArtCostReports = (() => {
             options = options || (keys3 ? void 0 : keysOrOptions);
             var wantResults = options ? options.allKeys : void 0;
             return this._trans("readwrite", function(trans) {
-              var _a2 = _this.schema.primKey, auto = _a2.auto, keyPath = _a2.keyPath;
+              var _a3 = _this.schema.primKey, auto = _a3.auto, keyPath = _a3.keyPath;
               if (keyPath && keys3)
                 throw new exceptions.InvalidArgument("bulkAdd(): keys argument invalid on tables with inbound keys");
               if (keys3 && keys3.length !== objects.length)
@@ -1681,8 +1681,8 @@ var ArtCostReports = (() => {
                 keys: keys3,
                 values: objectsToAdd,
                 wantResults
-              }).then(function(_a3) {
-                var numFailures = _a3.numFailures, results = _a3.results, lastResult = _a3.lastResult, failures = _a3.failures;
+              }).then(function(_a4) {
+                var numFailures = _a4.numFailures, results = _a4.results, lastResult = _a4.lastResult, failures = _a4.failures;
                 var result = wantResults ? results : lastResult;
                 if (numFailures === 0)
                   return result;
@@ -1696,7 +1696,7 @@ var ArtCostReports = (() => {
             options = options || (keys3 ? void 0 : keysOrOptions);
             var wantResults = options ? options.allKeys : void 0;
             return this._trans("readwrite", function(trans) {
-              var _a2 = _this.schema.primKey, auto = _a2.auto, keyPath = _a2.keyPath;
+              var _a3 = _this.schema.primKey, auto = _a3.auto, keyPath = _a3.keyPath;
               if (keyPath && keys3)
                 throw new exceptions.InvalidArgument("bulkPut(): keys argument invalid on tables with inbound keys");
               if (keys3 && keys3.length !== objects.length)
@@ -1709,8 +1709,8 @@ var ArtCostReports = (() => {
                 keys: keys3,
                 values: objectsToPut,
                 wantResults
-              }).then(function(_a3) {
-                var numFailures = _a3.numFailures, results = _a3.results, lastResult = _a3.lastResult, failures = _a3.failures;
+              }).then(function(_a4) {
+                var numFailures = _a4.numFailures, results = _a4.results, lastResult = _a4.lastResult, failures = _a4.failures;
                 var result = wantResults ? results : lastResult;
                 if (numFailures === 0)
                   return result;
@@ -1730,15 +1730,15 @@ var ArtCostReports = (() => {
             return this._trans("readwrite", function(trans) {
               var coreTable = _this.core;
               return coreTable.getMany({ trans, keys: keys3, cache: "clone" }).then(function(objs) {
-                var _a2 = coreTable.schema.primaryKey, outbound = _a2.outbound, extractKey = _a2.extractKey;
+                var _a3 = coreTable.schema.primaryKey, outbound = _a3.outbound, extractKey = _a3.extractKey;
                 var resultKeys = [];
                 var resultObjs = [];
-                keysAndChanges.forEach(function(_a3, idx) {
-                  var key = _a3.key, changes = _a3.changes;
+                keysAndChanges.forEach(function(_a4, idx) {
+                  var key = _a4.key, changes = _a4.changes;
                   var obj = objs[idx];
                   if (obj) {
-                    for (var _i = 0, _b = Object.keys(changes); _i < _b.length; _i++) {
-                      var keyPath = _b[_i];
+                    for (var _i = 0, _b2 = Object.keys(changes); _i < _b2.length; _i++) {
+                      var keyPath = _b2[_i];
                       setByKeyPath(obj, keyPath, changes[keyPath]);
                     }
                     if (!outbound && cmp2(extractKey(obj), key) !== 0) {
@@ -1759,12 +1759,12 @@ var ArtCostReports = (() => {
                     keys: keys3,
                     changeSpecs
                   }
-                }).then(function(_a3) {
-                  var numFailures = _a3.numFailures, failures = _a3.failures;
+                }).then(function(_a4) {
+                  var numFailures = _a4.numFailures, failures = _a4.failures;
                   if (numFailures === 0)
                     return numEntries;
-                  for (var _i = 0, _b = Object.keys(failures); _i < _b.length; _i++) {
-                    var offset = _b[_i];
+                  for (var _i = 0, _b2 = Object.keys(failures); _i < _b2.length; _i++) {
+                    var offset = _b2[_i];
                     var mappedOffset = offsetMap[Number(offset)];
                     if (mappedOffset != null) {
                       var failure = failures[offset];
@@ -1784,8 +1784,8 @@ var ArtCostReports = (() => {
               return _this.core.mutate({ trans, type: "delete", keys: keys3 }).then(function(res) {
                 return builtInDeletionTrigger(_this, keys3, res);
               });
-            }).then(function(_a2) {
-              var numFailures = _a2.numFailures, lastResult = _a2.lastResult, failures = _a2.failures;
+            }).then(function(_a3) {
+              var numFailures = _a3.numFailures, lastResult = _a3.lastResult, failures = _a3.failures;
               if (numFailures === 0)
                 return lastResult;
               throw new BulkError("".concat(_this.name, ".bulkDelete(): ").concat(numFailures, " of ").concat(numKeys, " operations failed"), failures);
@@ -1922,8 +1922,8 @@ var ArtCostReports = (() => {
             var union = function(item, cursor, advance) {
               if (!filter || filter(cursor, advance, function(result) {
                 return cursor.stop(result);
-              }, function(err) {
-                return cursor.fail(err);
+              }, function(err2) {
+                return cursor.fail(err2);
               })) {
                 var primaryKey = cursor.primaryKey;
                 var key = "" + primaryKey;
@@ -2062,8 +2062,8 @@ var ArtCostReports = (() => {
                     index,
                     range: ctx.range
                   }
-                }).then(function(_a2) {
-                  var result = _a2.result;
+                }).then(function(_a3) {
+                  var result = _a3.result;
                   return valueMapper_1 ? result.map(valueMapper_1) : result;
                 });
               } else {
@@ -2204,8 +2204,8 @@ var ArtCostReports = (() => {
                     range: ctx.range
                   }
                 });
-              }).then(function(_a2) {
-                var result = _a2.result;
+              }).then(function(_a3) {
+                var result = _a3.result;
                 return result;
               }).then(cb);
             }
@@ -2255,7 +2255,7 @@ var ArtCostReports = (() => {
                 };
               }
               var coreTable = ctx.table.core;
-              var _a2 = coreTable.schema.primaryKey, outbound = _a2.outbound, extractKey = _a2.extractKey;
+              var _a3 = coreTable.schema.primaryKey, outbound = _a3.outbound, extractKey = _a3.extractKey;
               var limit = 200;
               var modifyChunkSize = _this.db._options.modifyChunkSize;
               if (modifyChunkSize) {
@@ -2271,8 +2271,8 @@ var ArtCostReports = (() => {
               var applyMutateResult = function(expectedCount, res) {
                 var failures = res.failures, numFailures = res.numFailures;
                 successCount += expectedCount - numFailures;
-                for (var _i = 0, _a3 = keys2(failures); _i < _a3.length; _i++) {
-                  var pos = _a3[_i];
+                for (var _i = 0, _a4 = keys2(failures); _i < _a4.length; _i++) {
+                  var pos = _a4[_i];
                   totalFailures.push(failures[pos]);
                 }
               };
@@ -2363,8 +2363,8 @@ var ArtCostReports = (() => {
                 var primaryKey = ctx.table.core.schema.primaryKey;
                 var coreRange = range;
                 return ctx.table.core.count({ trans, query: { index: primaryKey, range: coreRange } }).then(function(count) {
-                  return ctx.table.core.mutate({ trans, type: "deleteRange", range: coreRange }).then(function(_a2) {
-                    var failures = _a2.failures, numFailures = _a2.numFailures;
+                  return ctx.table.core.mutate({ trans, type: "deleteRange", range: coreRange }).then(function(_a3) {
+                    var failures = _a3.failures, numFailures = _a3.numFailures;
                     if (numFailures)
                       throw new ModifyError("Could not delete some values", Object.keys(failures).map(function(pos) {
                         return failures[pos];
@@ -2421,9 +2421,9 @@ var ArtCostReports = (() => {
         function simpleCompareReverse(a, b) {
           return a > b ? -1 : a === b ? 0 : 1;
         }
-        function fail(collectionOrWhereClause, err, T) {
+        function fail(collectionOrWhereClause, err2, T) {
           var collection = collectionOrWhereClause instanceof WhereClause ? new collectionOrWhereClause.Collection(collectionOrWhereClause) : collectionOrWhereClause;
-          collection._ctx.error = T ? new T(err) : new TypeError(err);
+          collection._ctx.error = T ? new T(err2) : new TypeError(err2);
           return collection;
         }
         function emptyCollection(whereClause) {
@@ -2708,7 +2708,7 @@ var ArtCostReports = (() => {
           };
           WhereClause2.prototype.inAnyRange = function(ranges, options) {
             var _this = this;
-            var cmp3 = this._cmp, ascending = this._ascending, descending = this._descending, min = this._min, max = this._max;
+            var cmp3 = this._cmp, ascending = this._ascending, descending = this._descending, min = this._min, max2 = this._max;
             if (ranges.length === 0)
               return emptyCollection(this);
             if (!ranges.every(function(range) {
@@ -2724,7 +2724,7 @@ var ArtCostReports = (() => {
                 var range = ranges2[i];
                 if (cmp3(newRange[0], range[1]) < 0 && cmp3(newRange[1], range[0]) > 0) {
                   range[0] = min(range[0], newRange[0]);
-                  range[1] = max(range[1], newRange[1]);
+                  range[1] = max2(range[1], newRange[1]);
                   break;
                 }
               }
@@ -2985,8 +2985,8 @@ var ArtCostReports = (() => {
             return new DexiePromise(function(resolve, reject) {
               promise.then(function(res) {
                 return root._waitingQueue.push(wrap(resolve.bind(null, res)));
-              }, function(err) {
-                return root._waitingQueue.push(wrap(reject.bind(null, err)));
+              }, function(err2) {
+                return root._waitingQueue.push(wrap(reject.bind(null, err2)));
               }).finally(function() {
                 if (root._waitingFor === currentWaitPromise) {
                   root._waitingFor = null;
@@ -3022,8 +3022,8 @@ var ArtCostReports = (() => {
             var _this = this;
             if (mode !== "readonly")
               storeNames.forEach(function(storeName) {
-                var _a2;
-                var yProps = (_a2 = dbschema[storeName]) === null || _a2 === void 0 ? void 0 : _a2.yProps;
+                var _a3;
+                var yProps = (_a3 = dbschema[storeName]) === null || _a3 === void 0 ? void 0 : _a3.yProps;
                 if (yProps)
                   storeNames = storeNames.concat(yProps.map(function(p) {
                     return p.updatesTable;
@@ -3204,8 +3204,8 @@ var ArtCostReports = (() => {
           }
           function createDbCoreTable(tableSchema) {
             var tableName = tableSchema.name;
-            function mutate(_a3) {
-              var trans = _a3.trans, type2 = _a3.type, keys3 = _a3.keys, values = _a3.values, range = _a3.range;
+            function mutate(_a4) {
+              var trans = _a4.trans, type2 = _a4.type, keys3 = _a4.keys, values = _a4.values, range = _a4.range;
               return new Promise(function(resolve, reject) {
                 resolve = wrap(resolve);
                 var store = trans.objectStore(tableName);
@@ -3245,7 +3245,7 @@ var ArtCostReports = (() => {
                   else
                     reqs.push(req = store.delete(makeIDBKeyRange(range)));
                 } else {
-                  var _a4 = isAddOrPut ? outbound ? [values, keys3] : [values, null] : [keys3, null], args1 = _a4[0], args2 = _a4[1];
+                  var _a5 = isAddOrPut ? outbound ? [values, keys3] : [values, null] : [keys3, null], args1 = _a5[0], args2 = _a5[1];
                   if (isAddOrPut) {
                     for (var i = 0; i < length; ++i) {
                       reqs.push(req = args2 && args2[i] !== void 0 ? store[type2](args1[i], args2[i]) : store[type2](args1[i]));
@@ -3279,8 +3279,8 @@ var ArtCostReports = (() => {
                 req.onsuccess = done;
               });
             }
-            function openCursor2(_a3) {
-              var trans = _a3.trans, values = _a3.values, query2 = _a3.query, reverse = _a3.reverse, unique = _a3.unique;
+            function openCursor2(_a4) {
+              var trans = _a4.trans, values = _a4.values, query2 = _a4.query, reverse = _a4.reverse, unique = _a4.unique;
               return new Promise(function(resolve, reject) {
                 resolve = wrap(resolve);
                 var index = query2.index, range = query2.range;
@@ -3334,8 +3334,8 @@ var ArtCostReports = (() => {
                       if (req.result) {
                         try {
                           callback();
-                        } catch (err) {
-                          cursor.fail(err);
+                        } catch (err2) {
+                          cursor.fail(err2);
                         }
                       } else {
                         cursor.done = true;
@@ -3362,10 +3362,10 @@ var ArtCostReports = (() => {
             function query(hasGetAll2, hasIdb3Features2) {
               return function(request) {
                 return new Promise(function(resolve, reject) {
-                  var _a3;
+                  var _a4;
                   resolve = wrap(resolve);
                   var trans = request.trans, values = request.values, limit = request.limit, query2 = request.query;
-                  var direction = (_a3 = request.direction) !== null && _a3 !== void 0 ? _a3 : "next";
+                  var direction = (_a4 = request.direction) !== null && _a4 !== void 0 ? _a4 : "next";
                   var nonInfinitLimit = limit === Infinity ? void 0 : limit;
                   var index = query2.index, range = query2.range;
                   var store = trans.objectStore(tableName);
@@ -3412,8 +3412,8 @@ var ArtCostReports = (() => {
               name: tableName,
               schema: tableSchema,
               mutate,
-              getMany: function(_a3) {
-                var trans = _a3.trans, keys3 = _a3.keys;
+              getMany: function(_a4) {
+                var trans = _a4.trans, keys3 = _a4.keys;
                 return new Promise(function(resolve, reject) {
                   resolve = wrap(resolve);
                   var store = trans.objectStore(tableName);
@@ -3444,8 +3444,8 @@ var ArtCostReports = (() => {
                     resolve(result);
                 });
               },
-              get: function(_a3) {
-                var trans = _a3.trans, key = _a3.key;
+              get: function(_a4) {
+                var trans = _a4.trans, key = _a4.key;
                 return new Promise(function(resolve, reject) {
                   resolve = wrap(resolve);
                   var store = trans.objectStore(tableName);
@@ -3458,8 +3458,8 @@ var ArtCostReports = (() => {
               },
               query: query(hasGetAll, hasIdb3Features),
               openCursor: openCursor2,
-              count: function(_a3) {
-                var query2 = _a3.query, trans = _a3.trans;
+              count: function(_a4) {
+                var query2 = _a4.query, trans = _a4.trans;
                 var index = query2.index, range = query2.range;
                 return new Promise(function(resolve, reject) {
                   var store = trans.objectStore(tableName);
@@ -3474,7 +3474,7 @@ var ArtCostReports = (() => {
               }
             };
           }
-          var _a2 = extractSchema(db, tmpTrans), schema = _a2.schema, hasGetAll = _a2.hasGetAll, hasIdb3Features = _a2.hasIdb3Features;
+          var _a3 = extractSchema(db, tmpTrans), schema = _a3.schema, hasGetAll = _a3.hasGetAll, hasIdb3Features = _a3.hasIdb3Features;
           var tables = schema.tables.map(function(tableSchema) {
             return createDbCoreTable(tableSchema);
           });
@@ -3497,14 +3497,14 @@ var ArtCostReports = (() => {
           };
         }
         function createMiddlewareStack(stackImpl, middlewares) {
-          return middlewares.reduce(function(down, _a2) {
-            var create = _a2.create;
+          return middlewares.reduce(function(down, _a3) {
+            var create = _a3.create;
             return __assign(__assign({}, down), create(down));
           }, stackImpl);
         }
-        function createMiddlewareStacks(middlewares, idbdb, _a2, tmpTrans) {
-          var IDBKeyRange = _a2.IDBKeyRange;
-          _a2.indexedDB;
+        function createMiddlewareStacks(middlewares, idbdb, _a3, tmpTrans) {
+          var IDBKeyRange = _a3.IDBKeyRange;
+          _a3.indexedDB;
           var dbcore = createMiddlewareStack(createDBCore(idbdb, IDBKeyRange, tmpTrans), middlewares.dbcore);
           return {
             dbcore
@@ -3614,8 +3614,8 @@ var ArtCostReports = (() => {
               addIndex(store, idx);
             });
           };
-          for (var _i = 0, _a2 = diff.change; _i < _a2.length; _i++) {
-            var tableChange = _a2[_i];
+          for (var _i = 0, _a3 = diff.change; _i < _a3.length; _i++) {
+            var tableChange = _a3[_i];
             var state_1 = _loop_1(tableChange);
             if (typeof state_1 === "object")
               return state_1.value;
@@ -3860,9 +3860,9 @@ var ArtCostReports = (() => {
         }
         function parseIndexSyntax(primKeyAndIndexes) {
           return primKeyAndIndexes.split(",").map(function(index, indexNum) {
-            var _a2;
+            var _a3;
             var typeSplit = index.split(":");
-            var type2 = (_a2 = typeSplit[1]) === null || _a2 === void 0 ? void 0 : _a2.trim();
+            var type2 = (_a3 = typeSplit[1]) === null || _a3 === void 0 ? void 0 : _a3.trim();
             index = typeSplit[0].trim();
             var name = index.replace(/([&*]|\+\+)/g, "");
             var keyPath = /^\[/.test(name) ? name.match(/^\[(.*)\]$/)[1].split("+") : name;
@@ -4010,8 +4010,8 @@ var ArtCostReports = (() => {
         function hasDatabasesNative(indexedDB2) {
           return indexedDB2 && typeof indexedDB2.databases === "function";
         }
-        function getDatabaseNames(_a2) {
-          var indexedDB2 = _a2.indexedDB, IDBKeyRange = _a2.IDBKeyRange;
+        function getDatabaseNames(_a3) {
+          var indexedDB2 = _a3.indexedDB, IDBKeyRange = _a3.IDBKeyRange;
           return hasDatabasesNative(indexedDB2) ? Promise.resolve(indexedDB2.databases()).then(function(infos) {
             return infos.map(function(info) {
               return info.name;
@@ -4020,12 +4020,12 @@ var ArtCostReports = (() => {
             });
           }) : getDbNamesTable(indexedDB2, IDBKeyRange).toCollection().primaryKeys();
         }
-        function _onDatabaseCreated(_a2, name) {
-          var indexedDB2 = _a2.indexedDB, IDBKeyRange = _a2.IDBKeyRange;
+        function _onDatabaseCreated(_a3, name) {
+          var indexedDB2 = _a3.indexedDB, IDBKeyRange = _a3.IDBKeyRange;
           !hasDatabasesNative(indexedDB2) && name !== DBNAMES_DB && getDbNamesTable(indexedDB2, IDBKeyRange).put({ name }).catch(nop);
         }
-        function _onDatabaseDeleted(_a2, name) {
-          var indexedDB2 = _a2.indexedDB, IDBKeyRange = _a2.IDBKeyRange;
+        function _onDatabaseDeleted(_a3, name) {
+          var indexedDB2 = _a3.indexedDB, IDBKeyRange = _a3.IDBKeyRange;
           !hasDatabasesNative(indexedDB2) && name !== DBNAMES_DB && getDbNamesTable(indexedDB2, IDBKeyRange).delete(name).catch(nop);
         }
         function vip(fn) {
@@ -4049,7 +4049,7 @@ var ArtCostReports = (() => {
             return clearInterval(intervalId);
           });
         }
-        var _a;
+        var _a2;
         function isEmptyRange(node) {
           return !("from" in node);
         }
@@ -4064,7 +4064,7 @@ var ArtCostReports = (() => {
             return rv;
           }
         };
-        props(RangeSet2.prototype, (_a = {
+        props(RangeSet2.prototype, (_a2 = {
           add: function(rangeSet) {
             mergeRanges2(this, rangeSet);
             return this;
@@ -4084,9 +4084,9 @@ var ArtCostReports = (() => {
             var node = getRangeSetIterator(this).next(key).value;
             return node && cmp2(node.from, key) <= 0 && cmp2(node.to, key) >= 0;
           }
-        }, _a[iteratorSymbol] = function() {
+        }, _a2[iteratorSymbol] = function() {
           return getRangeSetIterator(this);
-        }, _a));
+        }, _a2));
         function addRange(target, from, to) {
           var diff = cmp2(from, to);
           if (isNaN(diff))
@@ -4124,8 +4124,8 @@ var ArtCostReports = (() => {
           }
         }
         function mergeRanges2(target, newSet) {
-          function _addRangeSet(target2, _a2) {
-            var from = _a2.from, to = _a2.to, l = _a2.l, r = _a2.r;
+          function _addRangeSet(target2, _a3) {
+            var from = _a3.from, to = _a3.to, l = _a3.l, r = _a3.r;
             addRange(target2, from, to);
             if (l)
               _addRangeSet(target2, l);
@@ -4186,8 +4186,8 @@ var ArtCostReports = (() => {
           };
         }
         function rebalance(target) {
-          var _a2, _b;
-          var diff = (((_a2 = target.r) === null || _a2 === void 0 ? void 0 : _a2.d) || 0) - (((_b = target.l) === null || _b === void 0 ? void 0 : _b.d) || 0);
+          var _a3, _b2;
+          var diff = (((_a3 = target.r) === null || _a3 === void 0 ? void 0 : _a3.d) || 0) - (((_b2 = target.l) === null || _b2 === void 0 ? void 0 : _b2.d) || 0);
           var r = diff > 1 ? "r" : diff < -1 ? "l" : "";
           if (r) {
             var l = r === "r" ? "l" : "r";
@@ -4202,8 +4202,8 @@ var ArtCostReports = (() => {
           }
           target.d = computeDepth(target);
         }
-        function computeDepth(_a2) {
-          var r = _a2.r, l = _a2.l;
+        function computeDepth(_a3) {
+          var r = _a3.r, l = _a3.l;
           return (r ? l ? Math.max(r.d, l.d) : r.d : l ? l.d : 0) + 1;
         }
         function extendObservabilitySet(target, newSet) {
@@ -4241,8 +4241,8 @@ var ArtCostReports = (() => {
           }
           var queriesToSignal = /* @__PURE__ */ new Set();
           if (updatedParts.all) {
-            for (var _i = 0, _a2 = Object.values(cache); _i < _a2.length; _i++) {
-              var tblCache = _a2[_i];
+            for (var _i = 0, _a3 = Object.values(cache); _i < _a3.length; _i++) {
+              var tblCache = _a3[_i];
               collectTableSubscribers(tblCache, updatedParts, queriesToSignal, deleteAffectedCacheEntries);
             }
           } else {
@@ -4262,8 +4262,8 @@ var ArtCostReports = (() => {
         }
         function collectTableSubscribers(tblCache, updatedParts, outQueriesToSignal, deleteAffectedCacheEntries) {
           var updatedEntryLists = [];
-          for (var _i = 0, _a2 = Object.entries(tblCache.queries.query); _i < _a2.length; _i++) {
-            var _b = _a2[_i], indexName = _b[0], entries = _b[1];
+          for (var _i = 0, _a3 = Object.entries(tblCache.queries.query); _i < _a3.length; _i++) {
+            var _b2 = _a3[_i], indexName = _b2[0], entries = _b2[1];
             var filteredEntries = [];
             for (var _c = 0, entries_1 = entries; _c < entries_1.length; _c++) {
               var entry = entries_1[_c];
@@ -4369,8 +4369,8 @@ var ArtCostReports = (() => {
                   _onDatabaseCreated(db._deps, dbName);
                 resolve();
               }, reject);
-            }).catch(function(err) {
-              switch (err === null || err === void 0 ? void 0 : err.name) {
+            }).catch(function(err2) {
+              switch (err2 === null || err2 === void 0 ? void 0 : err2.name) {
                 case "UnknownError":
                   if (state.PR1398_maxLoop > 0) {
                     state.PR1398_maxLoop--;
@@ -4385,7 +4385,7 @@ var ArtCostReports = (() => {
                   }
                   break;
               }
-              return DexiePromise.reject(err);
+              return DexiePromise.reject(err2);
             });
           };
           var useSafari14Workaround = typeof navigator !== "undefined" && !!indexedDB2 && indexedDB2 === _global.indexedDB;
@@ -4411,16 +4411,16 @@ var ArtCostReports = (() => {
               state.onReadyBeingFired = null;
               state.isBeingOpened = false;
             }
-          }).catch(function(err) {
-            state.dbOpenError = err;
+          }).catch(function(err2) {
+            state.dbOpenError = err2;
             try {
               upgradeTransaction && upgradeTransaction.abort();
-            } catch (_a2) {
+            } catch (_a3) {
             }
             if (openCanceller === state.openCanceller) {
               db._close();
             }
-            return rejection(err);
+            return rejection(err2);
           }).finally(function() {
             state.openComplete = true;
             resolveDbReady();
@@ -4557,8 +4557,8 @@ var ArtCostReports = (() => {
             }
             var primaryKey = addVirtualIndexes(schema.primaryKey.keyPath, 0, schema.primaryKey);
             indexLookup[":id"] = [primaryKey];
-            for (var _i = 0, _a2 = schema.indexes; _i < _a2.length; _i++) {
-              var index = _a2[_i];
+            for (var _i = 0, _a3 = schema.indexes; _i < _a3.length; _i++) {
+              var index = _a3[_i];
               addVirtualIndexes(index.keyPath, 0, index);
             }
             function findBestIndex(keyPath) {
@@ -4586,7 +4586,7 @@ var ArtCostReports = (() => {
             }, query: function(req) {
               return table.query(translateRequest(req));
             }, openCursor: function(req) {
-              var _a3 = req.query.index, keyTail = _a3.keyTail, isVirtual = _a3.isVirtual, keyLength = _a3.keyLength;
+              var _a4 = req.query.index, keyTail = _a4.keyTail, isVirtual = _a4.isVirtual, keyLength = _a4.keyLength;
               if (!isVirtual)
                 return table.openCursor(req);
               function createVirtualCursor(cursor) {
@@ -4676,7 +4676,7 @@ var ArtCostReports = (() => {
               var primaryKey = downTable.schema.primaryKey;
               var tableMiddleware = __assign(__assign({}, downTable), { mutate: function(req) {
                 var dxTrans = PSD.trans;
-                var _a2 = dxTrans.table(tableName).hook, deleting = _a2.deleting, creating = _a2.creating, updating = _a2.updating;
+                var _a3 = dxTrans.table(tableName).hook, deleting = _a3.deleting, creating = _a3.creating, updating = _a3.updating;
                 switch (req.type) {
                   case "add":
                     if (creating.fire === nop)
@@ -4745,8 +4745,8 @@ var ArtCostReports = (() => {
                       }
                       return ctx;
                     });
-                    return downTable.mutate(req2).then(function(_a3) {
-                      var failures = _a3.failures, results = _a3.results, numFailures = _a3.numFailures, lastResult = _a3.lastResult;
+                    return downTable.mutate(req2).then(function(_a4) {
+                      var failures = _a4.failures, results = _a4.results, numFailures = _a4.numFailures, lastResult = _a4.lastResult;
                       for (var i = 0; i < keys3.length; ++i) {
                         var primKey = results ? results[i] : keys3[i];
                         var ctx = contexts[i];
@@ -4776,8 +4776,8 @@ var ArtCostReports = (() => {
                     values: false,
                     query: { index: primaryKey, range },
                     limit
-                  }).then(function(_a3) {
-                    var result = _a3.result;
+                  }).then(function(_a4) {
+                    var result = _a4.result;
                     return addPutOrDelete({
                       type: "delete",
                       keys: result,
@@ -4823,7 +4823,7 @@ var ArtCostReports = (() => {
               ++j;
             }
             return result.length === keys3.length ? result : null;
-          } catch (_a2) {
+          } catch (_a3) {
             return null;
           }
         }
@@ -4896,7 +4896,7 @@ var ArtCostReports = (() => {
                 return index.compound && index.keyPath.includes(primaryKey.keyPath);
               });
               var tableClone = __assign(__assign({}, table), { mutate: function(req) {
-                var _a2, _b;
+                var _a3, _b2;
                 var trans = req.trans;
                 var mutatedParts = req.mutatedParts || (req.mutatedParts = {});
                 var getRangeSet = function(indexName) {
@@ -4924,8 +4924,8 @@ var ArtCostReports = (() => {
                   }
                 } else if (keys3) {
                   var range = {
-                    from: (_a2 = keys3.lower) !== null && _a2 !== void 0 ? _a2 : core.MIN_KEY,
-                    to: (_b = keys3.upper) !== null && _b !== void 0 ? _b : core.MAX_KEY
+                    from: (_a3 = keys3.lower) !== null && _a3 !== void 0 ? _a3 : core.MIN_KEY,
+                    to: (_b2 = keys3.upper) !== null && _b2 !== void 0 ? _b2 : core.MAX_KEY
                   };
                   delsRangeSet.add(range);
                   pkRangeSet.add(range);
@@ -4958,12 +4958,12 @@ var ArtCostReports = (() => {
                   return res;
                 });
               } });
-              var getRange = function(_a2) {
-                var _b, _c;
-                var _d = _a2.query, index = _d.index, range = _d.range;
+              var getRange = function(_a3) {
+                var _b2, _c;
+                var _d = _a3.query, index = _d.index, range = _d.range;
                 return [
                   index,
-                  new RangeSet2((_b = range.lower) !== null && _b !== void 0 ? _b : core.MIN_KEY, (_c = range.upper) !== null && _c !== void 0 ? _c : core.MAX_KEY)
+                  new RangeSet2((_b2 = range.lower) !== null && _b2 !== void 0 ? _b2 : core.MIN_KEY, (_c = range.upper) !== null && _c !== void 0 ? _c : core.MAX_KEY)
                 ];
               };
               var readSubscribers = {
@@ -4990,7 +4990,7 @@ var ArtCostReports = (() => {
                     };
                     var pkRangeSet_1 = getRangeSet("");
                     var delsRangeSet_1 = getRangeSet(":dels");
-                    var _a2 = readSubscribers[method](req), queriedIndex = _a2[0], queriedRanges = _a2[1];
+                    var _a3 = readSubscribers[method](req), queriedIndex = _a3[0], queriedRanges = _a3[1];
                     if (method === "query" && queriedIndex.isPrimaryKey && !req.values) {
                       delsRangeSet_1.add(queriedRanges);
                     } else {
@@ -5004,8 +5004,8 @@ var ArtCostReports = (() => {
                         return table[method].apply(this, arguments).then(function(res) {
                           if (method === "query") {
                             if (outbound && req.values) {
-                              return keysPromise_1.then(function(_a3) {
-                                var resultingKeys = _a3.result;
+                              return keysPromise_1.then(function(_a4) {
+                                var resultingKeys = _a4.result;
                                 pkRangeSet_1.addKeys(resultingKeys);
                                 return res;
                               });
@@ -5245,7 +5245,7 @@ var ArtCostReports = (() => {
           return compareLowers(r1.lower, r2.lower, r1.lowerOpen, r2.lowerOpen) <= 0 && compareUppers(r1.upper, r2.upper, r1.upperOpen, r2.upperOpen) >= 0;
         }
         function findCompatibleQuery(dbName, tableName, type2, req) {
-          var _a2;
+          var _a3;
           var tblCache = cache["idb://".concat(dbName, "/").concat(tableName)];
           if (!tblCache)
             return [];
@@ -5258,10 +5258,10 @@ var ArtCostReports = (() => {
             return [null, false, tblCache, null];
           switch (type2) {
             case "query":
-              var reqDirection_1 = (_a2 = req.direction) !== null && _a2 !== void 0 ? _a2 : "next";
+              var reqDirection_1 = (_a3 = req.direction) !== null && _a3 !== void 0 ? _a3 : "next";
               var equalEntry = entries.find(function(entry) {
-                var _a3;
-                return entry.req.limit === req.limit && entry.req.values === req.values && ((_a3 = entry.req.direction) !== null && _a3 !== void 0 ? _a3 : "next") === reqDirection_1 && areRangesEqual(entry.req.query.range, req.query.range);
+                var _a4;
+                return entry.req.limit === req.limit && entry.req.values === req.values && ((_a4 = entry.req.direction) !== null && _a4 !== void 0 ? _a4 : "next") === reqDirection_1 && areRangesEqual(entry.req.query.range, req.query.range);
               });
               if (equalEntry)
                 return [
@@ -5271,9 +5271,9 @@ var ArtCostReports = (() => {
                   entries
                 ];
               var superEntry = entries.find(function(entry) {
-                var _a3;
+                var _a4;
                 var limit = "limit" in entry.req ? entry.req.limit : Infinity;
-                return limit >= req.limit && ((_a3 = entry.req.direction) !== null && _a3 !== void 0 ? _a3 : "next") === reqDirection_1 && (req.values ? entry.req.values : true) && isSuperRange(entry.req.query.range, req.query.range);
+                return limit >= req.limit && ((_a4 = entry.req.direction) !== null && _a4 !== void 0 ? _a4 : "next") === reqDirection_1 && (req.values ? entry.req.values : true) && isSuperRange(entry.req.query.range, req.query.range);
               });
               return [superEntry, false, tblCache, entries];
             case "count":
@@ -5324,8 +5324,8 @@ var ArtCostReports = (() => {
                             return op.trans === idbtrans;
                           });
                           if (idbtrans._explicit && wasCommitted && idbtrans.mutatedParts) {
-                            for (var _a2 = 0, _b = Object.values(tblCache.queries.query); _a2 < _b.length; _a2++) {
-                              var entries = _b[_a2];
+                            for (var _a3 = 0, _b2 = Object.values(tblCache.queries.query); _a3 < _b2.length; _a3++) {
+                              var entries = _b2[_a3];
                               for (var _c = 0, _d = entries.slice(); _c < _d.length; _c++) {
                                 var entry = _d[_c];
                                 if (obsSetsOverlap(entry.obsSet, idbtrans.mutatedParts)) {
@@ -5407,10 +5407,10 @@ var ArtCostReports = (() => {
                 }))) {
                   promise.then(function(res) {
                     var reqWithResolvedKeys = __assign(__assign({}, req), { values: req.values.map(function(value, i) {
-                      var _a2;
+                      var _a3;
                       if (res.failures[i])
                         return value;
-                      var valueWithKey = ((_a2 = primKey.keyPath) === null || _a2 === void 0 ? void 0 : _a2.includes(".")) ? deepClone(value) : __assign({}, value);
+                      var valueWithKey = ((_a3 = primKey.keyPath) === null || _a3 === void 0 ? void 0 : _a3.includes(".")) ? deepClone(value) : __assign({}, value);
                       setByKeyPath(valueWithKey, primKey.keyPath, res.results[i]);
                       return valueWithKey;
                     }) });
@@ -5440,11 +5440,11 @@ var ArtCostReports = (() => {
                 }
                 return promise;
               }, query: function(req) {
-                var _a2;
+                var _a3;
                 if (!isCachableContext(PSD, downTable) || !isCachableRequest("query", req))
                   return downTable.query(req);
-                var freezeResults = ((_a2 = PSD.trans) === null || _a2 === void 0 ? void 0 : _a2.db._options.cache) === "immutable";
-                var _b = PSD, requery = _b.requery, signal = _b.signal;
+                var freezeResults = ((_a3 = PSD.trans) === null || _a3 === void 0 ? void 0 : _a3.db._options.cache) === "immutable";
+                var _b2 = PSD, requery = _b2.requery, signal = _b2.signal;
                 var _c = findCompatibleQuery(dbName, tableName, "query", req), cacheEntry = _c[0], exactMatch = _c[1], tblCache = _c[2], container = _c[3];
                 if (cacheEntry && exactMatch) {
                   cacheEntry.obsSet = req.obsSet;
@@ -5697,8 +5697,8 @@ var ArtCostReports = (() => {
               _this._state.dbReadyPromise.then(resolve, reject);
             }).then(fn);
           };
-          Dexie3.prototype.use = function(_a2) {
-            var stack = _a2.stack, create = _a2.create, level = _a2.level, name = _a2.name;
+          Dexie3.prototype.use = function(_a3) {
+            var stack = _a3.stack, create = _a3.create, level = _a3.level, name = _a3.name;
             if (name)
               this.unuse({ stack, name });
             var middlewares = this._middlewares[stack] || (this._middlewares[stack] = []);
@@ -5713,8 +5713,8 @@ var ArtCostReports = (() => {
             });
             return this;
           };
-          Dexie3.prototype.unuse = function(_a2) {
-            var stack = _a2.stack, name = _a2.name, create = _a2.create;
+          Dexie3.prototype.unuse = function(_a3) {
+            var stack = _a3.stack, name = _a3.name, create = _a3.create;
             if (stack && this._middlewares[stack]) {
               this._middlewares[stack] = this._middlewares[stack].filter(function(mw) {
                 return create ? mw.create !== create : name ? mw.name !== name : false;
@@ -5751,8 +5751,8 @@ var ArtCostReports = (() => {
               });
             }
           };
-          Dexie3.prototype.close = function(_a2) {
-            var _b = _a2 === void 0 ? { disableAutoOpen: true } : _a2, disableAutoOpen = _b.disableAutoOpen;
+          Dexie3.prototype.close = function(_a3) {
+            var _b2 = _a3 === void 0 ? { disableAutoOpen: true } : _a3, disableAutoOpen = _b2.disableAutoOpen;
             var state = this._state;
             if (disableAutoOpen) {
               if (state.isBeingOpened) {
@@ -5999,17 +5999,17 @@ var ArtCostReports = (() => {
                     });
                   }
                 }
-              }, function(err) {
+              }, function(err2) {
                 if (closed || ctx.signal.aborted) {
                   return;
                 }
                 hasValue = false;
-                if (!["DatabaseClosedError", "AbortError"].includes(err === null || err === void 0 ? void 0 : err.name)) {
+                if (!["DatabaseClosedError", "AbortError"].includes(err2 === null || err2 === void 0 ? void 0 : err2.name)) {
                   if (!closed)
                     execInGlobalContext(function() {
                       if (closed)
                         return;
-                      observer.error && observer.error(err);
+                      observer.error && observer.error(err2);
                     });
                 }
               });
@@ -6042,7 +6042,7 @@ var ArtCostReports = (() => {
           getDatabaseNames: function(cb) {
             try {
               return getDatabaseNames(Dexie2.dependencies).then(cb);
-            } catch (_a2) {
+            } catch (_a3) {
               return rejection(new exceptions.MissingAPI());
             }
           },
@@ -6140,8 +6140,8 @@ var ArtCostReports = (() => {
               propagatingLocally = false;
             }
           });
-          addEventListener(STORAGE_MUTATED_DOM_EVENT_NAME, function(_a2) {
-            var detail = _a2.detail;
+          addEventListener(STORAGE_MUTATED_DOM_EVENT_NAME, function(_a3) {
+            var detail = _a3.detail;
             if (!propagatingLocally) {
               propagateLocally(detail);
             }
@@ -6184,8 +6184,8 @@ var ArtCostReports = (() => {
               if (debug)
                 console.debug("Dexie: handling persisted pagehide");
               bc === null || bc === void 0 ? void 0 : bc.close();
-              for (var _i = 0, _a2 = connections.toArray(); _i < _a2.length; _i++) {
-                var db = _a2[_i];
+              for (var _i = 0, _a3 = connections.toArray(); _i < _a3.length; _i++) {
+                var db = _a3[_i];
                 db.close({ disableAutoOpen: false });
               }
             }
@@ -9896,9 +9896,9 @@ var ArtCostReports = (() => {
                       if (er instanceof Error) {
                         throw er;
                       }
-                      var err = new Error("Unhandled error." + (er ? " (" + er.message + ")" : ""));
-                      err.context = er;
-                      throw err;
+                      var err2 = new Error("Unhandled error." + (er ? " (" + er.message + ")" : ""));
+                      err2.context = er;
+                      throw err2;
                     }
                     var handler = events[type];
                     if (handler === void 0)
@@ -10131,9 +10131,9 @@ var ArtCostReports = (() => {
                   }
                   function once(emitter, name) {
                     return new Promise(function(resolve, reject) {
-                      function errorListener(err) {
+                      function errorListener(err2) {
                         emitter.removeListener(name, resolver);
-                        reject(err);
+                        reject(err2);
                       }
                       function resolver() {
                         if (typeof emitter.removeListener === "function") {
@@ -10971,11 +10971,11 @@ var ArtCostReports = (() => {
                 });
                 var to_absolute_index_namespaceFn = /* @__PURE__ */ __webpack_require__2.cw((module2) => {
                   var toIntegerOrInfinity = to_integer_or_infinity_namespaceFn();
-                  var max = Math.max;
+                  var max2 = Math.max;
                   var min = Math.min;
                   module2.exports = function(index, length) {
                     var integer = toIntegerOrInfinity(index);
-                    return integer < 0 ? max(integer + length, 0) : min(integer, length);
+                    return integer < 0 ? max2(integer + length, 0) : min(integer, length);
                   };
                 });
                 var to_indexed_object_namespaceFn = /* @__PURE__ */ __webpack_require__2.cw((module2) => {
@@ -11229,8 +11229,8 @@ var ArtCostReports = (() => {
                     _comment(comment) {
                       this._addChild(new XmlCommentNode(comment));
                     }
-                    _error(err) {
-                      throw err;
+                    _error(err2) {
+                      throw err2;
                     }
                     /**
                      * Iterates through each child element of this node
@@ -11454,33 +11454,33 @@ var ArtCostReports = (() => {
                   let delegates = [];
                   function addParserEvents(parser) {
                     parser.onopentag = (tag) => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._opentag(tag);
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._opentag(tag);
                     };
                     parser.onclosetag = () => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._closetag();
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._closetag();
                     };
                     parser.ontext = (text) => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._text(text);
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._text(text);
                     };
                     parser.oncdata = (cdata) => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._cdata(cdata);
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._cdata(cdata);
                     };
                     parser.oncomment = (comment) => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._comment(comment);
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._comment(comment);
                     };
                     parser.ondoctype = (doctype) => {
                       const doc = delegates[0];
                       if (doc._doctype)
                         doc._doctype(doctype);
                     };
-                    parser.onerror = (err) => {
-                      var _a;
-                      return (_a = delegates[0]) === null || _a === void 0 ? void 0 : _a._error(err);
+                    parser.onerror = (err2) => {
+                      var _a2;
+                      return (_a2 = delegates[0]) === null || _a2 === void 0 ? void 0 : _a2._error(err2);
                     };
                   }
                   function escapeXML(value) {
@@ -11534,7 +11534,7 @@ var ArtCostReports = (() => {
                     throw new Error("digestInto() expects output buffer of length at least " + min);
                   }
                 }
-                function u8(arr) {
+                function u82(arr) {
                   return new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
                 }
                 function u32(arr) {
@@ -11738,18 +11738,18 @@ var ArtCostReports = (() => {
                   w.onmessage = function(e) {
                     var d = e.data, ed = d.$e$;
                     if (ed) {
-                      var err = new Error(ed[0]);
-                      err["code"] = ed[1];
-                      err.stack = ed[2];
-                      cb(err, null);
+                      var err2 = new Error(ed[0]);
+                      err2["code"] = ed[1];
+                      err2.stack = ed[2];
+                      cb(err2, null);
                     } else
                       cb(null, d);
                   };
                   w.postMessage(msg, transfer);
                   return w;
                 });
-                var browser_u8 = Uint8Array, u16 = Uint16Array, i32 = Int32Array;
-                var fleb = new browser_u8([
+                var browser_u8 = Uint8Array, u162 = Uint16Array, i322 = Int32Array;
+                var fleb2 = new browser_u8([
                   0,
                   0,
                   0,
@@ -11785,7 +11785,7 @@ var ArtCostReports = (() => {
                   /* impossible */
                   0
                 ]);
-                var fdeb = new browser_u8([
+                var fdeb2 = new browser_u8([
                   0,
                   0,
                   0,
@@ -11820,13 +11820,13 @@ var ArtCostReports = (() => {
                   0,
                   0
                 ]);
-                var clim = new browser_u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
-                var freb = function(eb, start) {
-                  var b = new u16(31);
+                var clim2 = new browser_u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+                var freb2 = function(eb, start) {
+                  var b = new u162(31);
                   for (var i = 0; i < 31; ++i) {
                     b[i] = start += 1 << eb[i - 1];
                   }
-                  var r = new i32(b[30]);
+                  var r = new i322(b[30]);
                   for (var i = 1; i < 30; ++i) {
                     for (var j2 = b[i]; j2 < b[i + 1]; ++j2) {
                       r[j2] = j2 - b[i] << 5 | i;
@@ -11834,31 +11834,31 @@ var ArtCostReports = (() => {
                   }
                   return { b, r };
                 };
-                var browser_a = freb(fleb, 2), fl = browser_a.b, revfl = browser_a.r;
-                fl[28] = 258, revfl[258] = 28;
-                var _b = freb(fdeb, 0), fd = _b.b, revfd = _b.r;
-                var rev = new u16(32768);
+                var browser_a = freb2(fleb2, 2), fl2 = browser_a.b, revfl2 = browser_a.r;
+                fl2[28] = 258, revfl2[258] = 28;
+                var _b2 = freb2(fdeb2, 0), fd2 = _b2.b, revfd2 = _b2.r;
+                var rev2 = new u162(32768);
                 for (var browser_i = 0; browser_i < 32768; ++browser_i) {
                   var browser_x = (browser_i & 43690) >> 1 | (browser_i & 21845) << 1;
                   browser_x = (browser_x & 52428) >> 2 | (browser_x & 13107) << 2;
                   browser_x = (browser_x & 61680) >> 4 | (browser_x & 3855) << 4;
-                  rev[browser_i] = ((browser_x & 65280) >> 8 | (browser_x & 255) << 8) >> 1;
+                  rev2[browser_i] = ((browser_x & 65280) >> 8 | (browser_x & 255) << 8) >> 1;
                 }
-                var hMap = (function(cd, mb, r) {
+                var hMap2 = (function(cd, mb, r) {
                   var s = cd.length;
                   var i = 0;
-                  var l = new u16(mb);
+                  var l = new u162(mb);
                   for (; i < s; ++i) {
                     if (cd[i])
                       ++l[cd[i] - 1];
                   }
-                  var le = new u16(mb);
+                  var le = new u162(mb);
                   for (i = 1; i < mb; ++i) {
                     le[i] = le[i - 1] + l[i - 1] << 1;
                   }
                   var co;
                   if (r) {
-                    co = new u16(1 << mb);
+                    co = new u162(1 << mb);
                     var rvb = 15 - mb;
                     for (i = 0; i < s; ++i) {
                       if (cd[i]) {
@@ -11866,34 +11866,34 @@ var ArtCostReports = (() => {
                         var r_1 = mb - cd[i];
                         var v2 = le[cd[i] - 1]++ << r_1;
                         for (var m = v2 | (1 << r_1) - 1; v2 <= m; ++v2) {
-                          co[rev[v2] >> rvb] = sv;
+                          co[rev2[v2] >> rvb] = sv;
                         }
                       }
                     }
                   } else {
-                    co = new u16(s);
+                    co = new u162(s);
                     for (i = 0; i < s; ++i) {
                       if (cd[i]) {
-                        co[i] = rev[le[cd[i] - 1]++] >> 15 - cd[i];
+                        co[i] = rev2[le[cd[i] - 1]++] >> 15 - cd[i];
                       }
                     }
                   }
                   return co;
                 });
-                var flt = new browser_u8(288);
+                var flt2 = new browser_u8(288);
                 for (var browser_i = 0; browser_i < 144; ++browser_i)
-                  flt[browser_i] = 8;
+                  flt2[browser_i] = 8;
                 for (var browser_i = 144; browser_i < 256; ++browser_i)
-                  flt[browser_i] = 9;
+                  flt2[browser_i] = 9;
                 for (var browser_i = 256; browser_i < 280; ++browser_i)
-                  flt[browser_i] = 7;
+                  flt2[browser_i] = 7;
                 for (var browser_i = 280; browser_i < 288; ++browser_i)
-                  flt[browser_i] = 8;
-                var fdt = new browser_u8(32);
+                  flt2[browser_i] = 8;
+                var fdt2 = new browser_u8(32);
                 for (var browser_i = 0; browser_i < 32; ++browser_i)
-                  fdt[browser_i] = 5;
-                var flm = /* @__PURE__ */ hMap(flt, 9, 0), flrm = /* @__PURE__ */ hMap(flt, 9, 1);
-                var fdm = /* @__PURE__ */ hMap(fdt, 5, 0), fdrm = /* @__PURE__ */ hMap(fdt, 5, 1);
+                  fdt2[browser_i] = 5;
+                var flm2 = /* @__PURE__ */ hMap2(flt2, 9, 0), flrm2 = /* @__PURE__ */ hMap2(flt2, 9, 1);
+                var fdm2 = /* @__PURE__ */ hMap2(fdt2, 5, 0), fdrm2 = /* @__PURE__ */ hMap2(fdt2, 5, 1);
                 var browser_max = function(a) {
                   var m = a[0];
                   for (var i = 1; i < a.length; ++i) {
@@ -11902,18 +11902,18 @@ var ArtCostReports = (() => {
                   }
                   return m;
                 };
-                var bits = function(d, p, m) {
+                var bits2 = function(d, p, m) {
                   var o = p / 8 | 0;
                   return (d[o] | d[o + 1] << 8) >> (p & 7) & m;
                 };
-                var bits16 = function(d, p) {
+                var bits162 = function(d, p) {
                   var o = p / 8 | 0;
                   return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >> (p & 7);
                 };
-                var shft = function(p) {
+                var shft2 = function(p) {
                   return (p + 7) / 8 | 0;
                 };
-                var slc = function(v2, s, e) {
+                var slc2 = function(v2, s, e) {
                   if (s == null || s < 0)
                     s = 0;
                   if (e == null || e > v2.length)
@@ -11924,7 +11924,7 @@ var ArtCostReports = (() => {
                   /* unused pure expression or super */
                   null
                 );
-                var ec = [
+                var ec2 = [
                   "unexpected EOF",
                   "invalid block type",
                   "invalid length/literal",
@@ -11944,7 +11944,7 @@ var ArtCostReports = (() => {
                 ];
                 ;
                 var browser_err = function(ind, msg, nt) {
-                  var e = new Error(msg || ec[ind]);
+                  var e = new Error(msg || ec2[ind]);
                   e.code = ind;
                   if (Error.captureStackTrace)
                     Error.captureStackTrace(e, browser_err);
@@ -11952,7 +11952,7 @@ var ArtCostReports = (() => {
                     throw e;
                   return e;
                 };
-                var inflt = function(dat, st, buf, dict) {
+                var inflt2 = function(dat, st, buf, dict) {
                   var sl = dat.length, dl = dict ? dict.length : 0;
                   if (!sl || st.f && !st.l)
                     return buf || new browser_u8(0);
@@ -11973,11 +11973,11 @@ var ArtCostReports = (() => {
                   var tbts = sl * 8;
                   do {
                     if (!lm) {
-                      final = bits(dat, pos, 1);
-                      var type = bits(dat, pos + 1, 3);
+                      final = bits2(dat, pos, 1);
+                      var type = bits2(dat, pos + 1, 3);
                       pos += 3;
                       if (!type) {
-                        var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
+                        var s = shft2(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
                         if (t > sl) {
                           if (noSt)
                             browser_err(0);
@@ -11989,21 +11989,21 @@ var ArtCostReports = (() => {
                         st.b = bt += l, st.p = pos = t * 8, st.f = final;
                         continue;
                       } else if (type == 1)
-                        lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
+                        lm = flrm2, dm = fdrm2, lbt = 9, dbt = 5;
                       else if (type == 2) {
-                        var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
-                        var tl = hLit + bits(dat, pos + 5, 31) + 1;
+                        var hLit = bits2(dat, pos, 31) + 257, hcLen = bits2(dat, pos + 10, 15) + 4;
+                        var tl = hLit + bits2(dat, pos + 5, 31) + 1;
                         pos += 14;
                         var ldt = new browser_u8(tl);
                         var clt = new browser_u8(19);
                         for (var i = 0; i < hcLen; ++i) {
-                          clt[clim[i]] = bits(dat, pos + i * 3, 7);
+                          clt[clim2[i]] = bits2(dat, pos + i * 3, 7);
                         }
                         pos += hcLen * 3;
                         var clb = browser_max(clt), clbmsk = (1 << clb) - 1;
-                        var clm = hMap(clt, clb, 1);
+                        var clm = hMap2(clt, clb, 1);
                         for (var i = 0; i < tl; ) {
-                          var r = clm[bits(dat, pos, clbmsk)];
+                          var r = clm[bits2(dat, pos, clbmsk)];
                           pos += r & 15;
                           var s = r >> 4;
                           if (s < 16) {
@@ -12011,11 +12011,11 @@ var ArtCostReports = (() => {
                           } else {
                             var c = 0, n = 0;
                             if (s == 16)
-                              n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
+                              n = 3 + bits2(dat, pos, 3), pos += 2, c = ldt[i - 1];
                             else if (s == 17)
-                              n = 3 + bits(dat, pos, 7), pos += 3;
+                              n = 3 + bits2(dat, pos, 7), pos += 3;
                             else if (s == 18)
-                              n = 11 + bits(dat, pos, 127), pos += 7;
+                              n = 11 + bits2(dat, pos, 127), pos += 7;
                             while (n--)
                               ldt[i++] = c;
                           }
@@ -12023,8 +12023,8 @@ var ArtCostReports = (() => {
                         var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
                         lbt = browser_max(lt);
                         dbt = browser_max(dt);
-                        lm = hMap(lt, lbt, 1);
-                        dm = hMap(dt, dbt, 1);
+                        lm = hMap2(lt, lbt, 1);
+                        dm = hMap2(dt, dbt, 1);
                       } else
                         browser_err(1);
                       if (pos > tbts) {
@@ -12038,7 +12038,7 @@ var ArtCostReports = (() => {
                     var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
                     var lpos = pos;
                     for (; ; lpos = pos) {
-                      var c = lm[bits16(dat, pos) & lms], sym = c >> 4;
+                      var c = lm[bits162(dat, pos) & lms], sym = c >> 4;
                       pos += c & 15;
                       if (pos > tbts) {
                         if (noSt)
@@ -12055,18 +12055,18 @@ var ArtCostReports = (() => {
                       } else {
                         var add2 = sym - 254;
                         if (sym > 264) {
-                          var i = sym - 257, b = fleb[i];
-                          add2 = bits(dat, pos, (1 << b) - 1) + fl[i];
+                          var i = sym - 257, b = fleb2[i];
+                          add2 = bits2(dat, pos, (1 << b) - 1) + fl2[i];
                           pos += b;
                         }
-                        var d = dm[bits16(dat, pos) & dms], dsym = d >> 4;
+                        var d = dm[bits162(dat, pos) & dms], dsym = d >> 4;
                         if (!d)
                           browser_err(3);
                         pos += d & 15;
-                        var dt = fd[dsym];
+                        var dt = fd2[dsym];
                         if (dsym > 3) {
-                          var b = fdeb[dsym];
-                          dt += bits16(dat, pos) & (1 << b) - 1, pos += b;
+                          var b = fdeb2[dsym];
+                          dt += bits162(dat, pos) & (1 << b) - 1, pos += b;
                         }
                         if (pos > tbts) {
                           if (noSt)
@@ -12091,22 +12091,22 @@ var ArtCostReports = (() => {
                     if (lm)
                       final = 1, st.m = lbt, st.d = dm, st.n = dbt;
                   } while (!final);
-                  return bt != buf.length && noBuf ? slc(buf, 0, bt) : buf.subarray(0, bt);
+                  return bt != buf.length && noBuf ? slc2(buf, 0, bt) : buf.subarray(0, bt);
                 };
-                var wbits = function(d, p, v2) {
+                var wbits2 = function(d, p, v2) {
                   v2 <<= p & 7;
                   var o = p / 8 | 0;
                   d[o] |= v2;
                   d[o + 1] |= v2 >> 8;
                 };
-                var wbits16 = function(d, p, v2) {
+                var wbits162 = function(d, p, v2) {
                   v2 <<= p & 7;
                   var o = p / 8 | 0;
                   d[o] |= v2;
                   d[o + 1] |= v2 >> 8;
                   d[o + 2] |= v2 >> 16;
                 };
-                var hTree = function(d, mb) {
+                var hTree2 = function(d, mb) {
                   var t = [];
                   for (var i = 0; i < d.length; ++i) {
                     if (d[i])
@@ -12115,7 +12115,7 @@ var ArtCostReports = (() => {
                   var s = t.length;
                   var t2 = t.slice();
                   if (!s)
-                    return { t: et, l: 0 };
+                    return { t: et2, l: 0 };
                   if (s == 1) {
                     var v2 = new browser_u8(t[0].s + 1);
                     v2[t[0].s] = 1;
@@ -12137,8 +12137,8 @@ var ArtCostReports = (() => {
                     if (t2[i].s > maxSym)
                       maxSym = t2[i].s;
                   }
-                  var tr = new u16(maxSym + 1);
-                  var mbt = ln(t[i1 - 1], tr, 0);
+                  var tr = new u162(maxSym + 1);
+                  var mbt = ln2(t[i1 - 1], tr, 0);
                   if (mbt > mb) {
                     var i = 0, dt = 0;
                     var lft = mbt - mb, cst = 1 << lft;
@@ -12172,14 +12172,14 @@ var ArtCostReports = (() => {
                   }
                   return { t: new browser_u8(tr), l: mbt };
                 };
-                var ln = function(n, l, d) {
-                  return n.s == -1 ? Math.max(ln(n.l, l, d + 1), ln(n.r, l, d + 1)) : l[n.s] = d;
+                var ln2 = function(n, l, d) {
+                  return n.s == -1 ? Math.max(ln2(n.l, l, d + 1), ln2(n.r, l, d + 1)) : l[n.s] = d;
                 };
-                var lc = function(c) {
+                var lc2 = function(c) {
                   var s = c.length;
                   while (s && !c[--s])
                     ;
-                  var cl = new u16(++s);
+                  var cl = new u162(++s);
                   var cli = 0, cln = c[0], cls = 1;
                   var w = function(v2) {
                     cl[cli++] = v2;
@@ -12210,15 +12210,15 @@ var ArtCostReports = (() => {
                   }
                   return { c: cl.subarray(0, cli), n: s };
                 };
-                var clen = function(cf, cl) {
+                var clen2 = function(cf, cl) {
                   var l = 0;
                   for (var i = 0; i < cl.length; ++i)
                     l += cf[i] * cl[i];
                   return l;
                 };
-                var wfblk = function(out, pos, dat) {
+                var wfblk2 = function(out, pos, dat) {
                   var s = dat.length;
-                  var o = shft(pos + 2);
+                  var o = shft2(pos + 2);
                   out[o] = s & 255;
                   out[o + 1] = s >> 8;
                   out[o + 2] = out[o] ^ 255;
@@ -12227,73 +12227,73 @@ var ArtCostReports = (() => {
                     out[o + i + 4] = dat[i];
                   return (o + 4 + s) * 8;
                 };
-                var wblk = function(dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
-                  wbits(out, p++, final);
+                var wblk2 = function(dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
+                  wbits2(out, p++, final);
                   ++lf[256];
-                  var _a = hTree(lf, 15), dlt = _a.t, mlb = _a.l;
-                  var _b2 = hTree(df, 15), ddt = _b2.t, mdb = _b2.l;
-                  var _c = lc(dlt), lclt = _c.c, nlc = _c.n;
-                  var _d = lc(ddt), lcdt = _d.c, ndc = _d.n;
-                  var lcfreq = new u16(19);
+                  var _a2 = hTree2(lf, 15), dlt = _a2.t, mlb = _a2.l;
+                  var _b3 = hTree2(df, 15), ddt = _b3.t, mdb = _b3.l;
+                  var _c = lc2(dlt), lclt = _c.c, nlc = _c.n;
+                  var _d = lc2(ddt), lcdt = _d.c, ndc = _d.n;
+                  var lcfreq = new u162(19);
                   for (var i = 0; i < lclt.length; ++i)
                     ++lcfreq[lclt[i] & 31];
                   for (var i = 0; i < lcdt.length; ++i)
                     ++lcfreq[lcdt[i] & 31];
-                  var _e = hTree(lcfreq, 7), lct = _e.t, mlcb = _e.l;
+                  var _e = hTree2(lcfreq, 7), lct = _e.t, mlcb = _e.l;
                   var nlcc = 19;
-                  for (; nlcc > 4 && !lct[clim[nlcc - 1]]; --nlcc)
+                  for (; nlcc > 4 && !lct[clim2[nlcc - 1]]; --nlcc)
                     ;
                   var flen = bl + 5 << 3;
-                  var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
-                  var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
+                  var ftlen = clen2(lf, flt2) + clen2(df, fdt2) + eb;
+                  var dtlen = clen2(lf, dlt) + clen2(df, ddt) + eb + 14 + 3 * nlcc + clen2(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
                   if (bs >= 0 && flen <= ftlen && flen <= dtlen)
-                    return wfblk(out, p, dat.subarray(bs, bs + bl));
+                    return wfblk2(out, p, dat.subarray(bs, bs + bl));
                   var lm, ll, dm, dl;
-                  wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
+                  wbits2(out, p, 1 + (dtlen < ftlen)), p += 2;
                   if (dtlen < ftlen) {
-                    lm = hMap(dlt, mlb, 0), ll = dlt, dm = hMap(ddt, mdb, 0), dl = ddt;
-                    var llm = hMap(lct, mlcb, 0);
-                    wbits(out, p, nlc - 257);
-                    wbits(out, p + 5, ndc - 1);
-                    wbits(out, p + 10, nlcc - 4);
+                    lm = hMap2(dlt, mlb, 0), ll = dlt, dm = hMap2(ddt, mdb, 0), dl = ddt;
+                    var llm = hMap2(lct, mlcb, 0);
+                    wbits2(out, p, nlc - 257);
+                    wbits2(out, p + 5, ndc - 1);
+                    wbits2(out, p + 10, nlcc - 4);
                     p += 14;
                     for (var i = 0; i < nlcc; ++i)
-                      wbits(out, p + 3 * i, lct[clim[i]]);
+                      wbits2(out, p + 3 * i, lct[clim2[i]]);
                     p += 3 * nlcc;
                     var lcts = [lclt, lcdt];
                     for (var it = 0; it < 2; ++it) {
                       var clct = lcts[it];
                       for (var i = 0; i < clct.length; ++i) {
                         var len = clct[i] & 31;
-                        wbits(out, p, llm[len]), p += lct[len];
+                        wbits2(out, p, llm[len]), p += lct[len];
                         if (len > 15)
-                          wbits(out, p, clct[i] >> 5 & 127), p += clct[i] >> 12;
+                          wbits2(out, p, clct[i] >> 5 & 127), p += clct[i] >> 12;
                       }
                     }
                   } else {
-                    lm = flm, ll = flt, dm = fdm, dl = fdt;
+                    lm = flm2, ll = flt2, dm = fdm2, dl = fdt2;
                   }
                   for (var i = 0; i < li; ++i) {
                     var sym = syms[i];
                     if (sym > 255) {
                       var len = sym >> 18 & 31;
-                      wbits16(out, p, lm[len + 257]), p += ll[len + 257];
+                      wbits162(out, p, lm[len + 257]), p += ll[len + 257];
                       if (len > 7)
-                        wbits(out, p, sym >> 23 & 31), p += fleb[len];
+                        wbits2(out, p, sym >> 23 & 31), p += fleb2[len];
                       var dst = sym & 31;
-                      wbits16(out, p, dm[dst]), p += dl[dst];
+                      wbits162(out, p, dm[dst]), p += dl[dst];
                       if (dst > 3)
-                        wbits16(out, p, sym >> 5 & 8191), p += fdeb[dst];
+                        wbits162(out, p, sym >> 5 & 8191), p += fdeb2[dst];
                     } else {
-                      wbits16(out, p, lm[sym]), p += ll[sym];
+                      wbits162(out, p, lm[sym]), p += ll[sym];
                     }
                   }
-                  wbits16(out, p, lm[256]);
+                  wbits162(out, p, lm[256]);
                   return p + ll[256];
                 };
-                var deo = /* @__PURE__ */ new i32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
-                var et = /* @__PURE__ */ new browser_u8(0);
-                var dflt = function(dat, lvl, plvl, pre, post, st) {
+                var deo2 = /* @__PURE__ */ new i322([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
+                var et2 = /* @__PURE__ */ new browser_u8(0);
+                var dflt2 = function(dat, lvl, plvl, pre, post, st) {
                   var s = st.z || dat.length;
                   var o = new browser_u8(pre + s + 5 * (1 + Math.ceil(s / 7e3)) + post);
                   var w = o.subarray(pre, o.length - post);
@@ -12302,16 +12302,16 @@ var ArtCostReports = (() => {
                   if (lvl) {
                     if (pos)
                       w[0] = st.r >> 3;
-                    var opt = deo[lvl - 1];
+                    var opt = deo2[lvl - 1];
                     var n = opt >> 13, c = opt & 8191;
                     var msk_1 = (1 << plvl) - 1;
-                    var prev = st.p || new u16(32768), head = st.h || new u16(msk_1 + 1);
+                    var prev = st.p || new u162(32768), head = st.h || new u162(msk_1 + 1);
                     var bs1_1 = Math.ceil(plvl / 3), bs2_1 = 2 * bs1_1;
                     var hsh = function(i2) {
                       return (dat[i2] ^ dat[i2 + 1] << bs1_1 ^ dat[i2 + 2] << bs2_1) & msk_1;
                     };
-                    var syms = new i32(25e3);
-                    var lf = new u16(288), df = new u16(32);
+                    var syms = new i322(25e3);
+                    var lf = new u162(288), df = new u162(32);
                     var lc_1 = 0, eb = 0, i = st.i || 0, li = 0, wi = st.w || 0, bs = 0;
                     for (; i + 2 < s; ++i) {
                       var hv = hsh(i);
@@ -12321,7 +12321,7 @@ var ArtCostReports = (() => {
                       if (wi <= i) {
                         var rem = s - i;
                         if ((lc_1 > 7e3 || li > 24576) && (rem > 423 || !lst)) {
-                          pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
+                          pos = wblk2(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
                           li = lc_1 = eb = 0, bs = i;
                           for (var j2 = 0; j2 < 286; ++j2)
                             lf[j2] = 0;
@@ -12358,9 +12358,9 @@ var ArtCostReports = (() => {
                           }
                         }
                         if (d) {
-                          syms[li++] = 268435456 | revfl[l] << 18 | revfd[d];
-                          var lin = revfl[l] & 31, din = revfd[d] & 31;
-                          eb += fleb[lin] + fdeb[din];
+                          syms[li++] = 268435456 | revfl2[l] << 18 | revfd2[d];
+                          var lin = revfl2[l] & 31, din = revfd2[d] & 31;
+                          eb += fleb2[lin] + fdeb2[din];
                           ++lf[257 + lin];
                           ++df[din];
                           wi = i + l;
@@ -12375,7 +12375,7 @@ var ArtCostReports = (() => {
                       syms[li++] = dat[i];
                       ++lf[dat[i]];
                     }
-                    pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
+                    pos = wblk2(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
                     if (!lst) {
                       st.r = pos & 7 | w[pos / 8 | 0] << 3;
                       pos -= 7;
@@ -12388,23 +12388,23 @@ var ArtCostReports = (() => {
                         w[pos / 8 | 0] = lst;
                         e = s;
                       }
-                      pos = wfblk(w, pos + 1, dat.subarray(i, e));
+                      pos = wfblk2(w, pos + 1, dat.subarray(i, e));
                     }
                     st.i = s;
                   }
-                  return slc(o, 0, pre + shft(pos) + post);
+                  return slc2(o, 0, pre + shft2(pos) + post);
                 };
-                var crct = (
+                var crct2 = (
                   /* unused pure expression or super */
                   null
                 );
-                var crc = function() {
+                var crc2 = function() {
                   var c = -1;
                   return {
                     p: function(d) {
                       var cr = c;
                       for (var i = 0; i < d.length; ++i)
-                        cr = crct[cr & 255 ^ d[i]] ^ cr >>> 8;
+                        cr = crct2[cr & 255 ^ d[i]] ^ cr >>> 8;
                       c = cr;
                     },
                     d: function() {
@@ -12433,7 +12433,7 @@ var ArtCostReports = (() => {
                   };
                 };
                 ;
-                var dopt = function(dat, opt, pre, post, st) {
+                var dopt2 = function(dat, opt, pre, post, st) {
                   if (!st) {
                     st = { l: 1 };
                     if (opt.dictionary) {
@@ -12445,9 +12445,9 @@ var ArtCostReports = (() => {
                       st.w = dict.length;
                     }
                   }
-                  return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? st.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 20 : 12 + opt.mem, pre, post, st);
+                  return dflt2(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? st.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 20 : 12 + opt.mem, pre, post, st);
                 };
-                var mrg = function(a, b) {
+                var mrg2 = function(a, b) {
                   var o = {};
                   for (var k in a)
                     o[k] = a[k];
@@ -12455,7 +12455,7 @@ var ArtCostReports = (() => {
                     o[k] = b[k];
                   return o;
                 };
-                var wcln = function(fn, fnStr, td2) {
+                var wcln = function(fn, fnStr, td3) {
                   var dt = fn();
                   var st = fn.toString();
                   var ks = st.slice(st.indexOf("[") + 1, st.lastIndexOf("]")).replace(/\s+/g, "").split(",");
@@ -12476,7 +12476,7 @@ var ArtCostReports = (() => {
                       } else
                         fnStr += st_1;
                     } else
-                      td2[k] = v2;
+                      td3[k] = v2;
                   }
                   return fnStr;
                 };
@@ -12497,23 +12497,23 @@ var ArtCostReports = (() => {
                       fnStr = wcln(fns[i], fnStr, td_1);
                     ch[id] = { c: wcln(fns[m], fnStr, td_1), e: td_1 };
                   }
-                  var td2 = mrg({}, ch[id].e);
-                  return wk(ch[id].c + ";onmessage=function(e){for(var k in e.data)self[k]=e.data[k];onmessage=" + init.toString() + "}", id, td2, cbfs(td2), cb);
+                  var td3 = mrg2({}, ch[id].e);
+                  return wk(ch[id].c + ";onmessage=function(e){for(var k in e.data)self[k]=e.data[k];onmessage=" + init.toString() + "}", id, td3, cbfs(td3), cb);
                 };
                 var bInflt = function() {
-                  return [browser_u8, u16, i32, fleb, fdeb, clim, fl, fd, flrm, fdrm, rev, ec, hMap, browser_max, bits, bits16, shft, slc, browser_err, inflt, inflateSync, pbf, gopt];
+                  return [browser_u8, u162, i322, fleb2, fdeb2, clim2, fl2, fd2, flrm2, fdrm2, rev2, ec2, hMap2, browser_max, bits2, bits162, shft2, slc2, browser_err, inflt2, inflateSync2, pbf, gopt];
                 };
                 var bDflt = function() {
-                  return [browser_u8, u16, i32, fleb, fdeb, clim, revfl, revfd, flm, flt, fdm, fdt, rev, deo, et, hMap, wbits, wbits16, hTree, ln, lc, clen, wfblk, wblk, shft, slc, dflt, dopt, deflateSync, pbf];
+                  return [browser_u8, u162, i322, fleb2, fdeb2, clim2, revfl2, revfd2, flm2, flt2, fdm2, fdt2, rev2, deo2, et2, hMap2, wbits2, wbits162, hTree2, ln2, lc2, clen2, wfblk2, wblk2, shft2, slc2, dflt2, dopt2, deflateSync2, pbf];
                 };
                 var gze = function() {
-                  return [gzh, gzhl, wbytes, crc, crct];
+                  return [gzh, gzhl, wbytes2, crc2, crct2];
                 };
                 var guze = function() {
                   return [gzs, gzl];
                 };
                 var zle = function() {
-                  return [zlh, wbytes, adler];
+                  return [zlh, wbytes2, adler];
                 };
                 var zule = function() {
                   return [zls];
@@ -12528,9 +12528,9 @@ var ArtCostReports = (() => {
                   };
                 };
                 var cbify = function(dat, opts, fns, init, id, cb) {
-                  var w = wrkr(fns, init, id, function(err, dat2) {
+                  var w = wrkr(fns, init, id, function(err2, dat2) {
                     w.terminate();
-                    cb(err, dat2);
+                    cb(err2, dat2);
                   });
                   w.postMessage([dat, opts], opts.consume ? [dat.buffer] : []);
                   return function() {
@@ -12551,9 +12551,9 @@ var ArtCostReports = (() => {
                 };
                 var astrmify = function(fns, strm, opts, init, id, flush, ext) {
                   var t;
-                  var w = wrkr(fns, init, id, function(err, dat) {
-                    if (err)
-                      w.terminate(), strm.ondata.call(strm, err);
+                  var w = wrkr(fns, init, id, function(err2, dat) {
+                    if (err2)
+                      w.terminate(), strm.ondata.call(strm, err2);
                     else if (!Array.isArray(dat))
                       ext(dat);
                     else if (dat.length == 1) {
@@ -12563,7 +12563,7 @@ var ArtCostReports = (() => {
                     } else {
                       if (dat[1])
                         w.terminate();
-                      strm.ondata.call(strm, err, dat[0], dat[1]);
+                      strm.ondata.call(strm, err2, dat[0], dat[1]);
                     }
                   });
                   w.postMessage(opts);
@@ -12585,16 +12585,16 @@ var ArtCostReports = (() => {
                     };
                   }
                 };
-                var b2 = function(d, b) {
+                var b22 = function(d, b) {
                   return d[b] | d[b + 1] << 8;
                 };
-                var b4 = function(d, b) {
+                var b42 = function(d, b) {
                   return (d[b] | d[b + 1] << 8 | d[b + 2] << 16 | d[b + 3] << 24) >>> 0;
                 };
-                var b8 = function(d, b) {
-                  return b4(d, b) + b4(d, b + 4) * 4294967296;
+                var b82 = function(d, b) {
+                  return b42(d, b) + b42(d, b + 4) * 4294967296;
                 };
-                var wbytes = function(d, b, v2) {
+                var wbytes2 = function(d, b, v2) {
                   for (; v2; ++b)
                     d[b] = v2, v2 >>>= 8;
                 };
@@ -12602,7 +12602,7 @@ var ArtCostReports = (() => {
                   var fn = o.filename;
                   c[0] = 31, c[1] = 139, c[2] = 8, c[8] = o.level < 2 ? 4 : o.level == 9 ? 2 : 0, c[9] = 3;
                   if (o.mtime != 0)
-                    wbytes(c, 4, Math.floor(new Date(o.mtime || Date.now()) / 1e3));
+                    wbytes2(c, 4, Math.floor(new Date(o.mtime || Date.now()) / 1e3));
                   if (fn) {
                     c[3] = 8;
                     for (var i = 0; i <= fn.length; ++i)
@@ -12628,13 +12628,13 @@ var ArtCostReports = (() => {
                   return 10 + (o.filename ? o.filename.length + 1 : 0);
                 };
                 var zlh = function(c, o) {
-                  var lv = o.level, fl2 = lv == 0 ? 0 : lv < 6 ? 1 : lv == 9 ? 3 : 2;
-                  c[0] = 120, c[1] = fl2 << 6 | (o.dictionary && 32);
+                  var lv = o.level, fl3 = lv == 0 ? 0 : lv < 6 ? 1 : lv == 9 ? 3 : 2;
+                  c[0] = 120, c[1] = fl3 << 6 | (o.dictionary && 32);
                   c[1] |= 31 - (c[0] << 8 | c[1]) % 31;
                   if (o.dictionary) {
                     var h = adler();
                     h.p(o.dictionary);
-                    wbytes(c, 2, h.d());
+                    wbytes2(c, 2, h.d());
                   }
                 };
                 var zls = function(d, dict) {
@@ -12666,11 +12666,11 @@ var ArtCostReports = (() => {
                   return cbify(data, opts, [
                     bDflt
                   ], function(ev) {
-                    return pbf(deflateSync(ev.data[0], ev.data[1]));
+                    return pbf(deflateSync2(ev.data[0], ev.data[1]));
                   }, 0, cb);
                 }
-                function deflateSync(data, opts) {
-                  return dopt(data, opts || {}, 0, 0);
+                function deflateSync2(data, opts) {
+                  return dopt2(data, opts || {}, 0, 0);
                 }
                 var Inflate = (
                   /* unused pure expression or super */
@@ -12688,11 +12688,11 @@ var ArtCostReports = (() => {
                   return cbify(data, opts, [
                     bInflt
                   ], function(ev) {
-                    return pbf(inflateSync(ev.data[0], gopt(ev.data[1])));
+                    return pbf(inflateSync2(ev.data[0], gopt(ev.data[1])));
                   }, 1, cb);
                 }
-                function inflateSync(data, opts) {
-                  return inflt(data, { i: 2 }, opts && opts.out, opts && opts.dictionary);
+                function inflateSync2(data, opts) {
+                  return inflt2(data, { i: 2 }, opts && opts.out, opts && opts.dictionary);
                 }
                 var Gzip = (
                   /* unused pure expression or super */
@@ -12720,10 +12720,10 @@ var ArtCostReports = (() => {
                 function gzipSync(data, opts) {
                   if (!opts)
                     opts = {};
-                  var c = crc(), l = data.length;
+                  var c = crc2(), l = data.length;
                   c.p(data);
-                  var d = dopt(data, opts, gzhl(opts), 8), s = d.length;
-                  return gzh(d, opts), wbytes(d, s - 8, c.d()), wbytes(d, s - 4, l), d;
+                  var d = dopt2(data, opts, gzhl(opts), 8), s = d.length;
+                  return gzh(d, opts), wbytes2(d, s - 8, c.d()), wbytes2(d, s - 4, l), d;
                 }
                 var Gunzip = (
                   /* unused pure expression or super */
@@ -12752,7 +12752,7 @@ var ArtCostReports = (() => {
                   var st = gzs(data);
                   if (st + 8 > data.length)
                     browser_err(6, "invalid gzip data");
-                  return inflt(data.subarray(st, -8), { i: 2 }, opts && opts.out || new browser_u8(gzl(data)), opts && opts.dictionary);
+                  return inflt2(data.subarray(st, -8), { i: 2 }, opts && opts.out || new browser_u8(gzl(data)), opts && opts.dictionary);
                 }
                 var Zlib = (
                   /* unused pure expression or super */
@@ -12782,8 +12782,8 @@ var ArtCostReports = (() => {
                     opts = {};
                   var a = adler();
                   a.p(data);
-                  var d = dopt(data, opts, opts.dictionary ? 6 : 2, 4);
-                  return zlh(d, opts), wbytes(d, d.length - 4, a.d()), d;
+                  var d = dopt2(data, opts, opts.dictionary ? 6 : 2, 4);
+                  return zlh(d, opts), wbytes2(d, d.length - 4, a.d()), d;
                 }
                 var Unzlib = (
                   /* unused pure expression or super */
@@ -12809,7 +12809,7 @@ var ArtCostReports = (() => {
                   }, 5, cb);
                 }
                 function unzlibSync(data, opts) {
-                  return inflt(data.subarray(zls(data, opts && opts.dictionary), -4), { i: 2 }, opts && opts.out, opts && opts.dictionary);
+                  return inflt2(data.subarray(zls(data, opts && opts.dictionary), -4), { i: 2 }, opts && opts.out, opts && opts.dictionary);
                 }
                 var Decompress = (
                   /* unused pure expression or super */
@@ -12827,35 +12827,35 @@ var ArtCostReports = (() => {
                   return data[0] == 31 && data[1] == 139 && data[2] == 8 ? gunzip(data, opts, cb) : (data[0] & 15) != 8 || data[0] >> 4 > 7 || (data[0] << 8 | data[1]) % 31 ? inflate(data, opts, cb) : unzlib(data, opts, cb);
                 }
                 function decompressSync(data, opts) {
-                  return data[0] == 31 && data[1] == 139 && data[2] == 8 ? gunzipSync(data, opts) : (data[0] & 15) != 8 || data[0] >> 4 > 7 || (data[0] << 8 | data[1]) % 31 ? inflateSync(data, opts) : unzlibSync(data, opts);
+                  return data[0] == 31 && data[1] == 139 && data[2] == 8 ? gunzipSync(data, opts) : (data[0] & 15) != 8 || data[0] >> 4 > 7 || (data[0] << 8 | data[1]) % 31 ? inflateSync2(data, opts) : unzlibSync(data, opts);
                 }
-                var fltn = function(d, p, t, o) {
+                var fltn2 = function(d, p, t, o) {
                   for (var k in d) {
                     var val2 = d[k], n = p + k, op = o;
                     if (Array.isArray(val2))
-                      op = mrg(o, val2[1]), val2 = val2[0];
+                      op = mrg2(o, val2[1]), val2 = val2[0];
                     if (ArrayBuffer.isView(val2))
                       t[n] = [val2, op];
                     else {
                       t[n += "/"] = [new browser_u8(0), op];
-                      fltn(val2, n, t, o);
+                      fltn2(val2, n, t, o);
                     }
                   }
                 };
-                var te = typeof TextEncoder != "undefined" && /* @__PURE__ */ new TextEncoder();
-                var td = typeof TextDecoder != "undefined" && /* @__PURE__ */ new TextDecoder();
-                var tds = 0;
+                var te2 = typeof TextEncoder != "undefined" && /* @__PURE__ */ new TextEncoder();
+                var td2 = typeof TextDecoder != "undefined" && /* @__PURE__ */ new TextDecoder();
+                var tds2 = 0;
                 try {
-                  td.decode(et, { stream: true });
-                  tds = 1;
+                  td2.decode(et2, { stream: true });
+                  tds2 = 1;
                 } catch (e) {
                 }
-                var dutf8 = function(d) {
+                var dutf82 = function(d) {
                   for (var r = "", i = 0; ; ) {
                     var c = d[i++];
                     var eb = (c > 127) + (c > 223) + (c > 239);
                     if (i + eb > d.length)
-                      return { s: r, r: slc(d, i - 1) };
+                      return { s: r, r: slc2(d, i - 1) };
                     if (!eb)
                       r += String.fromCharCode(c);
                     else if (eb == 3) {
@@ -12874,15 +12874,15 @@ var ArtCostReports = (() => {
                   /* unused pure expression or super */
                   null
                 );
-                function strToU8(str, latin1) {
+                function strToU82(str, latin1) {
                   if (latin1) {
                     var ar_1 = new browser_u8(str.length);
                     for (var i = 0; i < str.length; ++i)
                       ar_1[i] = str.charCodeAt(i);
                     return ar_1;
                   }
-                  if (te)
-                    return te.encode(str);
+                  if (te2)
+                    return te2.encode(str);
                   var l = str.length;
                   var ar = new browser_u8(str.length + (str.length >> 1));
                   var ai = 0;
@@ -12905,18 +12905,18 @@ var ArtCostReports = (() => {
                     else
                       w(224 | c >> 12), w(128 | c >> 6 & 63), w(128 | c & 63);
                   }
-                  return slc(ar, 0, ai);
+                  return slc2(ar, 0, ai);
                 }
-                function strFromU8(dat, latin1) {
+                function strFromU82(dat, latin1) {
                   if (latin1) {
                     var r = "";
                     for (var i = 0; i < dat.length; i += 16384)
                       r += String.fromCharCode.apply(null, dat.subarray(i, i + 16384));
                     return r;
-                  } else if (td) {
-                    return td.decode(dat);
+                  } else if (td2) {
+                    return td2.decode(dat);
                   } else {
-                    var _a = dutf8(dat), s = _a.s, r = _a.r;
+                    var _a2 = dutf82(dat), s = _a2.s, r = _a2.r;
                     if (r.length)
                       browser_err(8);
                     return s;
@@ -12926,24 +12926,24 @@ var ArtCostReports = (() => {
                 var dbf = function(l) {
                   return l == 1 ? 3 : l < 6 ? 2 : l == 9 ? 1 : 0;
                 };
-                var slzh = function(d, b) {
-                  return b + 30 + b2(d, b + 26) + b2(d, b + 28);
+                var slzh2 = function(d, b) {
+                  return b + 30 + b22(d, b + 26) + b22(d, b + 28);
                 };
-                var zh = function(d, b, z) {
-                  var fnl = b2(d, b + 28), efl = b2(d, b + 30), fn = strFromU8(d.subarray(b + 46, b + 46 + fnl), !(b2(d, b + 8) & 2048)), es = b + 46 + fnl;
-                  var _a = z64hs(d, es, efl, z, b4(d, b + 20), b4(d, b + 24), b4(d, b + 42)), sc = _a[0], su = _a[1], off = _a[2];
-                  return [b2(d, b + 10), sc, su, fn, es + efl + b2(d, b + 32), off];
+                var zh2 = function(d, b, z) {
+                  var fnl = b22(d, b + 28), efl = b22(d, b + 30), fn = strFromU82(d.subarray(b + 46, b + 46 + fnl), !(b22(d, b + 8) & 2048)), es = b + 46 + fnl;
+                  var _a2 = z64hs2(d, es, efl, z, b42(d, b + 20), b42(d, b + 24), b42(d, b + 42)), sc = _a2[0], su = _a2[1], off = _a2[2];
+                  return [b22(d, b + 10), sc, su, fn, es + efl + b22(d, b + 32), off];
                 };
-                var z64hs = function(d, b, l, z, sc, su, off) {
+                var z64hs2 = function(d, b, l, z, sc, su, off) {
                   var nsc = sc == 4294967295, nsu = su == 4294967295, noff = off == 4294967295, e = b + l;
                   var nf = nsc + nsu + noff;
                   if (z && nf) {
-                    for (; b + 4 < e; b += 4 + b2(d, b + 2)) {
-                      if (b2(d, b) == 1) {
+                    for (; b + 4 < e; b += 4 + b22(d, b + 2)) {
+                      if (b22(d, b) == 1) {
                         return [
-                          nsc ? b8(d, b + 4 + 8 * nsu) : sc,
-                          nsu ? b8(d, b + 4) : su,
-                          noff ? b8(d, b + 4 + 8 * (nsu + nsc)) : off,
+                          nsc ? b82(d, b + 4 + 8 * nsu) : sc,
+                          nsu ? b82(d, b + 4) : su,
+                          noff ? b82(d, b + 4 + 8 * (nsu + nsc)) : off,
                           1
                         ];
                       }
@@ -12953,7 +12953,7 @@ var ArtCostReports = (() => {
                   }
                   return [sc, su, off, 0];
                 };
-                var exfl = function(ex) {
+                var exfl2 = function(ex) {
                   var le = 0;
                   if (ex) {
                     for (var k in ex) {
@@ -12965,10 +12965,10 @@ var ArtCostReports = (() => {
                   }
                   return le;
                 };
-                var wzh = function(d, b, f, fn, u, c, ce, co) {
-                  var fl2 = fn.length, ex = f.extra, col = co && co.length;
-                  var exl = exfl(ex);
-                  wbytes(d, b, ce != null ? 33639248 : 67324752), b += 4;
+                var wzh2 = function(d, b, f, fn, u, c, ce, co) {
+                  var fl3 = fn.length, ex = f.extra, col = co && co.length;
+                  var exl = exfl2(ex);
+                  wbytes2(d, b, ce != null ? 33639248 : 67324752), b += 4;
                   if (ce != null)
                     d[b++] = 20, d[b++] = f.os;
                   d[b] = 20, b += 2;
@@ -12977,26 +12977,26 @@ var ArtCostReports = (() => {
                   var dt = new Date(f.mtime == null ? Date.now() : f.mtime), y = dt.getFullYear() - 1980;
                   if (y < 0 || y > 119)
                     browser_err(10);
-                  wbytes(d, b, y << 25 | dt.getMonth() + 1 << 21 | dt.getDate() << 16 | dt.getHours() << 11 | dt.getMinutes() << 5 | dt.getSeconds() >> 1), b += 4;
+                  wbytes2(d, b, y << 25 | dt.getMonth() + 1 << 21 | dt.getDate() << 16 | dt.getHours() << 11 | dt.getMinutes() << 5 | dt.getSeconds() >> 1), b += 4;
                   if (c != -1) {
-                    wbytes(d, b, f.crc);
-                    wbytes(d, b + 4, c < 0 ? -c - 2 : c);
-                    wbytes(d, b + 8, f.size);
+                    wbytes2(d, b, f.crc);
+                    wbytes2(d, b + 4, c < 0 ? -c - 2 : c);
+                    wbytes2(d, b + 8, f.size);
                   }
-                  wbytes(d, b + 12, fl2);
-                  wbytes(d, b + 14, exl), b += 16;
+                  wbytes2(d, b + 12, fl3);
+                  wbytes2(d, b + 14, exl), b += 16;
                   if (ce != null) {
-                    wbytes(d, b, col);
-                    wbytes(d, b + 6, f.attrs);
-                    wbytes(d, b + 10, ce), b += 14;
+                    wbytes2(d, b, col);
+                    wbytes2(d, b + 6, f.attrs);
+                    wbytes2(d, b + 10, ce), b += 14;
                   }
                   d.set(fn, b);
-                  b += fl2;
+                  b += fl3;
                   if (exl) {
                     for (var k in ex) {
                       var exf = ex[k], l = exf.length;
-                      wbytes(d, b, +k);
-                      wbytes(d, b + 2, l);
+                      wbytes2(d, b, +k);
+                      wbytes2(d, b + 2, l);
                       d.set(exf, b + 4), b += 4 + l;
                     }
                   }
@@ -13004,12 +13004,12 @@ var ArtCostReports = (() => {
                     d.set(co, b), b += col;
                   return b;
                 };
-                var wzf = function(o, b, c, d, e) {
-                  wbytes(o, b, 101010256);
-                  wbytes(o, b + 8, c);
-                  wbytes(o, b + 10, c);
-                  wbytes(o, b + 12, d);
-                  wbytes(o, b + 16, e);
+                var wzf2 = function(o, b, c, d, e) {
+                  wbytes2(o, b, 101010256);
+                  wbytes2(o, b + 8, c);
+                  wbytes2(o, b + 10, c);
+                  wbytes2(o, b + 12, d);
+                  wbytes2(o, b + 16, e);
                 };
                 var ZipPassThrough = (
                   /* unused pure expression or super */
@@ -13033,7 +13033,7 @@ var ArtCostReports = (() => {
                   if (typeof cb != "function")
                     browser_err(7);
                   var r = {};
-                  fltn(data, "", r, opts);
+                  fltn2(data, "", r, opts);
                   var k = Object.keys(r);
                   var lft = k.length, o = 0, tot = 0;
                   var slft = lft, files = new Array(lft);
@@ -13057,28 +13057,28 @@ var ArtCostReports = (() => {
                       var f = files[i2];
                       try {
                         var l = f.c.length;
-                        wzh(out, tot, f, f.f, f.u, l);
-                        var badd = 30 + f.f.length + exfl(f.extra);
+                        wzh2(out, tot, f, f.f, f.u, l);
+                        var badd = 30 + f.f.length + exfl2(f.extra);
                         var loc = tot + badd;
                         out.set(f.c, loc);
-                        wzh(out, o, f, f.f, f.u, l, tot, f.m), o += 16 + badd + (f.m ? f.m.length : 0), tot = loc + l;
+                        wzh2(out, o, f, f.f, f.u, l, tot, f.m), o += 16 + badd + (f.m ? f.m.length : 0), tot = loc + l;
                       } catch (e) {
                         return cbd(e, null);
                       }
                     }
-                    wzf(out, o, files.length, cdl, oe);
+                    wzf2(out, o, files.length, cdl, oe);
                     cbd(null, out);
                   };
                   if (!lft)
                     cbf();
                   var _loop_1 = function(i2) {
                     var fn = k[i2];
-                    var _a = r[fn], file = _a[0], p = _a[1];
-                    var c = crc(), size = file.length;
+                    var _a2 = r[fn], file = _a2[0], p = _a2[1];
+                    var c = crc2(), size = file.length;
                     c.p(file);
-                    var f = strToU8(fn), s = f.length;
-                    var com = p.comment, m = com && strToU8(com), ms = m && m.length;
-                    var exl = exfl(p.extra);
+                    var f = strToU82(fn), s = f.length;
+                    var com = p.comment, m = com && strToU82(com), ms = m && m.length;
+                    var exl = exfl2(p.extra);
                     var compression = p.level == 0 ? 0 : 8;
                     var cbl = function(e, d) {
                       if (e) {
@@ -13086,7 +13086,7 @@ var ArtCostReports = (() => {
                         cbd(e, null);
                       } else {
                         var l = d.length;
-                        files[i2] = mrg(p, {
+                        files[i2] = mrg2(p, {
                           size,
                           crc: c.d(),
                           c: d,
@@ -13107,7 +13107,7 @@ var ArtCostReports = (() => {
                       cbl(null, file);
                     else if (size < 16e4) {
                       try {
-                        cbl(null, deflateSync(file, p));
+                        cbl(null, deflateSync2(file, p));
                       } catch (e) {
                         cbl(e, null);
                       }
@@ -13119,26 +13119,26 @@ var ArtCostReports = (() => {
                   }
                   return tAll;
                 }
-                function zipSync(data, opts) {
+                function zipSync2(data, opts) {
                   if (!opts)
                     opts = {};
                   var r = {};
                   var files = [];
-                  fltn(data, "", r, opts);
+                  fltn2(data, "", r, opts);
                   var o = 0;
                   var tot = 0;
                   for (var fn in r) {
-                    var _a = r[fn], file = _a[0], p = _a[1];
+                    var _a2 = r[fn], file = _a2[0], p = _a2[1];
                     var compression = p.level == 0 ? 0 : 8;
-                    var f = strToU8(fn), s = f.length;
-                    var com = p.comment, m = com && strToU8(com), ms = m && m.length;
-                    var exl = exfl(p.extra);
+                    var f = strToU82(fn), s = f.length;
+                    var com = p.comment, m = com && strToU82(com), ms = m && m.length;
+                    var exl = exfl2(p.extra);
                     if (s > 65535)
                       browser_err(11);
-                    var d = compression ? deflateSync(file, p) : file, l = d.length;
-                    var c = crc();
+                    var d = compression ? deflateSync2(file, p) : file, l = d.length;
+                    var c = crc2();
                     c.p(file);
-                    files.push(mrg(p, {
+                    files.push(mrg2(p, {
                       size: file.length,
                       crc: c.d(),
                       c: d,
@@ -13154,12 +13154,12 @@ var ArtCostReports = (() => {
                   var out = new browser_u8(tot + 22), oe = o, cdl = tot - o;
                   for (var i = 0; i < files.length; ++i) {
                     var f = files[i];
-                    wzh(out, f.o, f, f.f, f.u, f.c.length);
-                    var badd = 30 + f.f.length + exfl(f.extra);
+                    wzh2(out, f.o, f, f.f, f.u, f.c.length);
+                    var badd = 30 + f.f.length + exfl2(f.extra);
                     out.set(f.c, f.o + badd);
-                    wzh(out, o, f, f.f, f.u, f.c.length, f.o, f.m), o += 16 + badd + (f.m ? f.m.length : 0);
+                    wzh2(out, o, f, f.f, f.u, f.c.length, f.o, f.m), o += 16 + badd + (f.m ? f.m.length : 0);
                   }
-                  wzf(out, o, files.length, cdl, oe);
+                  wzf2(out, o, files.length, cdl, oe);
                   return out;
                 }
                 var UnzipPassThrough = (
@@ -13201,29 +13201,29 @@ var ArtCostReports = (() => {
                     cbd = cb;
                   });
                   var e = data.length - 22;
-                  for (; b4(data, e) != 101010256; --e) {
+                  for (; b42(data, e) != 101010256; --e) {
                     if (!e || data.length - e > 65558) {
                       cbd(browser_err(13, 0, 1), null);
                       return tAll;
                     }
                   }
                   ;
-                  var lft = b2(data, e + 8);
+                  var lft = b22(data, e + 8);
                   if (lft) {
                     var c = lft;
-                    var o = b4(data, e + 16);
-                    var z = b4(data, e - 20) == 117853008;
+                    var o = b42(data, e + 16);
+                    var z = b42(data, e - 20) == 117853008;
                     if (z) {
-                      var ze = b4(data, e - 12);
-                      z = b4(data, ze) == 101075792;
+                      var ze = b42(data, e - 12);
+                      z = b42(data, ze) == 101075792;
                       if (z) {
-                        c = lft = b4(data, ze + 32);
-                        o = b4(data, ze + 48);
+                        c = lft = b42(data, ze + 32);
+                        o = b42(data, ze + 48);
                       }
                     }
                     var fltr = opts && opts.filter;
                     var _loop_3 = function(i2) {
-                      var _a = zh(data, o, z), c_1 = _a[0], sc = _a[1], su = _a[2], fn = _a[3], no = _a[4], off = _a[5], b = slzh(data, off);
+                      var _a2 = zh2(data, o, z), c_1 = _a2[0], sc = _a2[1], su = _a2[2], fn = _a2[3], no = _a2[4], off = _a2[5], b = slzh2(data, off);
                       o = no;
                       var cbl = function(e2, d) {
                         if (e2) {
@@ -13243,12 +13243,12 @@ var ArtCostReports = (() => {
                         compression: c_1
                       })) {
                         if (!c_1)
-                          cbl(null, slc(data, b, b + sc));
+                          cbl(null, slc2(data, b, b + sc));
                         else if (c_1 == 8) {
                           var infl = data.subarray(b, b + sc);
                           if (su < 524288 || sc > 0.8 * su) {
                             try {
-                              cbl(null, inflateSync(infl, { out: new browser_u8(su) }));
+                              cbl(null, inflateSync2(infl, { out: new browser_u8(su) }));
                             } catch (e2) {
                               cbl(e2, null);
                             }
@@ -13266,30 +13266,30 @@ var ArtCostReports = (() => {
                     cbd(null, {});
                   return tAll;
                 }
-                function unzipSync(data, opts) {
+                function unzipSync2(data, opts) {
                   var files = {};
                   var e = data.length - 22;
-                  for (; b4(data, e) != 101010256; --e) {
+                  for (; b42(data, e) != 101010256; --e) {
                     if (!e || data.length - e > 65558)
                       browser_err(13);
                   }
                   ;
-                  var c = b2(data, e + 8);
+                  var c = b22(data, e + 8);
                   if (!c)
                     return {};
-                  var o = b4(data, e + 16);
-                  var z = b4(data, e - 20) == 117853008;
+                  var o = b42(data, e + 16);
+                  var z = b42(data, e - 20) == 117853008;
                   if (z) {
-                    var ze = b4(data, e - 12);
-                    z = b4(data, ze) == 101075792;
+                    var ze = b42(data, e - 12);
+                    z = b42(data, ze) == 101075792;
                     if (z) {
-                      c = b4(data, ze + 32);
-                      o = b4(data, ze + 48);
+                      c = b42(data, ze + 32);
+                      o = b42(data, ze + 48);
                     }
                   }
                   var fltr = opts && opts.filter;
                   for (var i = 0; i < c; ++i) {
-                    var _a = zh(data, o, z), c_2 = _a[0], sc = _a[1], su = _a[2], fn = _a[3], no = _a[4], off = _a[5], b = slzh(data, off);
+                    var _a2 = zh2(data, o, z), c_2 = _a2[0], sc = _a2[1], su = _a2[2], fn = _a2[3], no = _a2[4], off = _a2[5], b = slzh2(data, off);
                     o = no;
                     if (!fltr || fltr({
                       name: fn,
@@ -13298,9 +13298,9 @@ var ArtCostReports = (() => {
                       compression: c_2
                     })) {
                       if (!c_2)
-                        files[fn] = slc(data, b, b + sc);
+                        files[fn] = slc2(data, b, b + sc);
                       else if (c_2 == 8)
-                        files[fn] = inflateSync(data.subarray(b, b + sc), { out: new browser_u8(su) });
+                        files[fn] = inflateSync2(data.subarray(b, b + sc), { out: new browser_u8(su) });
                       else
                         browser_err(14, "unknown compression type " + c_2);
                     }
@@ -13963,9 +13963,9 @@ var ArtCostReports = (() => {
                   /* unused pure expression or super */
                   null
                 );
-                const aes_limit = (name, min, max) => (value) => {
-                  if (!Number.isSafeInteger(value) || min > value || value > max) {
-                    const minmax = "[" + min + ".." + max + "]";
+                const aes_limit = (name, min, max2) => (value) => {
+                  if (!Number.isSafeInteger(value) || min > value || value > max2) {
+                    const minmax = "[" + min + ".." + max2 + "]";
                     throw new Error("" + name + ": expected value in range " + minmax + ", got " + value);
                   }
                 };
@@ -14038,7 +14038,7 @@ var ArtCostReports = (() => {
                     try {
                       let decoder = new TextDecoder(encoding);
                       return decoder.decode(buf);
-                    } catch (err) {
+                    } catch (err2) {
                       return buf;
                     }
                   }
@@ -18944,8 +18944,8 @@ var ArtCostReports = (() => {
                   }
                   privateDictForGlyph(gid) {
                     if (this.topDict.FDSelect) {
-                      let fd2 = this.fdForGlyph(gid);
-                      if (this.topDict.FDArray[fd2]) return this.topDict.FDArray[fd2].Private;
+                      let fd3 = this.fdForGlyph(gid);
+                      if (this.topDict.FDArray[fd3]) return this.topDict.FDArray[fd3].Private;
                       return null;
                     }
                     if (this.version < 2) return this.topDict.Private;
@@ -20321,11 +20321,11 @@ var ArtCostReports = (() => {
                 var $816c07a04b6dba87$export$2e2bcd8739ae039 = $816c07a04b6dba87$var$Directory;
                 function $12727730ddfc8bfe$export$2e0ae67339d5f1ac(arr, cmp2) {
                   let min = 0;
-                  let max = arr.length - 1;
-                  while (min <= max) {
-                    let mid = min + max >> 1;
+                  let max2 = arr.length - 1;
+                  while (min <= max2) {
+                    let mid = min + max2 >> 1;
                     let res = cmp2(arr[mid]);
-                    if (res < 0) max = mid - 1;
+                    if (res < 0) max2 = mid - 1;
                     else if (res > 0) min = mid + 1;
                     else return mid;
                   }
@@ -20378,10 +20378,10 @@ var ArtCostReports = (() => {
                         return cmap.codeMap.get(codepoint) || 0;
                       case 4: {
                         let min = 0;
-                        let max = cmap.segCount - 1;
-                        while (min <= max) {
-                          let mid = min + max >> 1;
-                          if (codepoint < cmap.startCode.get(mid)) max = mid - 1;
+                        let max2 = cmap.segCount - 1;
+                        while (min <= max2) {
+                          let mid = min + max2 >> 1;
+                          if (codepoint < cmap.startCode.get(mid)) max2 = mid - 1;
                           else if (codepoint > cmap.endCode.get(mid)) min = mid + 1;
                           else {
                             let rangeOffset = cmap.idRangeOffset.get(mid);
@@ -20405,11 +20405,11 @@ var ArtCostReports = (() => {
                       case 12:
                       case 13: {
                         let min = 0;
-                        let max = cmap.nGroups - 1;
-                        while (min <= max) {
-                          let mid = min + max >> 1;
+                        let max2 = cmap.nGroups - 1;
+                        while (min <= max2) {
+                          let mid = min + max2 >> 1;
                           let group = cmap.groups.get(mid);
-                          if (codepoint < group.startCharCode) max = mid - 1;
+                          if (codepoint < group.startCharCode) max2 = mid - 1;
                           else if (codepoint > group.endCharCode) min = mid + 1;
                           else {
                             if (cmap.version === 12) return group.glyphID + (codepoint - group.startCharCode);
@@ -21623,12 +21623,12 @@ var ArtCostReports = (() => {
                       case 2:
                       case 4: {
                         let min = 0;
-                        let max = this.table.binarySearchHeader.nUnits - 1;
-                        while (min <= max) {
-                          var mid = min + max >> 1;
+                        let max2 = this.table.binarySearchHeader.nUnits - 1;
+                        while (min <= max2) {
+                          var mid = min + max2 >> 1;
                           var seg = this.table.segments[mid];
                           if (seg.firstGlyph === 65535) return null;
-                          if (glyph < seg.firstGlyph) max = mid - 1;
+                          if (glyph < seg.firstGlyph) max2 = mid - 1;
                           else if (glyph > seg.lastGlyph) min = mid + 1;
                           else {
                             if (this.table.version === 2) return seg.value;
@@ -21639,12 +21639,12 @@ var ArtCostReports = (() => {
                       }
                       case 6: {
                         let min = 0;
-                        let max = this.table.binarySearchHeader.nUnits - 1;
-                        while (min <= max) {
-                          var mid = min + max >> 1;
+                        let max2 = this.table.binarySearchHeader.nUnits - 1;
+                        while (min <= max2) {
+                          var mid = min + max2 >> 1;
                           var seg = this.table.segments[mid];
                           if (seg.glyph === 65535) return null;
-                          if (glyph < seg.glyph) max = mid - 1;
+                          if (glyph < seg.glyph) max2 = mid - 1;
                           else if (glyph > seg.glyph) min = mid + 1;
                           else return seg.value;
                         }
@@ -26533,18 +26533,18 @@ var ArtCostReports = (() => {
                     let used_subrs = [];
                     let fd_select = {};
                     for (let gid of this.glyphs) {
-                      let fd2 = this.cff.fdForGlyph(gid);
-                      if (fd2 == null) continue;
-                      if (!used_fds[fd2]) {
-                        topDict.FDArray.push(Object.assign({}, this.cff.topDict.FDArray[fd2]));
+                      let fd3 = this.cff.fdForGlyph(gid);
+                      if (fd3 == null) continue;
+                      if (!used_fds[fd3]) {
+                        topDict.FDArray.push(Object.assign({}, this.cff.topDict.FDArray[fd3]));
                         used_subrs.push({});
-                        fd_select[fd2] = topDict.FDArray.length - 1;
+                        fd_select[fd3] = topDict.FDArray.length - 1;
                       }
-                      used_fds[fd2] = true;
-                      topDict.FDSelect.fds.push(fd_select[fd2]);
+                      used_fds[fd3] = true;
+                      topDict.FDSelect.fds.push(fd_select[fd3]);
                       let glyph = this.font.getGlyph(gid);
                       let path = glyph.path;
-                      for (let subr in glyph._usedSubrs) used_subrs[fd_select[fd2]][subr] = true;
+                      for (let subr in glyph._usedSubrs) used_subrs[fd_select[fd3]][subr] = true;
                     }
                     for (let i = 0; i < topDict.FDArray.length; i++) {
                       let dict = topDict.FDArray[i];
@@ -27400,9 +27400,9 @@ var ArtCostReports = (() => {
                       dy = $21ee218f84ac7f32$var$withSign(flag >> 1, 1 + (b0 % 12 >> 2 << 8) + glyphs.readUInt8());
                     } else if (flag < 124) {
                       var b1 = glyphs.readUInt8();
-                      let b22 = glyphs.readUInt8();
-                      dx = $21ee218f84ac7f32$var$withSign(flag, (b1 << 4) + (b22 >> 4));
-                      dy = $21ee218f84ac7f32$var$withSign(flag >> 1, ((b22 & 15) << 8) + glyphs.readUInt8());
+                      let b23 = glyphs.readUInt8();
+                      dx = $21ee218f84ac7f32$var$withSign(flag, (b1 << 4) + (b23 >> 4));
+                      dy = $21ee218f84ac7f32$var$withSign(flag >> 1, ((b23 & 15) << 8) + glyphs.readUInt8());
                     } else {
                       dx = $21ee218f84ac7f32$var$withSign(flag, glyphs.readUInt16BE());
                       dy = $21ee218f84ac7f32$var$withSign(flag >> 1, glyphs.readUInt16BE());
@@ -29004,20 +29004,20 @@ var ArtCostReports = (() => {
                   }
                   readUInt32() {
                     const b1 = this.data[this.pos++] << 24;
-                    const b22 = this.data[this.pos++] << 16;
+                    const b23 = this.data[this.pos++] << 16;
                     const b3 = this.data[this.pos++] << 8;
-                    const b42 = this.data[this.pos++];
-                    return b1 | b22 | b3 | b42;
+                    const b43 = this.data[this.pos++];
+                    return b1 | b23 | b3 | b43;
                   }
                   readUInt16() {
                     const b1 = this.data[this.pos++] << 8;
-                    const b22 = this.data[this.pos++];
-                    return b1 | b22;
+                    const b23 = this.data[this.pos++];
+                    return b1 | b23;
                   }
                   decodePixels(fn) {
-                    return png_js_browser_inflate(new Uint8Array(this.imgData), (err, data) => {
-                      if (err) {
-                        throw err;
+                    return png_js_browser_inflate(new Uint8Array(this.imgData), (err2, data) => {
+                      if (err2) {
+                        throw err2;
                       }
                       const { width, height } = this;
                       const pixelBytes = this.pixelBitlength / 8;
@@ -33211,7 +33211,7 @@ end`);
                     let buffer = "";
                     let textWidth = 0;
                     let wc = 0;
-                    let lc2 = 0;
+                    let lc3 = 0;
                     let continueY = document2.y;
                     const emitLine = () => {
                       options.textWidth = textWidth + this.wordSpacing * (wc - 1);
@@ -33219,7 +33219,7 @@ end`);
                       options.lineWidth = this.lineWidth;
                       continueY = document2.y;
                       this.emit("line", buffer, options, this);
-                      return lc2++;
+                      return lc3++;
                     };
                     this.emit("sectionStart", options, this);
                     this.eachWord(text, (word, w, bk, last) => {
@@ -33294,7 +33294,7 @@ end`);
                     }
                     this.emit("sectionEnd", options, this);
                     if (options.continued === true) {
-                      if (lc2 > 1) {
+                      if (lc3 > 1) {
                         this.continuedX = 0;
                       }
                       this.continuedX += options.textWidth || 0;
@@ -37918,16 +37918,16 @@ Images dictionary should contain dataURL entries (or local file paths in node.js
                 };
                 var encode = function(ver, mode, data, maxbuflen) {
                   var buf = [];
-                  var bits2 = 0, remaining = 8;
+                  var bits3 = 0, remaining = 8;
                   var datalen = data.length;
                   var pack2 = function(x, n) {
                     if (n >= remaining) {
-                      buf.push(bits2 | x >> (n -= remaining));
+                      buf.push(bits3 | x >> (n -= remaining));
                       while (n >= 8) buf.push(x >> (n -= 8) & 255);
-                      bits2 = 0;
+                      bits3 = 0;
                       remaining = 8;
                     }
-                    if (n > 0) bits2 |= (x & (1 << n) - 1) << (remaining -= n);
+                    if (n > 0) bits3 |= (x & (1 << n) - 1) << (remaining -= n);
                   };
                   var nlenbits = ndatalenbits(ver, mode);
                   pack2(mode, 4);
@@ -37954,7 +37954,7 @@ Images dictionary should contain dataURL entries (or local file paths in node.js
                       break;
                   }
                   pack2(MODE_TERMINATOR, 4);
-                  if (remaining < 8) buf.push(bits2);
+                  if (remaining < 8) buf.push(bits3);
                   while (buf.length + 1 < maxbuflen) buf.push(236, 17);
                   if (buf.length < maxbuflen) buf.push(236);
                   return buf;
@@ -38021,10 +38021,10 @@ Images dictionary should contain dataURL entries (or local file paths in node.js
                     matrix.push([]);
                     reserved.push([]);
                   }
-                  var blit = function(y, x, h, w, bits2) {
+                  var blit = function(y, x, h, w, bits3) {
                     for (var i2 = 0; i2 < h; ++i2) {
                       for (var j3 = 0; j3 < w; ++j3) {
-                        matrix[y + i2][x + j3] = bits2[i2] >> j3 & 1;
+                        matrix[y + i2][x + j3] = bits3[i2] >> j3 & 1;
                         reserved[y + i2][x + j3] = 1;
                       }
                     }
@@ -40716,11 +40716,11 @@ Row data: ${stringifyNode(rowData)}`);
                    * @returns {number}
                    */
                   getHeight() {
-                    let max = 0;
+                    let max2 = 0;
                     this.inlines.forEach((item) => {
-                      max = Math.max(max, item.height || 0);
+                      max2 = Math.max(max2, item.height || 0);
                     });
-                    return max;
+                    return max2;
                   }
                   /**
                    * @returns {number}
@@ -42133,12 +42133,12 @@ Row data: ${stringifyNode(rowData)}`);
                   }
                   _drawDecoration(group, x, y) {
                     const maxInline = () => {
-                      let max = 0;
+                      let max2 = 0;
                       for (let i = 0, l = group.inlines.length; i < l; i++) {
                         let inline = group.inlines[i];
-                        max = inline.fontSize > group.inlines[max].fontSize ? i : max;
+                        max2 = inline.fontSize > group.inlines[max2].fontSize ? i : max2;
                       }
-                      return group.inlines[max];
+                      return group.inlines[max2];
                     };
                     const width = () => {
                       let sum = 0;
@@ -46318,8 +46318,8 @@ Row data: ${stringifyNode(rowData)}`);
               },
               /***/
               1561(__unused_webpack_module, exports2) {
-                function HuffmanCode(bits, value) {
-                  this.bits = bits;
+                function HuffmanCode(bits2, value) {
+                  this.bits = bits2;
                   this.value = value;
                 }
                 exports2.z = HuffmanCode;
@@ -47208,9 +47208,9 @@ Row data: ${stringifyNode(rowData)}`);
                 };
                 Buffer2.prototype.inspect = function inspect() {
                   let str = "";
-                  const max = exports2.IS;
-                  str = this.toString("hex", 0, max).replace(/(.{2})/g, "$1 ").trim();
-                  if (this.length > max) str += " ... ";
+                  const max2 = exports2.IS;
+                  str = this.toString("hex", 0, max2).replace(/(.{2})/g, "$1 ").trim();
+                  if (this.length > max2) str += " ... ";
                   return "<Buffer " + str + ">";
                 };
                 if (customInspectSymbol) {
@@ -47783,9 +47783,9 @@ Row data: ${stringifyNode(rowData)}`);
                   if (!noAssert) checkOffset(offset, 8, this.length);
                   return ieee754.read(this, offset, false, 52, 8);
                 };
-                function checkInt(buf, value, offset, ext, max, min) {
+                function checkInt(buf, value, offset, ext, max2, min) {
                   if (!Buffer2.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
-                  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
+                  if (value > max2 || value < min) throw new RangeError('"value" argument is out of bounds');
                   if (offset + ext > buf.length) throw new RangeError("Index out of range");
                 }
                 Buffer2.prototype.writeUintLE = Buffer2.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength2, noAssert) {
@@ -47863,8 +47863,8 @@ Row data: ${stringifyNode(rowData)}`);
                   this[offset + 3] = value & 255;
                   return offset + 4;
                 };
-                function wrtBigUInt64LE(buf, value, offset, min, max) {
-                  checkIntBI(value, min, max, buf, offset, 7);
+                function wrtBigUInt64LE(buf, value, offset, min, max2) {
+                  checkIntBI(value, min, max2, buf, offset, 7);
                   let lo = Number(value & BigInt(4294967295));
                   buf[offset++] = lo;
                   lo = lo >> 8;
@@ -47883,8 +47883,8 @@ Row data: ${stringifyNode(rowData)}`);
                   buf[offset++] = hi;
                   return offset;
                 }
-                function wrtBigUInt64BE(buf, value, offset, min, max) {
-                  checkIntBI(value, min, max, buf, offset, 7);
+                function wrtBigUInt64BE(buf, value, offset, min, max2) {
+                  checkIntBI(value, min, max2, buf, offset, 7);
                   let lo = Number(value & BigInt(4294967295));
                   buf[offset + 7] = lo;
                   lo = lo >> 8;
@@ -47998,7 +47998,7 @@ Row data: ${stringifyNode(rowData)}`);
                 Buffer2.prototype.writeBigInt64BE = defineBigIntMethod(function writeBigInt64BE(value, offset = 0) {
                   return wrtBigUInt64BE(this, value, offset, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
                 });
-                function checkIEEE754(buf, value, offset, ext, max, min) {
+                function checkIEEE754(buf, value, offset, ext, max2, min) {
                   if (offset + ext > buf.length) throw new RangeError("Index out of range");
                   if (offset < 0) throw new RangeError("Index out of range");
                 }
@@ -48196,8 +48196,8 @@ Row data: ${stringifyNode(rowData)}`);
                     boundsError(offset, buf.length - (byteLength2 + 1));
                   }
                 }
-                function checkIntBI(value, min, max, buf, offset, byteLength2) {
-                  if (value > max || value < min) {
+                function checkIntBI(value, min, max2, buf, offset, byteLength2) {
+                  if (value > max2 || value < min) {
                     const n = typeof min === "bigint" ? "n" : "";
                     let range;
                     if (byteLength2 > 3) {
@@ -48207,7 +48207,7 @@ Row data: ${stringifyNode(rowData)}`);
                         range = `>= -(2${n} ** ${(byteLength2 + 1) * 8 - 1}${n}) and < 2 ** ${(byteLength2 + 1) * 8 - 1}${n}`;
                       }
                     } else {
-                      range = `>= ${min}${n} and <= ${max}${n}`;
+                      range = `>= ${min}${n} and <= ${max2}${n}`;
                     }
                     throw new errors.ERR_OUT_OF_RANGE("value", range, value);
                   }
@@ -48418,8 +48418,8 @@ Row data: ${stringifyNode(rowData)}`);
                         child = new nativePromise(function(resolve, reject) {
                           parent2.then(function(value) {
                             resolve(_clone(value, depth2 - 1));
-                          }, function(err) {
-                            reject(_clone(err, depth2 - 1));
+                          }, function(err2) {
+                            reject(_clone(err2, depth2 - 1));
                           });
                         });
                       } else if (clone2.__isArray(parent2)) {
@@ -50545,13 +50545,13 @@ Row data: ${stringifyNode(rowData)}`);
                 ]);
                 var code_tree = new Tree();
                 var lengths = new Uint8Array(288 + 32);
-                function tinf_build_bits_base(bits, base, delta, first) {
+                function tinf_build_bits_base(bits2, base, delta, first) {
                   var i, sum;
-                  for (i = 0; i < delta; ++i) bits[i] = 0;
-                  for (i = 0; i < 30 - delta; ++i) bits[i + delta] = i / delta | 0;
+                  for (i = 0; i < delta; ++i) bits2[i] = 0;
+                  for (i = 0; i < 30 - delta; ++i) bits2[i + delta] = i / delta | 0;
                   for (sum = first, i = 0; i < 30; ++i) {
                     base[i] = sum;
-                    sum += 1 << bits[i];
+                    sum += 1 << bits2[i];
                   }
                 }
                 function tinf_build_fixed_trees(lt, dt) {
@@ -50629,8 +50629,8 @@ Row data: ${stringifyNode(rowData)}`);
                   hclen = tinf_read_bits(d, 4, 4);
                   for (i = 0; i < 19; ++i) lengths[i] = 0;
                   for (i = 0; i < hclen; ++i) {
-                    var clen = tinf_read_bits(d, 3, 0);
-                    lengths[clcidx[i]] = clen;
+                    var clen2 = tinf_read_bits(d, 3, 0);
+                    lengths[clcidx[i]] = clen2;
                   }
                   tinf_build_tree(code_tree, lengths, 0, 19);
                   for (num = 0; num < hlit + hdist; ) {
@@ -50840,38 +50840,38 @@ Row data: ${stringifyNode(rowData)}`);
                   }
                 })(this, function() {
                   "use strict";
-                  function b(a2, b2) {
-                    return "undefined" == typeof b2 ? b2 = { autoBom: false } : "object" != typeof b2 && (console.warn("Deprecated: Expected third argument to be a object"), b2 = { autoBom: !b2 }), b2.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a2.type) ? new Blob(["\uFEFF", a2], { type: a2.type }) : a2;
+                  function b(a2, b3) {
+                    return "undefined" == typeof b3 ? b3 = { autoBom: false } : "object" != typeof b3 && (console.warn("Deprecated: Expected third argument to be a object"), b3 = { autoBom: !b3 }), b3.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a2.type) ? new Blob(["\uFEFF", a2], { type: a2.type }) : a2;
                   }
-                  function c(a2, b2, c2) {
+                  function c(a2, b3, c2) {
                     var d2 = new XMLHttpRequest();
                     d2.open("GET", a2), d2.responseType = "blob", d2.onload = function() {
-                      g(d2.response, b2, c2);
+                      g(d2.response, b3, c2);
                     }, d2.onerror = function() {
                       console.error("could not download file");
                     }, d2.send();
                   }
                   function d(a2) {
-                    var b2 = new XMLHttpRequest();
-                    b2.open("HEAD", a2, false);
+                    var b3 = new XMLHttpRequest();
+                    b3.open("HEAD", a2, false);
                     try {
-                      b2.send();
+                      b3.send();
                     } catch (a3) {
                     }
-                    return 200 <= b2.status && 299 >= b2.status;
+                    return 200 <= b3.status && 299 >= b3.status;
                   }
                   function e(a2) {
                     try {
                       a2.dispatchEvent(new MouseEvent("click"));
                     } catch (c2) {
-                      var b2 = document.createEvent("MouseEvents");
-                      b2.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null), a2.dispatchEvent(b2);
+                      var b3 = document.createEvent("MouseEvents");
+                      b3.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null), a2.dispatchEvent(b3);
                     }
                   }
                   var f = "object" == typeof window && window.window === window ? window : "object" == typeof self && self.self === self ? self : "object" == typeof __webpack_require__2.g && __webpack_require__2.g.global === __webpack_require__2.g ? __webpack_require__2.g : void 0, a = f.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent), g = f.saveAs || ("object" != typeof window || window !== f ? function() {
-                  } : typeof HTMLAnchorElement !== "undefined" && "download" in HTMLAnchorElement.prototype && !a ? function(b2, g2, h) {
+                  } : typeof HTMLAnchorElement !== "undefined" && "download" in HTMLAnchorElement.prototype && !a ? function(b3, g2, h) {
                     var i = f.URL || f.webkitURL, j = document.createElement("a");
-                    g2 = g2 || b2.name || "download", j.download = g2, j.rel = "noopener", "string" == typeof b2 ? (j.href = b2, j.origin === location.origin ? e(j) : d(j.href) ? c(b2, g2, h) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b2), setTimeout(function() {
+                    g2 = g2 || b3.name || "download", j.download = g2, j.rel = "noopener", "string" == typeof b3 ? (j.href = b3, j.origin === location.origin ? e(j) : d(j.href) ? c(b3, g2, h) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b3), setTimeout(function() {
                       i.revokeObjectURL(j.href);
                     }, 4e4), setTimeout(function() {
                       e(j);
@@ -50885,17 +50885,17 @@ Row data: ${stringifyNode(rowData)}`);
                         e(i);
                       });
                     }
-                  } : function(b2, d2, e2, g2) {
-                    if (g2 = g2 || open("", "_blank"), g2 && (g2.document.title = g2.document.body.innerText = "downloading..."), "string" == typeof b2) return c(b2, d2, e2);
-                    var h = "application/octet-stream" === b2.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
+                  } : function(b3, d2, e2, g2) {
+                    if (g2 = g2 || open("", "_blank"), g2 && (g2.document.title = g2.document.body.innerText = "downloading..."), "string" == typeof b3) return c(b3, d2, e2);
+                    var h = "application/octet-stream" === b3.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
                     if ((j || h && i || a) && "undefined" != typeof FileReader) {
                       var k = new FileReader();
                       k.onloadend = function() {
                         var a2 = k.result;
                         a2 = j ? a2 : a2.replace(/^data:[^;]*;/, "data:attachment/file;"), g2 ? g2.location.href = a2 : location = a2, g2 = null;
-                      }, k.readAsDataURL(b2);
+                      }, k.readAsDataURL(b3);
                     } else {
-                      var l = f.URL || f.webkitURL, m = l.createObjectURL(b2);
+                      var l = f.URL || f.webkitURL, m = l.createObjectURL(b3);
                       g2 ? g2.location = m : location.href = m, g2 = null, setTimeout(function() {
                         l.revokeObjectURL(m);
                       }, 4e4);
@@ -51941,7 +51941,7 @@ Row data: ${stringifyNode(rowData)}`);
     var n = s.indexOf(".") > -1 ? s.slice(0, s.slice(0, 2) == "0." ? 17 : 16) : s.slice(0, 15) + fill("0", s.length - 15);
     return Number(n);
   }
-  function SSF_parse_date_code(v, opts, b2) {
+  function SSF_parse_date_code(v, opts, b22) {
     if (v > 2958465 || v < 0) return null;
     v = SSF_normalize_xl_unsafe(v);
     var date = v | 0, time = Math.floor(86400 * (v - date)), dow = 0;
@@ -51958,10 +51958,10 @@ Row data: ${stringifyNode(rowData)}`);
       }
     }
     if (date === 60) {
-      dout = b2 ? [1317, 10, 29] : [1900, 2, 29];
+      dout = b22 ? [1317, 10, 29] : [1900, 2, 29];
       dow = 3;
     } else if (date === 0) {
-      dout = b2 ? [1317, 8, 29] : [1900, 1, 0];
+      dout = b22 ? [1317, 8, 29] : [1900, 1, 0];
       dow = 6;
     } else {
       if (date > 60) --date;
@@ -51970,7 +51970,7 @@ Row data: ${stringifyNode(rowData)}`);
       dout = [d.getFullYear(), d.getMonth() + 1, d.getDate()];
       dow = d.getDay();
       if (date < 60) dow = (dow + 6) % 7;
-      if (b2) dow = SSF_fix_hijri(d, dout);
+      if (b22) dow = SSF_fix_hijri(d, dout);
     }
     out.y = dout[0];
     out.m = dout[1];
@@ -54019,12 +54019,12 @@ Row data: ${stringifyNode(rowData)}`);
     var bitswap8 = use_typed_arrays ? new Uint8Array(1 << 8) : [];
     for (var q = 0; q < 1 << 8; ++q) bitswap8[q] = bit_swap_8(q);
     function bit_swap_n(n, b) {
-      var rev = bitswap8[n & 255];
-      if (b <= 8) return rev >>> 8 - b;
-      rev = rev << 8 | bitswap8[n >> 8 & 255];
-      if (b <= 16) return rev >>> 16 - b;
-      rev = rev << 8 | bitswap8[n >> 16 & 255];
-      return rev >>> 24 - b;
+      var rev2 = bitswap8[n & 255];
+      if (b <= 8) return rev2 >>> 8 - b;
+      rev2 = rev2 << 8 | bitswap8[n >> 8 & 255];
+      if (b <= 16) return rev2 >>> 16 - b;
+      rev2 = rev2 << 8 | bitswap8[n >> 16 & 255];
+      return rev2 >>> 24 - b;
     }
     function read_bits_2(buf, bl) {
       var w = bl & 7, h = bl >>> 3;
@@ -54375,8 +54375,8 @@ Row data: ${stringifyNode(rowData)}`);
             outbuf = realloc(outbuf, woff + 32767);
             OL = outbuf.length;
           }
-          var bits = read_bits_n(data, boff, max_len_1);
-          var code = header >>> 1 == 1 ? fix_lmap[bits] : dyn_lmap[bits];
+          var bits2 = read_bits_n(data, boff, max_len_1);
+          var code = header >>> 1 == 1 ? fix_lmap[bits2] : dyn_lmap[bits2];
           boff += code & 15;
           code >>>= 4;
           if ((code >>> 8 & 255) === 0) outbuf[woff++] = code;
@@ -54390,8 +54390,8 @@ Row data: ${stringifyNode(rowData)}`);
               tgt += read_bits_n(data, boff, len_eb);
               boff += len_eb;
             }
-            bits = read_bits_n(data, boff, max_len_2);
-            code = header >>> 1 == 1 ? fix_dmap[bits] : dyn_dmap[bits];
+            bits2 = read_bits_n(data, boff, max_len_2);
+            code = header >>> 1 == 1 ? fix_dmap[bits2] : dyn_dmap[bits2];
             boff += code & 15;
             code >>>= 4;
             var dst_eb = code < 4 ? 0 : code - 2 >> 1;
@@ -55013,7 +55013,7 @@ Row data: ${stringifyNode(rowData)}`);
         if (arr[0] == 255 && arr[1] == 254) return utf8write(new TextDecoder("utf-16le").decode(arr.slice(2)));
         if (arr[0] == 254 && arr[1] == 255) return utf8write(new TextDecoder("utf-16be").decode(arr.slice(2)));
       }
-      var rev = {
+      var rev2 = {
         "\u20AC": "\x80",
         "\u201A": "\x82",
         "\u0192": "\x83",
@@ -55044,7 +55044,7 @@ Row data: ${stringifyNode(rowData)}`);
       };
       if (Array.isArray(arr)) arr = new Uint8Array(arr);
       return new TextDecoder("latin1").decode(arr).replace(/[€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/g, function(c) {
-        return rev[c] || c;
+        return rev2[c] || c;
       });
     } catch (e) {
     }
@@ -57613,13 +57613,13 @@ Row data: ${stringifyNode(rowData)}`);
     return out;
   }
   function write_WriteAccess(s, opts) {
-    var b8 = !opts || opts.biff == 8;
-    var o = new_buf(b8 ? 112 : 54);
+    var b82 = !opts || opts.biff == 8;
+    var o = new_buf(b82 ? 112 : 54);
     o.write_shift(opts.biff == 8 ? 2 : 1, 7);
-    if (b8) o.write_shift(1, 0);
+    if (b82) o.write_shift(1, 0);
     o.write_shift(4, 859007059);
-    o.write_shift(4, 5458548 | (b8 ? 0 : 536870912));
-    while (o.l < o.length) o.write_shift(1, b8 ? 0 : 32);
+    o.write_shift(4, 5458548 | (b82 ? 0 : 536870912));
+    while (o.l < o.length) o.write_shift(1, b82 ? 0 : 32);
     return o;
   }
   function write_BoundSheet8(data, opts) {
@@ -57691,12 +57691,12 @@ Row data: ${stringifyNode(rowData)}`);
     return o;
   }
   function write_Label(R, C, v, os, opts) {
-    var b8 = !opts || opts.biff == 8;
-    var o = new_buf(6 + 2 + +b8 + (1 + b8) * v.length);
+    var b82 = !opts || opts.biff == 8;
+    var o = new_buf(6 + 2 + +b82 + (1 + b82) * v.length);
     write_XLSCell(R, C, os, o);
     o.write_shift(2, v.length);
-    if (b8) o.write_shift(1, 1);
-    o.write_shift((1 + b8) * v.length, v, b8 ? "utf16le" : "sbcs");
+    if (b82) o.write_shift(1, 1);
+    o.write_shift((1 + b82) * v.length, v, b82 ? "utf16le" : "sbcs");
     return o;
   }
   function write_Format(i, f, opts, o) {
@@ -64158,11 +64158,11 @@ Row data: ${stringifyNode(rowData)}`);
     return r.replace(/!/, ".").replace(/:/, ":.");
   }
   var browser_has_Map = typeof Map !== "undefined";
-  function get_sst_id(sst, str, rev) {
+  function get_sst_id(sst, str, rev2) {
     var i = 0, len = sst.length;
-    if (rev) {
-      if (browser_has_Map ? rev.has(str) : Object.prototype.hasOwnProperty.call(rev, str)) {
-        var revarr = browser_has_Map ? rev.get(str) : rev[str];
+    if (rev2) {
+      if (browser_has_Map ? rev2.has(str) : Object.prototype.hasOwnProperty.call(rev2, str)) {
+        var revarr = browser_has_Map ? rev2.get(str) : rev2[str];
         for (; i < revarr.length; ++i) {
           if (sst[revarr[i]].t === str) {
             sst.Count++;
@@ -64179,13 +64179,13 @@ Row data: ${stringifyNode(rowData)}`);
     sst[len] = { t: str };
     sst.Count++;
     sst.Unique++;
-    if (rev) {
+    if (rev2) {
       if (browser_has_Map) {
-        if (!rev.has(str)) rev.set(str, []);
-        rev.get(str).push(len);
+        if (!rev2.has(str)) rev2.set(str, []);
+        rev2.get(str).push(len);
       } else {
-        if (!Object.prototype.hasOwnProperty.call(rev, str)) rev[str] = [];
-        rev[str].push(len);
+        if (!Object.prototype.hasOwnProperty.call(rev2, str)) rev2[str] = [];
+        rev2[str].push(len);
       }
     }
     return len;
@@ -69366,9 +69366,9 @@ Row data: ${stringifyNode(rowData)}`);
         buf.write_shift(4, acc);
         buf.write_shift(4, b8ocnts.length);
       }
-      b8ocnts.forEach(function(b8) {
-        buf.write_shift(4, b8[0]);
-        buf.write_shift(4, b8[2]);
+      b8ocnts.forEach(function(b82) {
+        buf.write_shift(4, b82[0]);
+        buf.write_shift(4, b82[2]);
       });
     }
     {
@@ -69686,10 +69686,10 @@ Row data: ${stringifyNode(rowData)}`);
     var _WB = (wb || {}).Workbook || {};
     var _sheet = (_WB.Sheets || [])[idx] || {};
     var dense = ws["!data"] != null;
-    var b8 = opts.biff == 8;
+    var b82 = opts.biff == 8;
     var ref, rr = "", cols = [];
     var range = safe_decode_range(ws["!ref"] || "A1");
-    var MAX_ROWS = b8 ? 65536 : 16384;
+    var MAX_ROWS = b82 ? 65536 : 16384;
     if (range.e.c > 255 || range.e.r >= MAX_ROWS) {
       if (opts.WTF) throw new Error("Range " + (ws["!ref"] || "A1") + " exceeds format limit A1:IV" + MAX_ROWS);
       range.e.c = Math.min(range.e.c, 255);
@@ -69708,10 +69708,10 @@ Row data: ${stringifyNode(rowData)}`);
     write_biff_rec(ba, 128, write_Guts([0, 0]));
     write_biff_rec(ba, 131, writebool(false));
     write_biff_rec(ba, 132, writebool(false));
-    if (b8) write_ws_cols_biff8(ba, ws["!cols"]);
+    if (b82) write_ws_cols_biff8(ba, ws["!cols"]);
     write_biff_rec(ba, 512, write_Dimensions(range, opts));
     var date1904 = (((wb || {}).Workbook || {}).WBProps || {}).date1904;
-    if (b8) ws["!links"] = [];
+    if (b82) ws["!links"] = [];
     for (var C = range.s.c; C <= range.e.c; ++C) cols[C] = encode_col(C);
     var comments = [];
     var row2 = [];
@@ -69722,18 +69722,18 @@ Row data: ${stringifyNode(rowData)}`);
         var cell = dense ? row2[C] : ws[cols[C] + rr];
         if (!cell) continue;
         write_ws_biff8_cell(ba, cell, R, C, opts, date1904);
-        if (b8 && cell.l) ws["!links"].push([cols[C] + rr, cell.l]);
+        if (b82 && cell.l) ws["!links"].push([cols[C] + rr, cell.l]);
         if (cell.c) comments.push([cell.c, R, C]);
       }
     }
     var cname = _sheet.CodeName || _sheet.name || s;
-    if (b8) write_comments_biff8(ba, comments);
+    if (b82) write_comments_biff8(ba, comments);
     else write_comments_biff2(ba, comments);
-    if (b8) write_biff_rec(ba, 574, write_Window2((_WB.Views || [])[0]));
-    if (b8 && (ws["!merges"] || []).length) write_biff_rec(ba, 229, write_MergeCells(ws["!merges"]));
-    if (b8) write_ws_biff8_hlinks(ba, ws);
+    if (b82) write_biff_rec(ba, 574, write_Window2((_WB.Views || [])[0]));
+    if (b82 && (ws["!merges"] || []).length) write_biff_rec(ba, 229, write_MergeCells(ws["!merges"]));
+    if (b82) write_ws_biff8_hlinks(ba, ws);
     write_biff_rec(ba, 442, write_XLUnicodeString(cname, opts));
-    if (b8) write_FEAT(ba, ws);
+    if (b82) write_FEAT(ba, ws);
     write_biff_rec(
       ba,
       10
@@ -69751,14 +69751,14 @@ Row data: ${stringifyNode(rowData)}`);
         /*::CodeName:"ThisWorkbook"*/
       }
     );
-    var b8 = opts.biff == 8, b5 = opts.biff == 5;
+    var b82 = opts.biff == 8, b5 = opts.biff == 5;
     write_biff_rec(A, 2057, write_BOF(wb, 5, opts));
     if (opts.bookType == "xla") write_biff_rec(
       A,
       135
       /* Addin */
     );
-    write_biff_rec(A, 225, b8 ? writeuint16(1200) : null);
+    write_biff_rec(A, 225, b82 ? writeuint16(1200) : null);
     write_biff_rec(A, 193, writezeroes(2));
     if (b5) write_biff_rec(
       A,
@@ -69776,20 +69776,20 @@ Row data: ${stringifyNode(rowData)}`);
       /* InterfaceEnd */
     );
     write_biff_rec(A, 92, write_WriteAccess("SheetJS", opts));
-    write_biff_rec(A, 66, writeuint16(b8 ? 1200 : 1252));
-    if (b8) write_biff_rec(A, 353, writeuint16(0));
-    if (b8) write_biff_rec(
+    write_biff_rec(A, 66, writeuint16(b82 ? 1200 : 1252));
+    if (b82) write_biff_rec(A, 353, writeuint16(0));
+    if (b82) write_biff_rec(
       A,
       448
       /* Excel9File */
     );
     write_biff_rec(A, 317, write_RRTabId(wb.SheetNames.length));
-    if (b8 && wb.vbaraw) write_biff_rec(
+    if (b82 && wb.vbaraw) write_biff_rec(
       A,
       211
       /* ObProj */
     );
-    if (b8 && wb.vbaraw) {
+    if (b82 && wb.vbaraw) {
       var cname = _wb.CodeName || "ThisWorkbook";
       write_biff_rec(A, 442, write_XLUnicodeString(cname, opts));
     }
@@ -69797,24 +69797,24 @@ Row data: ${stringifyNode(rowData)}`);
     write_biff_rec(A, 25, writebool(false));
     write_biff_rec(A, 18, writebool(false));
     write_biff_rec(A, 19, writeuint16(0));
-    if (b8) write_biff_rec(A, 431, writebool(false));
-    if (b8) write_biff_rec(A, 444, writeuint16(0));
+    if (b82) write_biff_rec(A, 431, writebool(false));
+    if (b82) write_biff_rec(A, 444, writeuint16(0));
     write_biff_rec(A, 61, write_Window1(opts));
     write_biff_rec(A, 64, writebool(false));
     write_biff_rec(A, 141, writeuint16(0));
     write_biff_rec(A, 34, writebool(safe1904(wb) == "true"));
     write_biff_rec(A, 14, writebool(true));
-    if (b8) write_biff_rec(A, 439, writebool(false));
+    if (b82) write_biff_rec(A, 439, writebool(false));
     write_biff_rec(A, 218, writeuint16(0));
     write_FONTS_biff8(A, wb, opts);
     write_FMTS_biff8(A, wb.SSF, opts);
     write_CELLXFS_biff8(A, opts);
-    if (b8) write_biff_rec(A, 352, writebool(false));
+    if (b82) write_biff_rec(A, 352, writebool(false));
     var a = A.end();
     var C = buf_array();
-    if (b8) write_biff_rec(C, 140, write_Country());
-    if (b8 && b8ocnts.length) write_biff_rec(C, 235, write_MsoDrawingGroup());
-    if (b8 && opts.Strings) write_biff_continue(C, 252, write_SST(opts.Strings, opts));
+    if (b82) write_biff_rec(C, 140, write_Country());
+    if (b82 && b8ocnts.length) write_biff_rec(C, 235, write_MsoDrawingGroup());
+    if (b82 && opts.Strings) write_biff_continue(C, 252, write_SST(opts.Strings, opts));
     write_biff_rec(
       C,
       10
@@ -69823,7 +69823,7 @@ Row data: ${stringifyNode(rowData)}`);
     var c = C.end();
     var B = buf_array();
     var blen = 0, j = 0;
-    for (j = 0; j < wb.SheetNames.length; ++j) blen += (b8 ? 12 : 11) + (b8 ? 2 : 1) * wb.SheetNames[j].length;
+    for (j = 0; j < wb.SheetNames.length; ++j) blen += (b82 ? 12 : 11) + (b82 ? 2 : 1) * wb.SheetNames[j].length;
     var start = a.length + blen + c.length;
     for (j = 0; j < wb.SheetNames.length; ++j) {
       var _sheet = _sheets[j] || {};
@@ -70637,8 +70637,8 @@ Row data: ${stringifyNode(rowData)}`);
   function u8_to_dataview(array) {
     return new DataView(array.buffer, array.byteOffset, array.byteLength);
   }
-  function u8str(u8) {
-    return typeof TextDecoder != "undefined" ? new TextDecoder().decode(u8) : utf8read(a2s(u8));
+  function u8str(u82) {
+    return typeof TextDecoder != "undefined" ? new TextDecoder().decode(u82) : utf8read(a2s(u82));
   }
   function stru8(str) {
     return typeof TextEncoder != "undefined" ? new TextEncoder().encode(str) : s2a(utf8write(str));
@@ -70650,12 +70650,12 @@ Row data: ${stringifyNode(rowData)}`);
     var out = new Uint8Array(len);
     var off = 0;
     for (i = 0; i < u8a.length; ++i) {
-      var u8 = u8a[i], L = u8.length;
+      var u82 = u8a[i], L = u82.length;
       if (L < 250) {
         for (var j = 0; j < L; ++j)
-          out[off++] = u8[j];
+          out[off++] = u82[j];
       } else {
-        out.set(u8, off);
+        out.set(u82, off);
         off += L;
       }
     }
@@ -70750,20 +70750,20 @@ Row data: ${stringifyNode(rowData)}`);
     }));
   }
   function varint_to_i32(buf) {
-    var l = 0, i32 = buf[l] & 127;
+    var l = 0, i322 = buf[l] & 127;
     if (buf[l++] < 128)
-      return i32;
-    i32 |= (buf[l] & 127) << 7;
+      return i322;
+    i322 |= (buf[l] & 127) << 7;
     if (buf[l++] < 128)
-      return i32;
-    i32 |= (buf[l] & 127) << 14;
+      return i322;
+    i322 |= (buf[l] & 127) << 14;
     if (buf[l++] < 128)
-      return i32;
-    i32 |= (buf[l] & 127) << 21;
+      return i322;
+    i322 |= (buf[l] & 127) << 21;
     if (buf[l++] < 128)
-      return i32;
-    i32 |= (buf[l] & 15) << 28;
-    return i32;
+      return i322;
+    i322 |= (buf[l] & 15) << 28;
+    return i322;
   }
   function parse_shallow(buf) {
     var out = [], ptr = { l: 0 };
@@ -70834,7 +70834,7 @@ Row data: ${stringifyNode(rowData)}`);
     })) || [];
   }
   function parse_iwa_file(buf) {
-    var _a;
+    var _a2;
     var out = [], ptr = { l: 0 };
     while (ptr.l < buf.length) {
       var len = parse_varint49(buf, ptr);
@@ -70846,14 +70846,14 @@ Row data: ${stringifyNode(rowData)}`);
       };
       ai[2].forEach(function(b) {
         var mi = parse_shallow(b.data);
-        var fl = varint_to_i32(mi[3][0].data);
+        var fl2 = varint_to_i32(mi[3][0].data);
         res.messages.push({
           meta: mi,
-          data: buf[subarray](ptr.l, ptr.l + fl)
+          data: buf[subarray](ptr.l, ptr.l + fl2)
         });
-        ptr.l += fl;
+        ptr.l += fl2;
       });
-      if ((_a = ai[3]) == null ? void 0 : _a[0])
+      if ((_a2 = ai[3]) == null ? void 0 : _a2[0])
         res.merge = varint_to_i32(ai[3][0].data) >>> 0 > 0;
       out.push(res);
     }
@@ -70962,11 +70962,11 @@ Row data: ${stringifyNode(rowData)}`);
           chunks = [u8concat(chunks)];
       }
     }
-    var clen = 0;
+    var clen2 = 0;
     for (var u8i = 0; u8i < chunks.length; ++u8i)
-      clen += chunks[u8i].length;
-    if (clen != usz)
-      throw new Error("Unexpected length: ".concat(clen, " != ").concat(usz));
+      clen2 += chunks[u8i].length;
+    if (clen2 != usz)
+      throw new Error("Unexpected length: ".concat(clen2, " != ").concat(usz));
     return chunks;
   }
   function decompress_iwa_file(buf) {
@@ -71050,8 +71050,8 @@ Row data: ${stringifyNode(rowData)}`);
           var s = cell.v == null ? "" : String(cell.v);
           if (cell.l) {
             var irsst = lut.rsst.findIndex(function(v) {
-              var _a;
-              return v.v == s && v.l == ((_a = cell.l) == null ? void 0 : _a.Target);
+              var _a2;
+              return v.v == s && v.l == ((_a2 = cell.l) == null ? void 0 : _a2.Target);
             });
             if (irsst == -1)
               lut.rsst[irsst = lut.rsst.length] = { v: s, l: cell.l.Target };
@@ -71104,8 +71104,8 @@ Row data: ${stringifyNode(rowData)}`);
           s = cell.v == null ? "" : String(cell.v);
           if (cell.l) {
             var irsst = lut.rsst.findIndex(function(v) {
-              var _a;
-              return v.v == s && v.l == ((_a = cell.l) == null ? void 0 : _a.Target);
+              var _a2;
+              return v.v == s && v.l == ((_a2 = cell.l) == null ? void 0 : _a2.Target);
             });
             if (irsst == -1)
               lut.rsst[irsst = lut.rsst.length] = { v: s, l: cell.l.Target };
@@ -71185,8 +71185,8 @@ Row data: ${stringifyNode(rowData)}`);
     ]);
   }
   function numbers_add_oref(iwa, ref) {
-    var _a;
-    var orefs = ((_a = iwa.messages[0].meta[5]) == null ? void 0 : _a[0]) ? parse_packed_varints(iwa.messages[0].meta[5][0].data) : [];
+    var _a2;
+    var orefs = ((_a2 = iwa.messages[0].meta[5]) == null ? void 0 : _a2[0]) ? parse_packed_varints(iwa.messages[0].meta[5][0].data) : [];
     var orefidx = orefs.indexOf(ref);
     if (orefidx == -1) {
       orefs.push(ref);
@@ -71194,8 +71194,8 @@ Row data: ${stringifyNode(rowData)}`);
     }
   }
   function numbers_del_oref(iwa, ref) {
-    var _a;
-    var orefs = ((_a = iwa.messages[0].meta[5]) == null ? void 0 : _a[0]) ? parse_packed_varints(iwa.messages[0].meta[5][0].data) : [];
+    var _a2;
+    var orefs = ((_a2 = iwa.messages[0].meta[5]) == null ? void 0 : _a2[0]) ? parse_packed_varints(iwa.messages[0].meta[5][0].data) : [];
     iwa.messages[0].meta[5] = [{ type: 2, data: write_packed_varints(orefs.filter(function(r) {
       return r != ref;
     })) }];
@@ -71213,7 +71213,7 @@ Row data: ${stringifyNode(rowData)}`);
     return out;
   }
   function write_TST_TileRowInfo(data, lut, wide) {
-    var _a, _b, _c;
+    var _a2, _b2, _c;
     var tri = [
       [],
       [{ type: 0, data: write_varint49(0) }],
@@ -71229,7 +71229,7 @@ Row data: ${stringifyNode(rowData)}`);
       })) }],
       [{ type: 0, data: write_varint49(1) }]
     ];
-    if (!((_a = tri[6]) == null ? void 0 : _a[0]) || !((_b = tri[7]) == null ? void 0 : _b[0]))
+    if (!((_a2 = tri[6]) == null ? void 0 : _a2[0]) || !((_b2 = tri[7]) == null ? void 0 : _b2[0]))
       throw "Mutation only works on post-BNC storages!";
     var cnt = 0;
     if (tri[7][0].data.length < 2 * data.length) {
@@ -71458,11 +71458,11 @@ Row data: ${stringifyNode(rowData)}`);
   function numbers_meta_add_dep(mlist, deps, id, dep) {
     var loc = deps[id].location.replace(/^Root Entry\//, "").replace(/^Index\//, "").replace(/\.iwa$/, "");
     var parentidx = mlist[3].findIndex(function(m) {
-      var _a, _b;
+      var _a2, _b2;
       var mm = parse_shallow(m.data);
-      if ((_a = mm[3]) == null ? void 0 : _a[0])
+      if ((_a2 = mm[3]) == null ? void 0 : _a2[0])
         return u8str(mm[3][0].data) == loc;
-      if (((_b = mm[2]) == null ? void 0 : _b[0]) && u8str(mm[2][0].data) == loc)
+      if (((_b2 = mm[2]) == null ? void 0 : _b2[0]) && u8str(mm[2][0].data) == loc)
         return true;
       return false;
     });
@@ -71483,11 +71483,11 @@ Row data: ${stringifyNode(rowData)}`);
   function numbers_meta_del_dep(mlist, deps, id, dep) {
     var loc = deps[id].location.replace(/^Root Entry\//, "").replace(/^Index\//, "").replace(/\.iwa$/, "");
     var parentidx = mlist[3].findIndex(function(m) {
-      var _a, _b;
+      var _a2, _b2;
       var mm = parse_shallow(m.data);
-      if ((_a = mm[3]) == null ? void 0 : _a[0])
+      if ((_a2 = mm[3]) == null ? void 0 : _a2[0])
         return u8str(mm[3][0].data) == loc;
-      if (((_b = mm[2]) == null ? void 0 : _b[0]) && u8str(mm[2][0].data) == loc)
+      if (((_b2 = mm[2]) == null ? void 0 : _b2[0]) && u8str(mm[2][0].data) == loc)
         return true;
       return false;
     });
@@ -71574,7 +71574,7 @@ Row data: ${stringifyNode(rowData)}`);
       tiaroot.messages[0].data = write_shallow(tia);
     });
     numbers_iwa_doit(cfb, deps, tmaref, function(tmaroot, arch) {
-      var _a, _b;
+      var _a2, _b2;
       var tma = parse_shallow(tmaroot.messages[0].data);
       var uuid = u8str(tma[1][0].data), new_uuid = uuid.replace(/-[A-Z0-9]*/, "-".concat(("0000" + wsidx.toString(16)).slice(-4)));
       tma[1][0].data = stru8(new_uuid);
@@ -71589,7 +71589,7 @@ Row data: ${stringifyNode(rowData)}`);
       }
       if (tma[70]) {
         var hsoa = parse_shallow(tma[70][0].data);
-        (_a = hsoa[2]) == null ? void 0 : _a.forEach(function(item) {
+        (_a2 = hsoa[2]) == null ? void 0 : _a2.forEach(function(item) {
           var hsa = parse_shallow(item.data);
           [2, 3].map(function(n) {
             return hsa[n][0];
@@ -71637,8 +71637,8 @@ Row data: ${stringifyNode(rowData)}`);
       var store = parse_shallow(tma[4][0].data);
       {
         [2, 4, 5, 6, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22].forEach(function(n) {
-          var _a2;
-          if (!((_a2 = store[n]) == null ? void 0 : _a2[0]))
+          var _a22;
+          if (!((_a22 = store[n]) == null ? void 0 : _a22[0]))
             return;
           var oldref = parse_TSP_Reference(store[n][0].data);
           var newref = get_unique_msgid({ deps: [tmaref], location: deps[oldref].location, type: deps[oldref].type }, deps);
@@ -71666,7 +71666,7 @@ Row data: ${stringifyNode(rowData)}`);
         });
         var row_headers = parse_shallow(store[1][0].data);
         {
-          (_b = row_headers[2]) == null ? void 0 : _b.forEach(function(tspref) {
+          (_b2 = row_headers[2]) == null ? void 0 : _b2.forEach(function(tspref) {
             var oldref = parse_TSP_Reference(tspref.data);
             var newref = get_unique_msgid({ deps: [tmaref], location: deps[oldref].location, type: deps[oldref].type }, deps);
             numbers_del_oref(tmaroot, oldref);
@@ -71809,9 +71809,9 @@ Row data: ${stringifyNode(rowData)}`);
       {
         var row_header_ref = parse_TSP_Reference(parse_shallow(store[1][0].data)[2][0].data);
         numbers_iwa_doit(cfb, deps, row_header_ref, function(rowhead, _x) {
-          var _a;
+          var _a2;
           var base_bucket = parse_shallow(rowhead.messages[0].data);
-          if ((_a = base_bucket == null ? void 0 : base_bucket[2]) == null ? void 0 : _a[0])
+          if ((_a2 = base_bucket == null ? void 0 : base_bucket[2]) == null ? void 0 : _a2[0])
             for (var R2 = 0; R2 < data.length; ++R2) {
               var _bucket = parse_shallow(base_bucket[2][0].data);
               _bucket[1][0].data = write_varint49(R2);
@@ -73170,6 +73170,985 @@ Row data: ${stringifyNode(rowData)}`);
   // report-export.mjs
   var import_pdfmake = __toESM(require_pdfmake(), 1);
   var import_vfs_fonts = __toESM(require_vfs_fonts(), 1);
+
+  // node_modules/fflate/esm/browser.js
+  var u8 = Uint8Array;
+  var u16 = Uint16Array;
+  var i32 = Int32Array;
+  var fleb = new u8([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    0,
+    /* unused */
+    0,
+    0,
+    /* impossible */
+    0
+  ]);
+  var fdeb = new u8([
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    10,
+    10,
+    11,
+    11,
+    12,
+    12,
+    13,
+    13,
+    /* unused */
+    0,
+    0
+  ]);
+  var clim = new u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+  var freb = function(eb, start) {
+    var b = new u16(31);
+    for (var i = 0; i < 31; ++i) {
+      b[i] = start += 1 << eb[i - 1];
+    }
+    var r = new i32(b[30]);
+    for (var i = 1; i < 30; ++i) {
+      for (var j = b[i]; j < b[i + 1]; ++j) {
+        r[j] = j - b[i] << 5 | i;
+      }
+    }
+    return { b, r };
+  };
+  var _a = freb(fleb, 2);
+  var fl = _a.b;
+  var revfl = _a.r;
+  fl[28] = 258, revfl[258] = 28;
+  var _b = freb(fdeb, 0);
+  var fd = _b.b;
+  var revfd = _b.r;
+  var rev = new u16(32768);
+  for (i = 0; i < 32768; ++i) {
+    x = (i & 43690) >> 1 | (i & 21845) << 1;
+    x = (x & 52428) >> 2 | (x & 13107) << 2;
+    x = (x & 61680) >> 4 | (x & 3855) << 4;
+    rev[i] = ((x & 65280) >> 8 | (x & 255) << 8) >> 1;
+  }
+  var x;
+  var i;
+  var hMap = (function(cd, mb, r) {
+    var s = cd.length;
+    var i = 0;
+    var l = new u16(mb);
+    for (; i < s; ++i) {
+      if (cd[i])
+        ++l[cd[i] - 1];
+    }
+    var le = new u16(mb);
+    for (i = 1; i < mb; ++i) {
+      le[i] = le[i - 1] + l[i - 1] << 1;
+    }
+    var co;
+    if (r) {
+      co = new u16(1 << mb);
+      var rvb = 15 - mb;
+      for (i = 0; i < s; ++i) {
+        if (cd[i]) {
+          var sv = i << 4 | cd[i];
+          var r_1 = mb - cd[i];
+          var v = le[cd[i] - 1]++ << r_1;
+          for (var m = v | (1 << r_1) - 1; v <= m; ++v) {
+            co[rev[v] >> rvb] = sv;
+          }
+        }
+      }
+    } else {
+      co = new u16(s);
+      for (i = 0; i < s; ++i) {
+        if (cd[i]) {
+          co[i] = rev[le[cd[i] - 1]++] >> 15 - cd[i];
+        }
+      }
+    }
+    return co;
+  });
+  var flt = new u8(288);
+  for (i = 0; i < 144; ++i)
+    flt[i] = 8;
+  var i;
+  for (i = 144; i < 256; ++i)
+    flt[i] = 9;
+  var i;
+  for (i = 256; i < 280; ++i)
+    flt[i] = 7;
+  var i;
+  for (i = 280; i < 288; ++i)
+    flt[i] = 8;
+  var i;
+  var fdt = new u8(32);
+  for (i = 0; i < 32; ++i)
+    fdt[i] = 5;
+  var i;
+  var flm = /* @__PURE__ */ hMap(flt, 9, 0);
+  var flrm = /* @__PURE__ */ hMap(flt, 9, 1);
+  var fdm = /* @__PURE__ */ hMap(fdt, 5, 0);
+  var fdrm = /* @__PURE__ */ hMap(fdt, 5, 1);
+  var max = function(a) {
+    var m = a[0];
+    for (var i = 1; i < a.length; ++i) {
+      if (a[i] > m)
+        m = a[i];
+    }
+    return m;
+  };
+  var bits = function(d, p, m) {
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8) >> (p & 7) & m;
+  };
+  var bits16 = function(d, p) {
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >> (p & 7);
+  };
+  var shft = function(p) {
+    return (p + 7) / 8 | 0;
+  };
+  var slc = function(v, s, e) {
+    if (s == null || s < 0)
+      s = 0;
+    if (e == null || e > v.length)
+      e = v.length;
+    return new u8(v.subarray(s, e));
+  };
+  var ec = [
+    "unexpected EOF",
+    "invalid block type",
+    "invalid length/literal",
+    "invalid distance",
+    "stream finished",
+    "no stream handler",
+    ,
+    // determined by compression function
+    "no callback",
+    "invalid UTF-8 data",
+    "extra field too long",
+    "date not in range 1980-2099",
+    "filename too long",
+    "stream finishing",
+    "invalid zip data"
+    // determined by unknown compression method
+  ];
+  var err = function(ind, msg, nt) {
+    var e = new Error(msg || ec[ind]);
+    e.code = ind;
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(e, err);
+    if (!nt)
+      throw e;
+    return e;
+  };
+  var inflt = function(dat, st, buf, dict) {
+    var sl = dat.length, dl = dict ? dict.length : 0;
+    if (!sl || st.f && !st.l)
+      return buf || new u8(0);
+    var noBuf = !buf;
+    var resize = noBuf || st.i != 2;
+    var noSt = st.i;
+    if (noBuf)
+      buf = new u8(sl * 3);
+    var cbuf = function(l2) {
+      var bl = buf.length;
+      if (l2 > bl) {
+        var nbuf = new u8(Math.max(bl * 2, l2));
+        nbuf.set(buf);
+        buf = nbuf;
+      }
+    };
+    var final = st.f || 0, pos = st.p || 0, bt = st.b || 0, lm = st.l, dm = st.d, lbt = st.m, dbt = st.n;
+    var tbts = sl * 8;
+    do {
+      if (!lm) {
+        final = bits(dat, pos, 1);
+        var type = bits(dat, pos + 1, 3);
+        pos += 3;
+        if (!type) {
+          var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
+          if (t > sl) {
+            if (noSt)
+              err(0);
+            break;
+          }
+          if (resize)
+            cbuf(bt + l);
+          buf.set(dat.subarray(s, t), bt);
+          st.b = bt += l, st.p = pos = t * 8, st.f = final;
+          continue;
+        } else if (type == 1)
+          lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
+        else if (type == 2) {
+          var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
+          var tl = hLit + bits(dat, pos + 5, 31) + 1;
+          pos += 14;
+          var ldt = new u8(tl);
+          var clt = new u8(19);
+          for (var i = 0; i < hcLen; ++i) {
+            clt[clim[i]] = bits(dat, pos + i * 3, 7);
+          }
+          pos += hcLen * 3;
+          var clb = max(clt), clbmsk = (1 << clb) - 1;
+          var clm = hMap(clt, clb, 1);
+          for (var i = 0; i < tl; ) {
+            var r = clm[bits(dat, pos, clbmsk)];
+            pos += r & 15;
+            var s = r >> 4;
+            if (s < 16) {
+              ldt[i++] = s;
+            } else {
+              var c = 0, n = 0;
+              if (s == 16)
+                n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
+              else if (s == 17)
+                n = 3 + bits(dat, pos, 7), pos += 3;
+              else if (s == 18)
+                n = 11 + bits(dat, pos, 127), pos += 7;
+              while (n--)
+                ldt[i++] = c;
+            }
+          }
+          var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
+          lbt = max(lt);
+          dbt = max(dt);
+          lm = hMap(lt, lbt, 1);
+          dm = hMap(dt, dbt, 1);
+        } else
+          err(1);
+        if (pos > tbts) {
+          if (noSt)
+            err(0);
+          break;
+        }
+      }
+      if (resize)
+        cbuf(bt + 131072);
+      var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
+      var lpos = pos;
+      for (; ; lpos = pos) {
+        var c = lm[bits16(dat, pos) & lms], sym = c >> 4;
+        pos += c & 15;
+        if (pos > tbts) {
+          if (noSt)
+            err(0);
+          break;
+        }
+        if (!c)
+          err(2);
+        if (sym < 256)
+          buf[bt++] = sym;
+        else if (sym == 256) {
+          lpos = pos, lm = null;
+          break;
+        } else {
+          var add2 = sym - 254;
+          if (sym > 264) {
+            var i = sym - 257, b = fleb[i];
+            add2 = bits(dat, pos, (1 << b) - 1) + fl[i];
+            pos += b;
+          }
+          var d = dm[bits16(dat, pos) & dms], dsym = d >> 4;
+          if (!d)
+            err(3);
+          pos += d & 15;
+          var dt = fd[dsym];
+          if (dsym > 3) {
+            var b = fdeb[dsym];
+            dt += bits16(dat, pos) & (1 << b) - 1, pos += b;
+          }
+          if (pos > tbts) {
+            if (noSt)
+              err(0);
+            break;
+          }
+          if (resize)
+            cbuf(bt + 131072);
+          var end = bt + add2;
+          if (bt < dt) {
+            var shift = dl - dt, dend = Math.min(dt, end);
+            if (shift + bt < 0)
+              err(3);
+            for (; bt < dend; ++bt)
+              buf[bt] = dict[shift + bt];
+          }
+          for (; bt < end; ++bt)
+            buf[bt] = buf[bt - dt];
+        }
+      }
+      st.l = lm, st.p = lpos, st.b = bt, st.f = final;
+      if (lm)
+        final = 1, st.m = lbt, st.d = dm, st.n = dbt;
+    } while (!final);
+    return bt != buf.length && noBuf ? slc(buf, 0, bt) : buf.subarray(0, bt);
+  };
+  var wbits = function(d, p, v) {
+    v <<= p & 7;
+    var o = p / 8 | 0;
+    d[o] |= v;
+    d[o + 1] |= v >> 8;
+  };
+  var wbits16 = function(d, p, v) {
+    v <<= p & 7;
+    var o = p / 8 | 0;
+    d[o] |= v;
+    d[o + 1] |= v >> 8;
+    d[o + 2] |= v >> 16;
+  };
+  var hTree = function(d, mb) {
+    var t = [];
+    for (var i = 0; i < d.length; ++i) {
+      if (d[i])
+        t.push({ s: i, f: d[i] });
+    }
+    var s = t.length;
+    var t2 = t.slice();
+    if (!s)
+      return { t: et, l: 0 };
+    if (s == 1) {
+      var v = new u8(t[0].s + 1);
+      v[t[0].s] = 1;
+      return { t: v, l: 1 };
+    }
+    t.sort(function(a, b) {
+      return a.f - b.f;
+    });
+    t.push({ s: -1, f: 25001 });
+    var l = t[0], r = t[1], i0 = 0, i1 = 1, i2 = 2;
+    t[0] = { s: -1, f: l.f + r.f, l, r };
+    while (i1 != s - 1) {
+      l = t[t[i0].f < t[i2].f ? i0++ : i2++];
+      r = t[i0 != i1 && t[i0].f < t[i2].f ? i0++ : i2++];
+      t[i1++] = { s: -1, f: l.f + r.f, l, r };
+    }
+    var maxSym = t2[0].s;
+    for (var i = 1; i < s; ++i) {
+      if (t2[i].s > maxSym)
+        maxSym = t2[i].s;
+    }
+    var tr = new u16(maxSym + 1);
+    var mbt = ln(t[i1 - 1], tr, 0);
+    if (mbt > mb) {
+      var i = 0, dt = 0;
+      var lft = mbt - mb, cst = 1 << lft;
+      t2.sort(function(a, b) {
+        return tr[b.s] - tr[a.s] || a.f - b.f;
+      });
+      for (; i < s; ++i) {
+        var i2_1 = t2[i].s;
+        if (tr[i2_1] > mb) {
+          dt += cst - (1 << mbt - tr[i2_1]);
+          tr[i2_1] = mb;
+        } else
+          break;
+      }
+      dt >>= lft;
+      while (dt > 0) {
+        var i2_2 = t2[i].s;
+        if (tr[i2_2] < mb)
+          dt -= 1 << mb - tr[i2_2]++ - 1;
+        else
+          ++i;
+      }
+      for (; i >= 0 && dt; --i) {
+        var i2_3 = t2[i].s;
+        if (tr[i2_3] == mb) {
+          --tr[i2_3];
+          ++dt;
+        }
+      }
+      mbt = mb;
+    }
+    return { t: new u8(tr), l: mbt };
+  };
+  var ln = function(n, l, d) {
+    return n.s == -1 ? Math.max(ln(n.l, l, d + 1), ln(n.r, l, d + 1)) : l[n.s] = d;
+  };
+  var lc = function(c) {
+    var s = c.length;
+    while (s && !c[--s])
+      ;
+    var cl = new u16(++s);
+    var cli = 0, cln = c[0], cls = 1;
+    var w = function(v) {
+      cl[cli++] = v;
+    };
+    for (var i = 1; i <= s; ++i) {
+      if (c[i] == cln && i != s)
+        ++cls;
+      else {
+        if (!cln && cls > 2) {
+          for (; cls > 138; cls -= 138)
+            w(32754);
+          if (cls > 2) {
+            w(cls > 10 ? cls - 11 << 5 | 28690 : cls - 3 << 5 | 12305);
+            cls = 0;
+          }
+        } else if (cls > 3) {
+          w(cln), --cls;
+          for (; cls > 6; cls -= 6)
+            w(8304);
+          if (cls > 2)
+            w(cls - 3 << 5 | 8208), cls = 0;
+        }
+        while (cls--)
+          w(cln);
+        cls = 1;
+        cln = c[i];
+      }
+    }
+    return { c: cl.subarray(0, cli), n: s };
+  };
+  var clen = function(cf, cl) {
+    var l = 0;
+    for (var i = 0; i < cl.length; ++i)
+      l += cf[i] * cl[i];
+    return l;
+  };
+  var wfblk = function(out, pos, dat) {
+    var s = dat.length;
+    var o = shft(pos + 2);
+    out[o] = s & 255;
+    out[o + 1] = s >> 8;
+    out[o + 2] = out[o] ^ 255;
+    out[o + 3] = out[o + 1] ^ 255;
+    for (var i = 0; i < s; ++i)
+      out[o + i + 4] = dat[i];
+    return (o + 4 + s) * 8;
+  };
+  var wblk = function(dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
+    wbits(out, p++, final);
+    ++lf[256];
+    var _a2 = hTree(lf, 15), dlt = _a2.t, mlb = _a2.l;
+    var _b2 = hTree(df, 15), ddt = _b2.t, mdb = _b2.l;
+    var _c = lc(dlt), lclt = _c.c, nlc = _c.n;
+    var _d = lc(ddt), lcdt = _d.c, ndc = _d.n;
+    var lcfreq = new u16(19);
+    for (var i = 0; i < lclt.length; ++i)
+      ++lcfreq[lclt[i] & 31];
+    for (var i = 0; i < lcdt.length; ++i)
+      ++lcfreq[lcdt[i] & 31];
+    var _e = hTree(lcfreq, 7), lct = _e.t, mlcb = _e.l;
+    var nlcc = 19;
+    for (; nlcc > 4 && !lct[clim[nlcc - 1]]; --nlcc)
+      ;
+    var flen = bl + 5 << 3;
+    var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
+    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
+    if (bs >= 0 && flen <= ftlen && flen <= dtlen)
+      return wfblk(out, p, dat.subarray(bs, bs + bl));
+    var lm, ll, dm, dl;
+    wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
+    if (dtlen < ftlen) {
+      lm = hMap(dlt, mlb, 0), ll = dlt, dm = hMap(ddt, mdb, 0), dl = ddt;
+      var llm = hMap(lct, mlcb, 0);
+      wbits(out, p, nlc - 257);
+      wbits(out, p + 5, ndc - 1);
+      wbits(out, p + 10, nlcc - 4);
+      p += 14;
+      for (var i = 0; i < nlcc; ++i)
+        wbits(out, p + 3 * i, lct[clim[i]]);
+      p += 3 * nlcc;
+      var lcts = [lclt, lcdt];
+      for (var it = 0; it < 2; ++it) {
+        var clct = lcts[it];
+        for (var i = 0; i < clct.length; ++i) {
+          var len = clct[i] & 31;
+          wbits(out, p, llm[len]), p += lct[len];
+          if (len > 15)
+            wbits(out, p, clct[i] >> 5 & 127), p += clct[i] >> 12;
+        }
+      }
+    } else {
+      lm = flm, ll = flt, dm = fdm, dl = fdt;
+    }
+    for (var i = 0; i < li; ++i) {
+      var sym = syms[i];
+      if (sym > 255) {
+        var len = sym >> 18 & 31;
+        wbits16(out, p, lm[len + 257]), p += ll[len + 257];
+        if (len > 7)
+          wbits(out, p, sym >> 23 & 31), p += fleb[len];
+        var dst = sym & 31;
+        wbits16(out, p, dm[dst]), p += dl[dst];
+        if (dst > 3)
+          wbits16(out, p, sym >> 5 & 8191), p += fdeb[dst];
+      } else {
+        wbits16(out, p, lm[sym]), p += ll[sym];
+      }
+    }
+    wbits16(out, p, lm[256]);
+    return p + ll[256];
+  };
+  var deo = /* @__PURE__ */ new i32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
+  var et = /* @__PURE__ */ new u8(0);
+  var dflt = function(dat, lvl, plvl, pre, post, st) {
+    var s = st.z || dat.length;
+    var o = new u8(pre + s + 5 * (1 + Math.ceil(s / 7e3)) + post);
+    var w = o.subarray(pre, o.length - post);
+    var lst = st.l;
+    var pos = (st.r || 0) & 7;
+    if (lvl) {
+      if (pos)
+        w[0] = st.r >> 3;
+      var opt = deo[lvl - 1];
+      var n = opt >> 13, c = opt & 8191;
+      var msk_1 = (1 << plvl) - 1;
+      var prev = st.p || new u16(32768), head = st.h || new u16(msk_1 + 1);
+      var bs1_1 = Math.ceil(plvl / 3), bs2_1 = 2 * bs1_1;
+      var hsh = function(i2) {
+        return (dat[i2] ^ dat[i2 + 1] << bs1_1 ^ dat[i2 + 2] << bs2_1) & msk_1;
+      };
+      var syms = new i32(25e3);
+      var lf = new u16(288), df = new u16(32);
+      var lc_1 = 0, eb = 0, i = st.i || 0, li = 0, wi = st.w || 0, bs = 0;
+      for (; i + 2 < s; ++i) {
+        var hv = hsh(i);
+        var imod = i & 32767, pimod = head[hv];
+        prev[imod] = pimod;
+        head[hv] = imod;
+        if (wi <= i) {
+          var rem = s - i;
+          if ((lc_1 > 7e3 || li > 24576) && (rem > 423 || !lst)) {
+            pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
+            li = lc_1 = eb = 0, bs = i;
+            for (var j = 0; j < 286; ++j)
+              lf[j] = 0;
+            for (var j = 0; j < 30; ++j)
+              df[j] = 0;
+          }
+          var l = 2, d = 0, ch_1 = c, dif = imod - pimod & 32767;
+          if (rem > 2 && hv == hsh(i - dif)) {
+            var maxn = Math.min(n, rem) - 1;
+            var maxd = Math.min(32767, i);
+            var ml = Math.min(258, rem);
+            while (dif <= maxd && --ch_1 && imod != pimod) {
+              if (dat[i + l] == dat[i + l - dif]) {
+                var nl = 0;
+                for (; nl < ml && dat[i + nl] == dat[i + nl - dif]; ++nl)
+                  ;
+                if (nl > l) {
+                  l = nl, d = dif;
+                  if (nl > maxn)
+                    break;
+                  var mmd = Math.min(dif, nl - 2);
+                  var md = 0;
+                  for (var j = 0; j < mmd; ++j) {
+                    var ti = i - dif + j & 32767;
+                    var pti = prev[ti];
+                    var cd = ti - pti & 32767;
+                    if (cd > md)
+                      md = cd, pimod = ti;
+                  }
+                }
+              }
+              imod = pimod, pimod = prev[imod];
+              dif += imod - pimod & 32767;
+            }
+          }
+          if (d) {
+            syms[li++] = 268435456 | revfl[l] << 18 | revfd[d];
+            var lin = revfl[l] & 31, din = revfd[d] & 31;
+            eb += fleb[lin] + fdeb[din];
+            ++lf[257 + lin];
+            ++df[din];
+            wi = i + l;
+            ++lc_1;
+          } else {
+            syms[li++] = dat[i];
+            ++lf[dat[i]];
+          }
+        }
+      }
+      for (i = Math.max(i, wi); i < s; ++i) {
+        syms[li++] = dat[i];
+        ++lf[dat[i]];
+      }
+      pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
+      if (!lst) {
+        st.r = pos & 7 | w[pos / 8 | 0] << 3;
+        pos -= 7;
+        st.h = head, st.p = prev, st.i = i, st.w = wi;
+      }
+    } else {
+      for (var i = st.w || 0; i < s + lst; i += 65535) {
+        var e = i + 65535;
+        if (e >= s) {
+          w[pos / 8 | 0] = lst;
+          e = s;
+        }
+        pos = wfblk(w, pos + 1, dat.subarray(i, e));
+      }
+      st.i = s;
+    }
+    return slc(o, 0, pre + shft(pos) + post);
+  };
+  var crct = /* @__PURE__ */ (function() {
+    var t = new Int32Array(256);
+    for (var i = 0; i < 256; ++i) {
+      var c = i, k = 9;
+      while (--k)
+        c = (c & 1 && -306674912) ^ c >>> 1;
+      t[i] = c;
+    }
+    return t;
+  })();
+  var crc = function() {
+    var c = -1;
+    return {
+      p: function(d) {
+        var cr = c;
+        for (var i = 0; i < d.length; ++i)
+          cr = crct[cr & 255 ^ d[i]] ^ cr >>> 8;
+        c = cr;
+      },
+      d: function() {
+        return ~c;
+      }
+    };
+  };
+  var dopt = function(dat, opt, pre, post, st) {
+    if (!st) {
+      st = { l: 1 };
+      if (opt.dictionary) {
+        var dict = opt.dictionary.subarray(-32768);
+        var newDat = new u8(dict.length + dat.length);
+        newDat.set(dict);
+        newDat.set(dat, dict.length);
+        dat = newDat;
+        st.w = dict.length;
+      }
+    }
+    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? st.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 20 : 12 + opt.mem, pre, post, st);
+  };
+  var mrg = function(a, b) {
+    var o = {};
+    for (var k in a)
+      o[k] = a[k];
+    for (var k in b)
+      o[k] = b[k];
+    return o;
+  };
+  var b2 = function(d, b) {
+    return d[b] | d[b + 1] << 8;
+  };
+  var b4 = function(d, b) {
+    return (d[b] | d[b + 1] << 8 | d[b + 2] << 16 | d[b + 3] << 24) >>> 0;
+  };
+  var b8 = function(d, b) {
+    return b4(d, b) + b4(d, b + 4) * 4294967296;
+  };
+  var wbytes = function(d, b, v) {
+    for (; v; ++b)
+      d[b] = v, v >>>= 8;
+  };
+  function deflateSync(data, opts) {
+    return dopt(data, opts || {}, 0, 0);
+  }
+  function inflateSync(data, opts) {
+    return inflt(data, { i: 2 }, opts && opts.out, opts && opts.dictionary);
+  }
+  var fltn = function(d, p, t, o) {
+    for (var k in d) {
+      var val2 = d[k], n = p + k, op = o;
+      if (Array.isArray(val2))
+        op = mrg(o, val2[1]), val2 = val2[0];
+      if (ArrayBuffer.isView(val2))
+        t[n] = [val2, op];
+      else {
+        t[n += "/"] = [new u8(0), op];
+        fltn(val2, n, t, o);
+      }
+    }
+  };
+  var te = typeof TextEncoder != "undefined" && /* @__PURE__ */ new TextEncoder();
+  var td = typeof TextDecoder != "undefined" && /* @__PURE__ */ new TextDecoder();
+  var tds = 0;
+  try {
+    td.decode(et, { stream: true });
+    tds = 1;
+  } catch (e) {
+  }
+  var dutf8 = function(d) {
+    for (var r = "", i = 0; ; ) {
+      var c = d[i++];
+      var eb = (c > 127) + (c > 223) + (c > 239);
+      if (i + eb > d.length)
+        return { s: r, r: slc(d, i - 1) };
+      if (!eb)
+        r += String.fromCharCode(c);
+      else if (eb == 3) {
+        c = ((c & 15) << 18 | (d[i++] & 63) << 12 | (d[i++] & 63) << 6 | d[i++] & 63) - 65536, r += String.fromCharCode(55296 | c >> 10, 56320 | c & 1023);
+      } else if (eb & 1)
+        r += String.fromCharCode((c & 31) << 6 | d[i++] & 63);
+      else
+        r += String.fromCharCode((c & 15) << 12 | (d[i++] & 63) << 6 | d[i++] & 63);
+    }
+  };
+  function strToU8(str, latin1) {
+    if (latin1) {
+      var ar_1 = new u8(str.length);
+      for (var i = 0; i < str.length; ++i)
+        ar_1[i] = str.charCodeAt(i);
+      return ar_1;
+    }
+    if (te)
+      return te.encode(str);
+    var l = str.length;
+    var ar = new u8(str.length + (str.length >> 1));
+    var ai = 0;
+    var w = function(v) {
+      ar[ai++] = v;
+    };
+    for (var i = 0; i < l; ++i) {
+      if (ai + 5 > ar.length) {
+        var n = new u8(ai + 8 + (l - i << 1));
+        n.set(ar);
+        ar = n;
+      }
+      var c = str.charCodeAt(i);
+      if (c < 128 || latin1)
+        w(c);
+      else if (c < 2048)
+        w(192 | c >> 6), w(128 | c & 63);
+      else if (c > 55295 && c < 57344)
+        c = 65536 + (c & 1023 << 10) | str.charCodeAt(++i) & 1023, w(240 | c >> 18), w(128 | c >> 12 & 63), w(128 | c >> 6 & 63), w(128 | c & 63);
+      else
+        w(224 | c >> 12), w(128 | c >> 6 & 63), w(128 | c & 63);
+    }
+    return slc(ar, 0, ai);
+  }
+  function strFromU8(dat, latin1) {
+    if (latin1) {
+      var r = "";
+      for (var i = 0; i < dat.length; i += 16384)
+        r += String.fromCharCode.apply(null, dat.subarray(i, i + 16384));
+      return r;
+    } else if (td) {
+      return td.decode(dat);
+    } else {
+      var _a2 = dutf8(dat), s = _a2.s, r = _a2.r;
+      if (r.length)
+        err(8);
+      return s;
+    }
+  }
+  var slzh = function(d, b) {
+    return b + 30 + b2(d, b + 26) + b2(d, b + 28);
+  };
+  var zh = function(d, b, z) {
+    var fnl = b2(d, b + 28), efl = b2(d, b + 30), fn = strFromU8(d.subarray(b + 46, b + 46 + fnl), !(b2(d, b + 8) & 2048)), es = b + 46 + fnl;
+    var _a2 = z64hs(d, es, efl, z, b4(d, b + 20), b4(d, b + 24), b4(d, b + 42)), sc = _a2[0], su = _a2[1], off = _a2[2];
+    return [b2(d, b + 10), sc, su, fn, es + efl + b2(d, b + 32), off];
+  };
+  var z64hs = function(d, b, l, z, sc, su, off) {
+    var nsc = sc == 4294967295, nsu = su == 4294967295, noff = off == 4294967295, e = b + l;
+    var nf = nsc + nsu + noff;
+    if (z && nf) {
+      for (; b + 4 < e; b += 4 + b2(d, b + 2)) {
+        if (b2(d, b) == 1) {
+          return [
+            nsc ? b8(d, b + 4 + 8 * nsu) : sc,
+            nsu ? b8(d, b + 4) : su,
+            noff ? b8(d, b + 4 + 8 * (nsu + nsc)) : off,
+            1
+          ];
+        }
+      }
+      if (z < 2)
+        err(13);
+    }
+    return [sc, su, off, 0];
+  };
+  var exfl = function(ex) {
+    var le = 0;
+    if (ex) {
+      for (var k in ex) {
+        var l = ex[k].length;
+        if (l > 65535)
+          err(9);
+        le += l + 4;
+      }
+    }
+    return le;
+  };
+  var wzh = function(d, b, f, fn, u, c, ce, co) {
+    var fl2 = fn.length, ex = f.extra, col = co && co.length;
+    var exl = exfl(ex);
+    wbytes(d, b, ce != null ? 33639248 : 67324752), b += 4;
+    if (ce != null)
+      d[b++] = 20, d[b++] = f.os;
+    d[b] = 20, b += 2;
+    d[b++] = f.flag << 1 | (c < 0 && 8), d[b++] = u && 8;
+    d[b++] = f.compression & 255, d[b++] = f.compression >> 8;
+    var dt = new Date(f.mtime == null ? Date.now() : f.mtime), y = dt.getFullYear() - 1980;
+    if (y < 0 || y > 119)
+      err(10);
+    wbytes(d, b, y << 25 | dt.getMonth() + 1 << 21 | dt.getDate() << 16 | dt.getHours() << 11 | dt.getMinutes() << 5 | dt.getSeconds() >> 1), b += 4;
+    if (c != -1) {
+      wbytes(d, b, f.crc);
+      wbytes(d, b + 4, c < 0 ? -c - 2 : c);
+      wbytes(d, b + 8, f.size);
+    }
+    wbytes(d, b + 12, fl2);
+    wbytes(d, b + 14, exl), b += 16;
+    if (ce != null) {
+      wbytes(d, b, col);
+      wbytes(d, b + 6, f.attrs);
+      wbytes(d, b + 10, ce), b += 14;
+    }
+    d.set(fn, b);
+    b += fl2;
+    if (exl) {
+      for (var k in ex) {
+        var exf = ex[k], l = exf.length;
+        wbytes(d, b, +k);
+        wbytes(d, b + 2, l);
+        d.set(exf, b + 4), b += 4 + l;
+      }
+    }
+    if (col)
+      d.set(co, b), b += col;
+    return b;
+  };
+  var wzf = function(o, b, c, d, e) {
+    wbytes(o, b, 101010256);
+    wbytes(o, b + 8, c);
+    wbytes(o, b + 10, c);
+    wbytes(o, b + 12, d);
+    wbytes(o, b + 16, e);
+  };
+  function zipSync(data, opts) {
+    if (!opts)
+      opts = {};
+    var r = {};
+    var files = [];
+    fltn(data, "", r, opts);
+    var o = 0;
+    var tot = 0;
+    for (var fn in r) {
+      var _a2 = r[fn], file = _a2[0], p = _a2[1];
+      var compression = p.level == 0 ? 0 : 8;
+      var f = strToU8(fn), s = f.length;
+      var com = p.comment, m = com && strToU8(com), ms = m && m.length;
+      var exl = exfl(p.extra);
+      if (s > 65535)
+        err(11);
+      var d = compression ? deflateSync(file, p) : file, l = d.length;
+      var c = crc();
+      c.p(file);
+      files.push(mrg(p, {
+        size: file.length,
+        crc: c.d(),
+        c: d,
+        f,
+        m,
+        u: s != fn.length || m && com.length != ms,
+        o,
+        compression
+      }));
+      o += 30 + s + exl + l;
+      tot += 76 + 2 * (s + exl) + (ms || 0) + l;
+    }
+    var out = new u8(tot + 22), oe = o, cdl = tot - o;
+    for (var i = 0; i < files.length; ++i) {
+      var f = files[i];
+      wzh(out, f.o, f, f.f, f.u, f.c.length);
+      var badd = 30 + f.f.length + exfl(f.extra);
+      out.set(f.c, f.o + badd);
+      wzh(out, o, f, f.f, f.u, f.c.length, f.o, f.m), o += 16 + badd + (f.m ? f.m.length : 0);
+    }
+    wzf(out, o, files.length, cdl, oe);
+    return out;
+  }
+  function unzipSync(data, opts) {
+    var files = {};
+    var e = data.length - 22;
+    for (; b4(data, e) != 101010256; --e) {
+      if (!e || data.length - e > 65558)
+        err(13);
+    }
+    ;
+    var c = b2(data, e + 8);
+    if (!c)
+      return {};
+    var o = b4(data, e + 16);
+    var z = b4(data, e - 20) == 117853008;
+    if (z) {
+      var ze = b4(data, e - 12);
+      z = b4(data, ze) == 101075792;
+      if (z) {
+        c = b4(data, ze + 32);
+        o = b4(data, ze + 48);
+      }
+    }
+    var fltr = opts && opts.filter;
+    for (var i = 0; i < c; ++i) {
+      var _a2 = zh(data, o, z), c_2 = _a2[0], sc = _a2[1], su = _a2[2], fn = _a2[3], no = _a2[4], off = _a2[5], b = slzh(data, off);
+      o = no;
+      if (!fltr || fltr({
+        name: fn,
+        size: sc,
+        originalSize: su,
+        compression: c_2
+      })) {
+        if (!c_2)
+          files[fn] = slc(data, b, b + sc);
+        else if (c_2 == 8)
+          files[fn] = inflateSync(data.subarray(b, b + sc), { out: new u8(su) });
+        else
+          err(14, "unknown compression type " + c_2);
+      }
+    }
+    return files;
+  }
+
+  // report-export.mjs
   var reportFontName = "Roboto";
   var money = (value) => value === null || value === void 0 ? "\u5F85\u8865\u5145" : Number(value).toFixed(2);
   var number = (value, digits = 3) => value === null || value === void 0 || !Number.isFinite(Number(value)) ? "\u5F85\u8865\u5145" : Number(value).toLocaleString("en-US", { maximumFractionDigits: digits });
@@ -73298,7 +74277,7 @@ Row data: ${stringifyNode(rowData)}`);
       { wch: 20 },
       { wch: 12 }
     ];
-    feesSheet["!rows"] = [{ hpt: 36 }];
+    feesSheet["!rows"] = [{ hpt: 42 }, ...snapshot.countries.map(() => ({ hpt: 30 }))];
     feesSheet["!autofilter"] = { ref: `A1:U${rows.length}` };
     feesSheet["!freeze"] = { xSplit: 2, ySplit: 1 };
     const notesSheet = utils.aoa_to_sheet(notes);
@@ -73310,9 +74289,170 @@ Row data: ${stringifyNode(rowData)}`);
     utils.book_append_sheet(book, notesSheet, "\u8BA1\u7B97\u8BF4\u660E");
     return book;
   }
+  var EXCEL_STYLE = {
+    normal: 0,
+    title: 1,
+    label: 2,
+    value: 3,
+    header: 4,
+    pending: 5,
+    notesLabel: 6,
+    notesValue: 7,
+    productDimension: 8,
+    productInteger: 9,
+    productDecimal: 10,
+    productUsd: 11,
+    productVolume: 12,
+    countries: {
+      \u7F8E\u56FD: 13,
+      \u5FB7\u56FD: 19,
+      \u82F1\u56FD: 25,
+      \u52A0\u62FF\u5927: 31
+    }
+  };
+  var countryCurrencyFormat = {
+    \u7F8E\u56FD: 164,
+    \u5FB7\u56FD: 165,
+    \u82F1\u56FD: 166,
+    \u52A0\u62FF\u5927: 167
+  };
+  function excelStyleXml() {
+    const font = ({ bold = false, size = 10, color = "FF182230" } = {}) => `<font>${bold ? "<b/>" : ""}<sz val="${size}"/><color rgb="${color}"/><name val="\u7B49\u7EBF"/></font>`;
+    const fill2 = (color) => `<fill><patternFill patternType="solid"><fgColor rgb="${color}"/><bgColor indexed="64"/></patternFill></fill>`;
+    const border = '<border><left style="thin"><color rgb="FFD9E5DF"/></left><right style="thin"><color rgb="FFD9E5DF"/></right><top style="thin"><color rgb="FFD9E5DF"/></top><bottom style="thin"><color rgb="FFD9E5DF"/></bottom><diagonal/></border>';
+    const alignment = (horizontal = "center", wrapText = false) => `<alignment horizontal="${horizontal}" vertical="center"${wrapText ? ' wrapText="1"' : ""}/>`;
+    const xf = ({ numFmtId = 0, fontId = 0, fillId = 0, borderId = 0, horizontal = "center", wrapText = false } = {}) => {
+      const apply = [numFmtId ? ' applyNumberFormat="1"' : "", fontId ? ' applyFont="1"' : "", fillId ? ' applyFill="1"' : "", borderId ? ' applyBorder="1"' : ""].join("");
+      return `<xf numFmtId="${numFmtId}" fontId="${fontId}" fillId="${fillId}" borderId="${borderId}" xfId="0"${apply}>${alignment(horizontal, wrapText)}</xf>`;
+    };
+    const fonts = [
+      font({ size: 11 }),
+      font({ bold: true, size: 15, color: "FFFFFFFF" }),
+      font({ bold: true, size: 10 }),
+      font({ size: 10 })
+    ];
+    const fills = [
+      '<fill><patternFill patternType="none"/></fill>',
+      '<fill><patternFill patternType="gray125"/></fill>',
+      fill2("FF087F5B"),
+      fill2("FFEAF6F0"),
+      fill2("FFFEF2CA"),
+      fill2("FFF9DBDE"),
+      fill2("FFD3F4F1"),
+      fill2("FF99CCFF"),
+      fill2("FFFFF3CD")
+    ];
+    const xfs = [
+      xf(),
+      xf({ fontId: 1, fillId: 2, borderId: 1, horizontal: "left" }),
+      xf({ fontId: 2, fillId: 3, borderId: 1, horizontal: "left" }),
+      xf({ fontId: 3, borderId: 1, horizontal: "left" }),
+      xf({ fontId: 1, fillId: 2, borderId: 1, wrapText: true }),
+      xf({ fontId: 2, fillId: 8, borderId: 1 }),
+      xf({ fontId: 2, fillId: 3, borderId: 1, horizontal: "left", wrapText: true }),
+      xf({ fontId: 3, borderId: 1, horizontal: "left", wrapText: true }),
+      xf({ numFmtId: 2, borderId: 1 }),
+      xf({ numFmtId: 3, borderId: 1 }),
+      xf({ numFmtId: 4, borderId: 1 }),
+      xf({ numFmtId: 168, borderId: 1 }),
+      xf({ numFmtId: 3, borderId: 1 })
+    ];
+    const countryFills = [4, 5, 6, 7];
+    const countryNames = ["\u7F8E\u56FD", "\u5FB7\u56FD", "\u82F1\u56FD", "\u52A0\u62FF\u5927"];
+    countryNames.forEach((country, index) => {
+      const fillId = countryFills[index];
+      const base = EXCEL_STYLE.countries[country];
+      xfs.push(
+        xf({ fontId: 3, fillId, borderId: 1 }),
+        xf({ numFmtId: 3, fillId, borderId: 1 }),
+        xf({ numFmtId: 4, fillId, borderId: 1 }),
+        xf({ numFmtId: 2, fillId, borderId: 1 }),
+        xf({ numFmtId: countryCurrencyFormat[country], fillId, borderId: 1 }),
+        xf({ numFmtId: 168, fillId, borderId: 1 })
+      );
+      if (base !== EXCEL_STYLE.countries[country]) throw new Error(`Excel style index mismatch for ${country}`);
+    });
+    const numFmts = [
+      '<numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0.00;[Red]-&quot;$&quot;#,##0.00"/>',
+      '<numFmt numFmtId="165" formatCode="&quot;\u20AC&quot;#,##0.00;[Red]-&quot;\u20AC&quot;#,##0.00"/>',
+      '<numFmt numFmtId="166" formatCode="&quot;\xA3&quot;#,##0.00;[Red]-&quot;\xA3&quot;#,##0.00"/>',
+      '<numFmt numFmtId="167" formatCode="&quot;C$&quot;#,##0.00;[Red]-&quot;C$&quot;#,##0.00"/>',
+      '<numFmt numFmtId="168" formatCode="&quot;$&quot;#,##0.00;[Red]-&quot;$&quot;#,##0.00"/>'
+    ].join("");
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="5">${numFmts}</numFmts><fonts count="${fonts.length}">${fonts.join("")}</fonts><fills count="${fills.length}">${fills.join("")}</fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${border}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>`;
+  }
+  function xmlCellText(cellXml) {
+    const match = cellXml.match(/<v>([\s\S]*?)<\/v>/);
+    return match ? match[1].replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">") : "";
+  }
+  function isPendingCell(cellXml) {
+    return /待补充|待接入|待计算/.test(xmlCellText(cellXml));
+  }
+  function patchCellStyles(xml, sheetNumber, countryCount) {
+    const styleCell = (full, column, rowText, attributes, body = "") => {
+      const row2 = Number(rowText);
+      const columnNumber = column.split("").reduce((sum, char) => sum * 26 + char.charCodeAt(0) - 64, 0);
+      const cellContent = `${full}${body}`;
+      let style = EXCEL_STYLE.normal;
+      if (sheetNumber === 1) {
+        if (row2 === 1) style = EXCEL_STYLE.title;
+        else if (columnNumber === 1) style = EXCEL_STYLE.label;
+        else if (columnNumber === 2) {
+          style = EXCEL_STYLE.value;
+          if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
+          else if (row2 >= 6 && row2 <= 8) style = EXCEL_STYLE.productDimension;
+          else if (row2 === 9 || row2 === 14) style = EXCEL_STYLE.productInteger;
+          else if (row2 === 10 || row2 === 11) style = EXCEL_STYLE.productDecimal;
+          else if (row2 === 12) style = EXCEL_STYLE.productUsd;
+          else if (row2 === 13) style = EXCEL_STYLE.productVolume;
+        }
+      } else if (sheetNumber === 2) {
+        if (row2 === 1) style = EXCEL_STYLE.header;
+        else if (row2 >= 2 && row2 <= countryCount + 1) {
+          const base = EXCEL_STYLE.countries[["\u7F8E\u56FD", "\u5FB7\u56FD", "\u82F1\u56FD", "\u52A0\u62FF\u5927"][row2 - 2]] ?? EXCEL_STYLE.countries.\u7F8E\u56FD;
+          if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
+          else if ([5, 15, 20].includes(columnNumber)) style = base + 5;
+          else if ([6, 12, 13].includes(columnNumber)) style = base + 1;
+          else if ([7, 8].includes(columnNumber)) style = base + 2;
+          else if ([9, 10, 11].includes(columnNumber)) style = base + 3;
+          else if ([15, 16, 17, 18, 19].includes(columnNumber)) style = base + 4;
+          else style = base;
+        }
+      } else if (sheetNumber === 3) {
+        if (row2 === 1) style = EXCEL_STYLE.title;
+        else if (columnNumber === 1) style = EXCEL_STYLE.notesLabel;
+        else style = isPendingCell(cellContent) ? EXCEL_STYLE.pending : EXCEL_STYLE.notesValue;
+      }
+      const cleanAttributes = attributes.replace(/\s+s="[^"]*"/g, "");
+      return `<c r="${column}${row2}"${cleanAttributes} s="${style}">${body}</c>`;
+    };
+    let styled = xml.replace(/<c r="([A-Z]+)(\d+)"([^>]*)>([\s\S]*?)<\/c>/g, (full, column, rowText, attributes, body) => styleCell(full, column, rowText, attributes, body));
+    styled = styled.replace(/<c r="([A-Z]+)(\d+)"([^>]*)\/>/g, (full, column, rowText, attributes) => {
+      const styledCell = styleCell(full, column, rowText, attributes, "");
+      return styledCell.replace("</c>", "/>");
+    });
+    return styled;
+  }
+  function patchWorksheetView(xml, frozen = false) {
+    if (!frozen) return xml.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/, '<sheetViews><sheetView workbookViewId="0" zoomScale="95"/></sheetViews>');
+    return xml.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/, '<sheetViews><sheetView workbookViewId="0" zoomScale="85"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>');
+  }
+  function styleExcelWorkbook(data, snapshot) {
+    const files = unzipSync(new Uint8Array(data));
+    files["xl/styles.xml"] = strToU8(excelStyleXml());
+    for (let index = 1; index <= 3; index += 1) {
+      const fileName = `xl/worksheets/sheet${index}.xml`;
+      if (!files[fileName]) continue;
+      let xml = strFromU8(files[fileName]);
+      xml = patchCellStyles(xml, index, snapshot.countries.length);
+      xml = patchWorksheetView(xml, index === 2);
+      files[fileName] = strToU8(xml);
+    }
+    return zipSync(files, { level: 6 });
+  }
   function exportExcel(snapshot, { save = true } = {}) {
     const book = buildWorkbook(snapshot);
-    const data = writeSync(book, { bookType: "xlsx", type: "array" });
+    const data = styleExcelWorkbook(writeSync(book, { bookType: "xlsx", type: "array" }), snapshot);
     if (save && typeof document !== "undefined") downloadBlob(new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), reportFilename(snapshot, "xlsx"));
     return data;
   }

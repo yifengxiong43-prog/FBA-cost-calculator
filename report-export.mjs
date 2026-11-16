@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import pdfMake from 'pdfmake/build/pdfmake.js';
 import pdfFonts from 'pdfmake/build/vfs_fonts.js';
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 
 let reportFontName = 'Roboto';
 
@@ -104,7 +105,7 @@ export function buildWorkbook(snapshot) {
     { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 17 }, { wch: 12 }, { wch: 23 }, { wch: 25 },
     { wch: 25 }, { wch: 27 }, { wch: 31 }, { wch: 20 }, { wch: 12 }
   ];
-  feesSheet['!rows'] = [{ hpt: 36 }];
+  feesSheet['!rows'] = [{ hpt: 42 }, ...snapshot.countries.map(() => ({ hpt: 30 }))];
   feesSheet['!autofilter'] = { ref: `A1:U${rows.length}` };
   feesSheet['!freeze'] = { xSplit: 2, ySplit: 1 };
   const notesSheet = XLSX.utils.aoa_to_sheet(notes);
@@ -117,9 +118,184 @@ export function buildWorkbook(snapshot) {
   return book;
 }
 
+const EXCEL_STYLE = {
+  normal: 0,
+  title: 1,
+  label: 2,
+  value: 3,
+  header: 4,
+  pending: 5,
+  notesLabel: 6,
+  notesValue: 7,
+  productDimension: 8,
+  productInteger: 9,
+  productDecimal: 10,
+  productUsd: 11,
+  productVolume: 12,
+  countries: {
+    美国: 13,
+    德国: 19,
+    英国: 25,
+    加拿大: 31
+  }
+};
+
+const countryCurrencyFormat = {
+  美国: 164,
+  德国: 165,
+  英国: 166,
+  加拿大: 167
+};
+
+function excelStyleXml() {
+  const font = ({ bold = false, size = 10, color = 'FF182230' } = {}) =>
+    `<font>${bold ? '<b/>' : ''}<sz val="${size}"/><color rgb="${color}"/><name val="等线"/></font>`;
+  const fill = color => `<fill><patternFill patternType="solid"><fgColor rgb="${color}"/><bgColor indexed="64"/></patternFill></fill>`;
+  const border = '<border><left style="thin"><color rgb="FFD9E5DF"/></left><right style="thin"><color rgb="FFD9E5DF"/></right><top style="thin"><color rgb="FFD9E5DF"/></top><bottom style="thin"><color rgb="FFD9E5DF"/></bottom><diagonal/></border>';
+  const alignment = (horizontal = 'center', wrapText = false) =>
+    `<alignment horizontal="${horizontal}" vertical="center"${wrapText ? ' wrapText="1"' : ''}/>`;
+  const xf = ({ numFmtId = 0, fontId = 0, fillId = 0, borderId = 0, horizontal = 'center', wrapText = false } = {}) => {
+    const apply = [numFmtId ? ' applyNumberFormat="1"' : '', fontId ? ' applyFont="1"' : '', fillId ? ' applyFill="1"' : '', borderId ? ' applyBorder="1"' : ''].join('');
+    return `<xf numFmtId="${numFmtId}" fontId="${fontId}" fillId="${fillId}" borderId="${borderId}" xfId="0"${apply}>${alignment(horizontal, wrapText)}</xf>`;
+  };
+
+  const fonts = [
+    font({ size: 11 }),
+    font({ bold: true, size: 15, color: 'FFFFFFFF' }),
+    font({ bold: true, size: 10 }),
+    font({ size: 10 })
+  ];
+  const fills = [
+    '<fill><patternFill patternType="none"/></fill>',
+    '<fill><patternFill patternType="gray125"/></fill>',
+    fill('FF087F5B'),
+    fill('FFEAF6F0'),
+    fill('FFFEF2CA'),
+    fill('FFF9DBDE'),
+    fill('FFD3F4F1'),
+    fill('FF99CCFF'),
+    fill('FFFFF3CD')
+  ];
+  const xfs = [
+    xf(),
+    xf({ fontId: 1, fillId: 2, borderId: 1, horizontal: 'left' }),
+    xf({ fontId: 2, fillId: 3, borderId: 1, horizontal: 'left' }),
+    xf({ fontId: 3, borderId: 1, horizontal: 'left' }),
+    xf({ fontId: 1, fillId: 2, borderId: 1, wrapText: true }),
+    xf({ fontId: 2, fillId: 8, borderId: 1 }),
+    xf({ fontId: 2, fillId: 3, borderId: 1, horizontal: 'left', wrapText: true }),
+    xf({ fontId: 3, borderId: 1, horizontal: 'left', wrapText: true }),
+    xf({ numFmtId: 2, borderId: 1 }),
+    xf({ numFmtId: 3, borderId: 1 }),
+    xf({ numFmtId: 4, borderId: 1 }),
+    xf({ numFmtId: 168, borderId: 1 }),
+    xf({ numFmtId: 3, borderId: 1 }),
+  ];
+
+  const countryFills = [4, 5, 6, 7];
+  const countryNames = ['美国', '德国', '英国', '加拿大'];
+  countryNames.forEach((country, index) => {
+    const fillId = countryFills[index];
+    const base = EXCEL_STYLE.countries[country];
+    xfs.push(
+      xf({ fontId: 3, fillId, borderId: 1 }),
+      xf({ numFmtId: 3, fillId, borderId: 1 }),
+      xf({ numFmtId: 4, fillId, borderId: 1 }),
+      xf({ numFmtId: 2, fillId, borderId: 1 }),
+      xf({ numFmtId: countryCurrencyFormat[country], fillId, borderId: 1 }),
+      xf({ numFmtId: 168, fillId, borderId: 1 })
+    );
+    if (base !== EXCEL_STYLE.countries[country]) throw new Error(`Excel style index mismatch for ${country}`);
+  });
+
+  const numFmts = [
+    '<numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0.00;[Red]\-&quot;$&quot;#,##0.00"/>',
+    '<numFmt numFmtId="165" formatCode="&quot;€&quot;#,##0.00;[Red]\-&quot;€&quot;#,##0.00"/>',
+    '<numFmt numFmtId="166" formatCode="&quot;£&quot;#,##0.00;[Red]\-&quot;£&quot;#,##0.00"/>',
+    '<numFmt numFmtId="167" formatCode="&quot;C$&quot;#,##0.00;[Red]\-&quot;C$&quot;#,##0.00"/>',
+    '<numFmt numFmtId="168" formatCode="&quot;$&quot;#,##0.00;[Red]\-&quot;$&quot;#,##0.00"/>'
+  ].join('');
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="5">${numFmts}</numFmts><fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length}">${fills.join('')}</fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${border}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>`;
+}
+
+function xmlCellText(cellXml) {
+  const match = cellXml.match(/<v>([\s\S]*?)<\/v>/);
+  return match ? match[1].replaceAll('&amp;', '&').replaceAll('&lt;', '<').replaceAll('&gt;', '>') : '';
+}
+
+function isPendingCell(cellXml) {
+  return /待补充|待接入|待计算/.test(xmlCellText(cellXml));
+}
+
+function patchCellStyles(xml, sheetNumber, countryCount) {
+  const styleCell = (full, column, rowText, attributes, body = '') => {
+    const row = Number(rowText);
+    const columnNumber = column.split('').reduce((sum, char) => sum * 26 + char.charCodeAt(0) - 64, 0);
+    const cellContent = `${full}${body}`;
+    let style = EXCEL_STYLE.normal;
+    if (sheetNumber === 1) {
+      if (row === 1) style = EXCEL_STYLE.title;
+      else if (columnNumber === 1) style = EXCEL_STYLE.label;
+      else if (columnNumber === 2) {
+        style = EXCEL_STYLE.value;
+        if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
+        else if (row >= 6 && row <= 8) style = EXCEL_STYLE.productDimension;
+        else if (row === 9 || row === 14) style = EXCEL_STYLE.productInteger;
+        else if (row === 10 || row === 11) style = EXCEL_STYLE.productDecimal;
+        else if (row === 12) style = EXCEL_STYLE.productUsd;
+        else if (row === 13) style = EXCEL_STYLE.productVolume;
+      }
+    } else if (sheetNumber === 2) {
+      if (row === 1) style = EXCEL_STYLE.header;
+      else if (row >= 2 && row <= countryCount + 1) {
+        const base = EXCEL_STYLE.countries[['美国', '德国', '英国', '加拿大'][row - 2]] ?? EXCEL_STYLE.countries.美国;
+        if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
+        else if ([5, 15, 20].includes(columnNumber)) style = base + 5;
+        else if ([6, 12, 13].includes(columnNumber)) style = base + 1;
+        else if ([7, 8].includes(columnNumber)) style = base + 2;
+        else if ([9, 10, 11].includes(columnNumber)) style = base + 3;
+        else if ([15, 16, 17, 18, 19].includes(columnNumber)) style = base + 4;
+        else style = base;
+      }
+    } else if (sheetNumber === 3) {
+      if (row === 1) style = EXCEL_STYLE.title;
+      else if (columnNumber === 1) style = EXCEL_STYLE.notesLabel;
+      else style = isPendingCell(cellContent) ? EXCEL_STYLE.pending : EXCEL_STYLE.notesValue;
+    }
+    const cleanAttributes = attributes.replace(/\s+s="[^"]*"/g, '');
+    return `<c r="${column}${row}"${cleanAttributes} s="${style}">${body}</c>`;
+  };
+  let styled = xml.replace(/<c r="([A-Z]+)(\d+)"([^>]*)>([\s\S]*?)<\/c>/g, (full, column, rowText, attributes, body) => styleCell(full, column, rowText, attributes, body));
+  styled = styled.replace(/<c r="([A-Z]+)(\d+)"([^>]*)\/>/g, (full, column, rowText, attributes) => {
+    const styledCell = styleCell(full, column, rowText, attributes, '');
+    return styledCell.replace('</c>', '/>');
+  });
+  return styled;
+}
+
+function patchWorksheetView(xml, frozen = false) {
+  if (!frozen) return xml.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/, '<sheetViews><sheetView workbookViewId="0" zoomScale="95"/></sheetViews>');
+  return xml.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/, '<sheetViews><sheetView workbookViewId="0" zoomScale="85"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>');
+}
+
+function styleExcelWorkbook(data, snapshot) {
+  const files = unzipSync(new Uint8Array(data));
+  files['xl/styles.xml'] = strToU8(excelStyleXml());
+  for (let index = 1; index <= 3; index += 1) {
+    const fileName = `xl/worksheets/sheet${index}.xml`;
+    if (!files[fileName]) continue;
+    let xml = strFromU8(files[fileName]);
+    xml = patchCellStyles(xml, index, snapshot.countries.length);
+    xml = patchWorksheetView(xml, index === 2);
+    files[fileName] = strToU8(xml);
+  }
+  return zipSync(files, { level: 6 });
+}
+
 export function exportExcel(snapshot, { save = true } = {}) {
   const book = buildWorkbook(snapshot);
-  const data = XLSX.write(book, { bookType: 'xlsx', type: 'array' });
+  const data = styleExcelWorkbook(XLSX.write(book, { bookType: 'xlsx', type: 'array' }), snapshot);
   if (save && typeof document !== 'undefined') downloadBlob(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), reportFilename(snapshot, 'xlsx'));
   return data;
 }
