@@ -1,0 +1,14 @@
+{
+  "name": "art-cost-desk-dingtalk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18.17.1" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.mjs"
+  },
+  "dependencies": {
+    "dingtalk-stream-sdk-nodejs": "2.0.4"
+  }
+}
