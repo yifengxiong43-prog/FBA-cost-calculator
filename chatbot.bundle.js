@@ -57102,12 +57102,20 @@ JSON schema\uFF1A${JSON.stringify(schema)}`;
 // chatbot-config.mjs
 var CHAT_SYSTEM_PROMPT = `\u4F60\u662F ART COST DESK \u7684\u8DE8\u5883\u6210\u672C\u52A9\u624B\u3002\u4F60\u53EF\u4EE5\u5E2E\u52A9\u7528\u6237\u6574\u7406\u4EA7\u54C1\u5305\u88C5\u53C2\u6570\u3001\u89E3\u91CA FBA \u8D39\u7528\u7ED3\u679C\u3001\u6307\u51FA\u8FD8\u7F3A\u54EA\u4E9B\u8D44\u6599\uFF0C\u4E5F\u53EF\u4EE5\u6839\u636E\u7528\u6237\u5728\u804A\u5929\u4E2D\u63D0\u4F9B\u7684\u660E\u786E\u53C2\u6570\u66F4\u65B0\u4E0B\u65B9\u4EA7\u54C1\u8868\u5355\u3002
 \u56DE\u7B54\u8981\u7B80\u6D01\u3001\u5177\u4F53\u3001\u53CB\u597D\u3002\u4E0D\u8981\u7F16\u9020\u8D39\u7387\u3001\u6C47\u7387\u6216\u7269\u6D41\u4EF7\u683C\uFF1B\u6CA1\u6709\u8D44\u6599\u65F6\u660E\u786E\u8BF4\u201C\u5F85\u8865\u5145\u201D\u3002\u5F53\u7CFB\u7EDF\u63D0\u793A\u201C\u5DF2\u66F4\u65B0\u8868\u5355\u201D\u65F6\uFF0C\u544A\u8BC9\u7528\u6237\u6539\u4E86\u54EA\u4E9B\u5B57\u6BB5\uFF0C\u5E76\u63D0\u9192\u5148\u6838\u5BF9\u518D\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97 FBA\u201D\u3002`;
+var REQUIRED_FORM_FIELDS = ["length", "width", "height", "weight", "price", "feeDate"];
 function looksLikeProductInput(text, hasImage = false) {
   if (hasImage) return true;
   return /(\d{4}年?\s*\d{1,2}月\s*\d{1,2}[日号]?|\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d+(?:\.\d+)?\s*(?:mm|毫米|cm|厘米|kg|千克|g|克|lb|磅|美元|美金|usd|\$)|包装|长宽高|重量|售价|价格|配送|上架|尺寸)/i.test(text || "");
 }
 function recognizedFieldKeys(fields = {}) {
   return Object.keys(fields).filter((key) => fields[key]?.status === "recognized");
+}
+function missingFormFieldKeys(values = {}) {
+  return REQUIRED_FORM_FIELDS.filter((key) => {
+    if (key === "feeDate") return !/^\d{4}-\d{2}-\d{2}$/.test(String(values[key] || "").trim());
+    const number = Number(values[key]);
+    return !Number.isFinite(number) || number <= 0;
+  });
 }
 function textFromMessage(message) {
   return (message?.content || []).filter((part) => part?.type === "text" && typeof part.text === "string").map((part) => part.text).join("\n").trim();
@@ -57151,12 +57159,23 @@ var apiConfig = () => getStoredChatConfig(window.localStorage, {
   endpoint: document.querySelector("#apiEndpoint")?.value,
   model: document.querySelector("#apiModel")?.value
 });
+var missingLabels = { length: "\u5305\u88C5\u957F", width: "\u5305\u88C5\u5BBD", height: "\u5305\u88C5\u9AD8", weight: "\u5305\u88C5\u91CD\u91CF", price: "\u552E\u4EF7", feeDate: "FBA\u914D\u9001\u65E5\u671F" };
+function currentFormValues() {
+  return Object.fromEntries(["length", "width", "height", "weight", "price", "feeDate"].map((key) => [key, document.querySelector(`#${key}`)?.value || ""]));
+}
+function missingReply(missing) {
+  return missing.length ? `\u8FD8\u7F3A\u5C11\uFF1A${missing.map((key) => missingLabels[key]).join("\u3001")}\u3002\u8BF7\u7EE7\u7EED\u8865\u5145\uFF0C\u8BC6\u522B\u5B8C\u6210\u540E\u5148\u6838\u5BF9\u4E0B\u65B9\u8868\u5355\uFF0C\u518D\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002` : "\u53C2\u6570\u5DF2\u5B8C\u6574\u8BC6\u522B\u3002\u8BF7\u6838\u5BF9\u4E0B\u65B9\u8868\u5355\uFF0C\u786E\u8BA4\u65E0\u8BEF\u540E\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97\u8D39\u7528\u201D\u3002";
+}
 var chatModel = {
   async run({ messages, abortSignal }) {
     const latestText = [...messages].reverse().find((message) => message?.role === "user")?.content?.filter((part) => part?.type === "text").map((part) => part.text).join("\n").trim() || "";
     const image = window.__artCostDeskImageData || "";
     const fileText = window.__artCostDeskFileText || "";
     const fileName = window.__artCostDeskFileName || "";
+    const missingBefore = missingFormFieldKeys(currentFormValues());
+    if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
+      return { content: [{ type: "text", text: missingReply(missingBefore) }] };
+    }
     if (looksLikeProductInput(latestText, Boolean(image) || Boolean(fileText)) && typeof window.__artCostDeskRecognize === "function") {
       try {
         const result = await window.__artCostDeskRecognize({ text: latestText, image, fileText, fileName, preserveExisting: true, signal: abortSignal });
@@ -57166,7 +57185,8 @@ var chatModel = {
           window.__artCostDeskFileText = "";
           window.__artCostDeskFileName = "";
           const labels = changed.map((key) => FIELD_LABELS[key]).join("\u3001");
-          return { content: [{ type: "text", text: `\u5DF2\u6839\u636E\u4F60\u7684\u6D88\u606F\u66F4\u65B0\uFF1A${labels}\u3002\u8BF7\u68C0\u67E5\u4E0B\u65B9\u8868\u5355\uFF0C\u786E\u8BA4\u65E0\u8BEF\u540E\u518D\u70B9\u51FB\u201C\u786E\u8BA4\u53C2\u6570\u5E76\u8BA1\u7B97 FBA\u201D\u3002` }] };
+          const missing = missingFormFieldKeys(currentFormValues());
+          return { content: [{ type: "text", text: `\u5DF2\u6839\u636E\u4F60\u7684\u6D88\u606F\u66F4\u65B0\uFF1A${labels}\u3002${missingReply(missing)}` }] };
         }
       } catch (error) {
         if (abortSignal.aborted) throw error;

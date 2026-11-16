@@ -10,12 +10,24 @@ import {
 } from '@assistant-ui/react';
 import { RELAY_ENDPOINT } from '../relay-config.mjs';
 import { FIELD_LABELS } from '../product-recognition.mjs';
-import { createChatRequest, getStoredChatConfig, looksLikeProductInput, recognizedFieldKeys } from '../chatbot-config.mjs';
+import { createChatRequest, getStoredChatConfig, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys } from '../chatbot-config.mjs';
 
 const apiConfig = () => getStoredChatConfig(window.localStorage, {
   endpoint: document.querySelector('#apiEndpoint')?.value,
   model: document.querySelector('#apiModel')?.value
 });
+
+const missingLabels = { length: '包装长', width: '包装宽', height: '包装高', weight: '包装重量', price: '售价', feeDate: 'FBA配送日期' };
+
+function currentFormValues() {
+  return Object.fromEntries(['length', 'width', 'height', 'weight', 'price', 'feeDate'].map(key => [key, document.querySelector(`#${key}`)?.value || '']));
+}
+
+function missingReply(missing) {
+  return missing.length
+    ? `还缺少：${missing.map(key => missingLabels[key]).join('、')}。请继续补充，识别完成后先核对下方表单，再点击“确认参数并计算费用”。`
+    : '参数已完整识别。请核对下方表单，确认无误后点击“确认参数并计算费用”。';
+}
 
 const chatModel = {
   async run({ messages, abortSignal }) {
@@ -24,6 +36,10 @@ const chatModel = {
     const image = window.__artCostDeskImageData || '';
     const fileText = window.__artCostDeskFileText || '';
     const fileName = window.__artCostDeskFileName || '';
+    const missingBefore = missingFormFieldKeys(currentFormValues());
+    if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
+      return { content: [{ type: 'text', text: missingReply(missingBefore) }] };
+    }
     if (looksLikeProductInput(latestText, Boolean(image) || Boolean(fileText)) && typeof window.__artCostDeskRecognize === 'function') {
       try {
         const result = await window.__artCostDeskRecognize({ text: latestText, image, fileText, fileName, preserveExisting: true, signal: abortSignal });
@@ -33,7 +49,8 @@ const chatModel = {
           window.__artCostDeskFileText = '';
           window.__artCostDeskFileName = '';
           const labels = changed.map(key => FIELD_LABELS[key]).join('、');
-          return { content: [{ type: 'text', text: `已根据你的消息更新：${labels}。请检查下方表单，确认无误后再点击“确认参数并计算 FBA”。` }] };
+          const missing = missingFormFieldKeys(currentFormValues());
+          return { content: [{ type: 'text', text: `已根据你的消息更新：${labels}。${missingReply(missing)}` }] };
         }
       } catch (error) {
         if (abortSignal.aborted) throw error;

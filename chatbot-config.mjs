@@ -1,6 +1,8 @@
 export const CHAT_SYSTEM_PROMPT = `你是 ART COST DESK 的跨境成本助手。你可以帮助用户整理产品包装参数、解释 FBA 费用结果、指出还缺哪些资料，也可以根据用户在聊天中提供的明确参数更新下方产品表单。
 回答要简洁、具体、友好。不要编造费率、汇率或物流价格；没有资料时明确说“待补充”。当系统提示“已更新表单”时，告诉用户改了哪些字段，并提醒先核对再点击“确认参数并计算 FBA”。`;
 
+export const REQUIRED_FORM_FIELDS = ['length', 'width', 'height', 'weight', 'price', 'feeDate'];
+
 export function looksLikeProductInput(text, hasImage = false) {
   if (hasImage) return true;
   return /(\d{4}年?\s*\d{1,2}月\s*\d{1,2}[日号]?|\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d+(?:\.\d+)?\s*(?:mm|毫米|cm|厘米|kg|千克|g|克|lb|磅|美元|美金|usd|\$)|包装|长宽高|重量|售价|价格|配送|上架|尺寸)/i.test(text || '');
@@ -8,6 +10,14 @@ export function looksLikeProductInput(text, hasImage = false) {
 
 export function recognizedFieldKeys(fields = {}) {
   return Object.keys(fields).filter(key => fields[key]?.status === 'recognized');
+}
+
+export function missingFormFieldKeys(values = {}) {
+  return REQUIRED_FORM_FIELDS.filter(key => {
+    if (key === 'feeDate') return !/^\d{4}-\d{2}-\d{2}$/.test(String(values[key] || '').trim());
+    const number = Number(values[key]);
+    return !Number.isFinite(number) || number <= 0;
+  });
 }
 
 export function textFromMessage(message) {

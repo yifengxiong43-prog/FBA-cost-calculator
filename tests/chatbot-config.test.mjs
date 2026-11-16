@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createChatRequest, getStoredChatConfig, looksLikeProductInput, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
+import { createChatRequest, getStoredChatConfig, looksLikeProductInput, missingFormFieldKeys, recognizedFieldKeys, toChatMessages } from '../chatbot-config.mjs';
 
 test('serializes assistant-ui messages into OpenAI-compatible chat messages', () => {
   assert.deepEqual(toChatMessages([
@@ -46,4 +46,9 @@ test('recognizes parameter-like chat messages as form updates while leaving gene
 
 test('reports only fields that were confidently recognized for assistant updates', () => {
   assert.deepEqual(recognizedFieldKeys({ productName: { status: 'recognized' }, price: { status: 'uncertain' }, weight: { status: 'missing' } }), ['productName']);
+});
+
+test('reports missing form fields without treating zero values as complete', () => {
+  assert.deepEqual(missingFormFieldKeys({ length: 300, width: 200, height: 50, weight: 800, price: 19.99, feeDate: '2027-02-10' }), []);
+  assert.deepEqual(missingFormFieldKeys({ length: 300, width: 0, height: 50, weight: 800, price: '', feeDate: '' }), ['width', 'price', 'feeDate']);
 });
