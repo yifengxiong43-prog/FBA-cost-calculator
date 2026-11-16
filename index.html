@@ -492,7 +492,7 @@
             <div class="field"><label for="price">销售价</label><div class="unit-input"><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0"><span class="unit">USD</span></div></div>
             <div class="field"><label for="feeDate">FBA 配送日期</label><input id="feeDate" name="feeDate" type="date"></div>
           </div>
-          <details class="form-note"><summary>查看计费规则</summary><div class="note-content">美国按包装三边自动匹配小号标准尺寸 1 或大号标准尺寸；美国大号标准尺寸体积重按英寸体积 ÷ 139，加拿大体积重按 mm³ ÷ 5000，并按两国表格进位。四国都不另加 3.5%。海运：整柜美元报价 ÷ 63.5 × 单件体积（mm³ ÷ 1,000,000,000），按体积分摊，非整柜最低起运报价。海运按所选日期判断季节：10月15日至次年1月14日为旺季，其余为淡季。仅需长宽高和日期即可计算海运。</div></details>
+          <details class="form-note"><summary>查看计费规则</summary><div class="note-content">先按美国包装三边自动匹配小号标准尺寸 1 或大号标准尺寸，德国、英国、加拿大沿用同一尺寸档；英国和德国不再匹配信封档。美国大号标准尺寸体积重按英寸体积 ÷ 139，加拿大、德国和英国体积重按 mm³ ÷ 5000，并按各国表格进位。四国都不另加 3.5%。海运：整柜美元报价 ÷ 63.5 × 单件体积（mm³ ÷ 1,000,000,000），按体积分摊，非整柜最低起运报价。海运按所选日期判断季节：10月15日至次年1月14日为旺季，其余为淡季。仅需长宽高和日期即可计算海运。</div></details>
           <div class="actions"><button class="btn primary" type="submit">确认参数并计算费用</button><button class="btn" type="button" id="clearBtn">清空</button></div>
         </form>
       </aside>
@@ -665,7 +665,11 @@
         value.removeAttribute('title');
       }
     }
-    function calculateEuropeFbaFees() {
+    function calculateEuropeFbaFees(sizeTier) {
+      if (!sizeTier) {
+        resetEuropeFba();
+        return;
+      }
       const dimensionsMm = ['length', 'width', 'height'].map(number);
       const weightG = number('weight');
       const date = document.querySelector('#feeDate').value;
@@ -674,7 +678,7 @@
         return;
       }
       for (const [country, symbol] of [['DE', '€'], ['GB', '£']]) {
-        const result = calculateEuropeFba({ country, dimensionsMm, weightG, date });
+        const result = calculateEuropeFba({ country, dimensionsMm, weightG, date, sizeTier });
         const value = document.querySelector(`#${country.toLowerCase()}FbaValue`);
         if (result.status !== 'ok') {
           setPendingState(value, 'supplement', result.reason);
@@ -714,7 +718,6 @@
     }
     function calculateFba() {
       const result = document.querySelector('#usFbaValue');
-      calculateEuropeFbaFees();
       if (['length', 'width', 'height', 'weight', 'price'].some(id => number(id) <= 0) || !document.querySelector('#feeDate').value) {
          setPendingState(result, 'supplement', '请填写完整参数');
         document.querySelector('#resultHint').textContent = '请填写包装长宽高、包装重量、售价和配送日期。';
@@ -728,6 +731,7 @@
         priceUsd: number('price'),
         date: document.querySelector('#feeDate').value
       });
+      calculateEuropeFbaFees(fee.status === 'ok' ? (fee.tier === '小号标准尺寸 1' ? 'small-standard-1' : 'large-standard') : null);
        if (fee.status === 'ok') {
          result.textContent = `$${fee.total.toFixed(2)} USD`;
          result.classList.remove('pending', 'pending-calculated', 'pending-supplement');
