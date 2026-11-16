@@ -23,6 +23,7 @@ const allowedFiles = new Map([
   ['/sea-freight.mjs', ['sea-freight.mjs', 'text/javascript; charset=utf-8']],
   ['/non-fba.mjs', ['non-fba.mjs', 'text/javascript; charset=utf-8']],
   ['/chatbot.bundle.js', ['chatbot.bundle.js', 'text/javascript; charset=utf-8']],
+  ['/report.bundle.js', ['report.bundle.js', 'text/javascript; charset=utf-8']],
   ['/ohuhu-marker.svg', ['ohuhu-marker.svg', 'image/svg+xml']]
 ]);
 

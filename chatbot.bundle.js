@@ -57214,6 +57214,7 @@ function formSummaryReply(values) {
   return `${entries.join("\uFF1B")}\u3002${missing.length ? `\u8FD8\u7F3A\u5C11\uFF1A${missing.map((key) => labels[key]).join("\u3001")}\u3002` : "\u5FC5\u586B\u53C2\u6570\u5DF2\u5B8C\u6574\u3002"}`;
 }
 var CONFIRM_PREFIX = "__ART_COST_CONFIRM__";
+var EXPORT_PREFIX = "__ART_EXPORT_CHOICES__";
 function confirmationMessage(changed) {
   const values = currentFormValues();
   return `${CONFIRM_PREFIX}${JSON.stringify({
@@ -57230,6 +57231,60 @@ function parseConfirmation(text) {
     return null;
   }
 }
+function exportChoicesMessage() {
+  return EXPORT_PREFIX;
+}
+function currentReportSnapshot() {
+  return window.__artCostDeskGetReportSnapshot?.();
+}
+async function runLocalAssistantCommand(text) {
+  const query = String(text || "").trim();
+  if (/导出上一次测算报告/.test(query)) {
+    const latest = await window.__artCostDeskReports?.historyStore?.latest?.();
+    if (!latest) return "\u6CA1\u6709\u627E\u5230\u53EF\u5BFC\u51FA\u7684\u5386\u53F2\u6D4B\u7B97\u8BB0\u5F55\u3002";
+    window.__artCostDeskPendingExportSnapshot = latest.snapshot;
+    return exportChoicesMessage();
+  }
+  if (/导出(?:这次结果|测算报告|报告)|生成测算报告/.test(query)) {
+    const snapshot = currentReportSnapshot();
+    if (!snapshot?.calculated) return "\u5F53\u524D\u8FD8\u6CA1\u6709\u6D4B\u7B97\u7ED3\u679C\uFF0C\u8BF7\u5148\u786E\u8BA4\u53C2\u6570\u5E76\u5B8C\u6210\u8BA1\u7B97\u3002";
+    window.__artCostDeskPendingExportSnapshot = null;
+    if (/Excel|excel|表格/.test(query)) {
+      await window.__artCostDeskExport?.("xlsx", snapshot);
+      return "\u5DF2\u5F00\u59CB\u5BFC\u51FA Excel \u6D4B\u7B97\u62A5\u544A\u3002";
+    }
+    if (/PDF|pdf/.test(query)) {
+      await window.__artCostDeskExport?.("pdf", snapshot);
+      return "\u5DF2\u5F00\u59CB\u5BFC\u51FA PDF \u6D4B\u7B97\u62A5\u544A\u3002";
+    }
+    return exportChoicesMessage();
+  }
+  if (/保存当前测算/.test(query)) {
+    const saved = await window.__artCostDeskSaveHistory?.();
+    return saved ? "\u5F53\u524D\u6D4B\u7B97\u5DF2\u4FDD\u5B58\u5230\u5386\u53F2\u8BB0\u5F55\u3002" : "\u5F53\u524D\u8FD8\u6CA1\u6709\u65B0\u7684\u5B8C\u6574\u6D4B\u7B97\u7ED3\u679C\u53EF\u4FDD\u5B58\u3002";
+  }
+  const namedHistory = query.match(/打开上次(.+?)的结果/);
+  if (namedHistory) {
+    const keyword = namedHistory[1].trim();
+    const records = await window.__artCostDeskReports?.historyStore?.list?.() || [];
+    const matches = records.filter((record) => String(record.productName || "").includes(keyword));
+    if (!matches.length) return `\u6CA1\u6709\u627E\u5230\u4EA7\u54C1\u540D\u5305\u542B\u201C${keyword}\u201D\u7684\u5386\u53F2\u6D4B\u7B97\u8BB0\u5F55\u3002`;
+    if (matches.length > 1) return `\u627E\u5230${matches.length}\u6761\u201C${keyword}\u201D\u8BB0\u5F55\uFF1A${matches.slice(0, 4).map((record) => `${record.createdAt?.slice(0, 10) || "\u672A\u77E5\u65E5\u671F"}\uFF08${record.form?.length || "\u2014"}\xD7${record.form?.width || "\u2014"}\xD7${record.form?.height || "\u2014"}mm\uFF09`).join("\u3001")}\u3002\u8BF7\u6253\u5F00\u5386\u53F2\u8BB0\u5F55\u540E\u9009\u62E9\u3002`;
+    await window.__artCostDeskOpenHistory?.();
+    return `\u5DF2\u627E\u5230\u201C${keyword}\u201D\u7684\u5386\u53F2\u8BB0\u5F55\uFF0C\u8BF7\u5728\u5386\u53F2\u8BB0\u5F55\u4E2D\u70B9\u51FB\u201C\u67E5\u770B\u201D\u3002`;
+  }
+  if (/查看历史记录|打开最近一次记录/.test(query)) {
+    await window.__artCostDeskOpenHistory?.();
+    return "\u5DF2\u6253\u5F00\u5386\u53F2\u6D4B\u7B97\u8BB0\u5F55\u3002";
+  }
+  if (/复制这个方案/.test(query)) {
+    const latest = await window.__artCostDeskReports?.historyStore?.latest?.();
+    if (!latest) return "\u6CA1\u6709\u627E\u5230\u53EF\u590D\u5236\u7684\u5386\u53F2\u6D4B\u7B97\u8BB0\u5F55\u3002";
+    window.__artCostDeskLoadCopy?.(latest.snapshot);
+    return "\u5DF2\u590D\u5236\u6700\u8FD1\u4E00\u6B21\u65B9\u6848\u5230\u5F53\u524D\u8868\u5355\uFF0C\u65E7\u8D39\u7528\u7ED3\u679C\u4E0D\u4F1A\u6CBF\u7528\uFF0C\u8BF7\u786E\u8BA4\u540E\u91CD\u65B0\u8BA1\u7B97\u3002";
+  }
+  return "";
+}
 var chatModel = {
   async run({ messages, abortSignal }) {
     const latestText = [...messages].reverse().find((message) => message?.role === "user")?.content?.filter((part) => part?.type === "text").map((part) => part.text).join("\n").trim() || "";
@@ -57238,6 +57293,8 @@ var chatModel = {
     const fileName = window.__artCostDeskFileName || "";
     const missingBefore = missingFormFieldKeys(currentFormValues());
     const snapshot = readPageSnapshot();
+    const localCommand = await runLocalAssistantCommand(latestText);
+    if (localCommand) return { content: [{ type: "text", text: localCommand }] };
     if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
       return { content: [{ type: "text", text: missingReply(missingBefore) }] };
     }
@@ -57305,10 +57362,19 @@ function ConfirmationCard({ data }) {
   const continueEditing = () => document.querySelector(".assistant-input")?.focus();
   return /* @__PURE__ */ import_react29.default.createElement("div", { className: "assistant-confirm-card", style: { width: "100%", padding: 8, border: "1px solid #cbd7e4", borderRadius: 8, background: "#fff" } }, /* @__PURE__ */ import_react29.default.createElement("strong", { style: { display: "block", marginBottom: 5 } }, "\u8BF7\u786E\u8BA4\u8BC6\u522B\u7ED3\u679C"), /* @__PURE__ */ import_react29.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "3px 10px", fontSize: 11 } }, Object.entries(labels).map(([key, label]) => /* @__PURE__ */ import_react29.default.createElement("span", { key, style: { color: data.values?.[key] ? "#334155" : "#a16207" } }, label, "\uFF1A", data.values?.[key] || "\u5F85\u8865\u5145"))), data.missing?.length ? /* @__PURE__ */ import_react29.default.createElement("p", { style: { margin: "6px 0 0", color: "#a16207", fontSize: 10 } }, "\u8FD8\u7F3A\u5C11\uFF1A", data.missing.map((key) => missingLabels2[key]).join("\u3001")) : null, /* @__PURE__ */ import_react29.default.createElement("div", { style: { display: "flex", gap: 6, marginTop: 7 } }, /* @__PURE__ */ import_react29.default.createElement("button", { type: "button", onClick: confirm, disabled: Boolean(data.missing?.length) || state === "confirmed", style: { minHeight: 26, padding: "0 9px", border: 0, borderRadius: 6, background: data.missing?.length ? "#cbd5e1" : "#237a58", color: "#fff", fontSize: 10, cursor: data.missing?.length ? "not-allowed" : "pointer" } }, state === "confirmed" ? "\u5DF2\u5F00\u59CB\u8BA1\u7B97" : "\u786E\u8BA4\u8BA1\u7B97"), /* @__PURE__ */ import_react29.default.createElement("button", { type: "button", onClick: continueEditing, style: { minHeight: 26, padding: "0 9px", border: "1px solid #cbd7e4", borderRadius: 6, background: "#fff", color: "#334155", fontSize: 10, cursor: "pointer" } }, "\u7EE7\u7EED\u4FEE\u6539")));
 }
+function ExportChoiceCard() {
+  const exportFormat = async (format) => {
+    const snapshot = window.__artCostDeskPendingExportSnapshot || void 0;
+    const result = await window.__artCostDeskExport?.(format, snapshot);
+    window.__artCostDeskPendingExportSnapshot = null;
+    if (result?.message) window.alert(result.message);
+  };
+  return /* @__PURE__ */ import_react29.default.createElement("div", { className: "assistant-confirm-card", style: { width: "100%", padding: 8, border: "1px solid #cbd7e4", borderRadius: 8, background: "#fff" } }, /* @__PURE__ */ import_react29.default.createElement("strong", { style: { display: "block", marginBottom: 6 } }, "\u8BF7\u9009\u62E9\u5BFC\u51FA\u683C\u5F0F\uFF1AExcel\u6216PDF\u3002"), /* @__PURE__ */ import_react29.default.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ import_react29.default.createElement("button", { type: "button", onClick: () => exportFormat("xlsx"), style: { minHeight: 26, padding: "0 9px", border: 0, borderRadius: 6, background: "#237a58", color: "#fff", fontSize: 10 } }, "\u5BFC\u51FAExcel"), /* @__PURE__ */ import_react29.default.createElement("button", { type: "button", onClick: () => exportFormat("pdf"), style: { minHeight: 26, padding: "0 9px", border: "1px solid #cbd7e4", borderRadius: 6, background: "#fff", color: "#334155", fontSize: 10 } }, "\u5BFC\u51FAPDF")));
+}
 function AssistantMessage() {
   const text = useAuiState((state) => state.message.content?.filter((part) => part?.type === "text").map((part) => part.text).join("") || "");
   const confirmation = parseConfirmation(text);
-  return /* @__PURE__ */ import_react29.default.createElement(message_exports.Root, { className: "assistant-message-row assistant-message-agent" }, /* @__PURE__ */ import_react29.default.createElement("div", { className: "assistant-bubble" }, confirmation ? /* @__PURE__ */ import_react29.default.createElement(ConfirmationCard, { data: confirmation }) : /* @__PURE__ */ import_react29.default.createElement(message_exports.Parts, null)));
+  return /* @__PURE__ */ import_react29.default.createElement(message_exports.Root, { className: "assistant-message-row assistant-message-agent" }, /* @__PURE__ */ import_react29.default.createElement("div", { className: "assistant-bubble" }, confirmation ? /* @__PURE__ */ import_react29.default.createElement(ConfirmationCard, { data: confirmation }) : text === EXPORT_PREFIX ? /* @__PURE__ */ import_react29.default.createElement(ExportChoiceCard, null) : /* @__PURE__ */ import_react29.default.createElement(message_exports.Parts, null)));
 }
 function ChatThread() {
   const runtime = useLocalRuntime(chatModel, { maxSteps: 1 });

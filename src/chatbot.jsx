@@ -76,6 +76,7 @@ function formSummaryReply(values) {
 }
 
 const CONFIRM_PREFIX = '__ART_COST_CONFIRM__';
+const EXPORT_PREFIX = '__ART_EXPORT_CHOICES__';
 
 function confirmationMessage(changed) {
   const values = currentFormValues();
@@ -91,6 +92,57 @@ function parseConfirmation(text) {
   try { return JSON.parse(text.slice(CONFIRM_PREFIX.length)); } catch { return null; }
 }
 
+function exportChoicesMessage() {
+  return EXPORT_PREFIX;
+}
+
+function currentReportSnapshot() {
+  return window.__artCostDeskGetReportSnapshot?.();
+}
+
+async function runLocalAssistantCommand(text) {
+  const query = String(text || '').trim();
+  if (/导出上一次测算报告/.test(query)) {
+    const latest = await window.__artCostDeskReports?.historyStore?.latest?.();
+    if (!latest) return '没有找到可导出的历史测算记录。';
+    window.__artCostDeskPendingExportSnapshot = latest.snapshot;
+    return exportChoicesMessage();
+  }
+  if (/导出(?:这次结果|测算报告|报告)|生成测算报告/.test(query)) {
+    const snapshot = currentReportSnapshot();
+    if (!snapshot?.calculated) return '当前还没有测算结果，请先确认参数并完成计算。';
+    window.__artCostDeskPendingExportSnapshot = null;
+    if (/Excel|excel|表格/.test(query)) { await window.__artCostDeskExport?.('xlsx', snapshot); return '已开始导出 Excel 测算报告。'; }
+    if (/PDF|pdf/.test(query)) { await window.__artCostDeskExport?.('pdf', snapshot); return '已开始导出 PDF 测算报告。'; }
+    return exportChoicesMessage();
+  }
+  if (/保存当前测算/.test(query)) {
+    const saved = await window.__artCostDeskSaveHistory?.();
+    return saved ? '当前测算已保存到历史记录。' : '当前还没有新的完整测算结果可保存。';
+  }
+  const namedHistory = query.match(/打开上次(.+?)的结果/);
+  if (namedHistory) {
+    const keyword = namedHistory[1].trim();
+    const records = await window.__artCostDeskReports?.historyStore?.list?.() || [];
+    const matches = records.filter(record => String(record.productName || '').includes(keyword));
+    if (!matches.length) return `没有找到产品名包含“${keyword}”的历史测算记录。`;
+    if (matches.length > 1) return `找到${matches.length}条“${keyword}”记录：${matches.slice(0, 4).map(record => `${record.createdAt?.slice(0, 10) || '未知日期'}（${record.form?.length || '—'}×${record.form?.width || '—'}×${record.form?.height || '—'}mm）`).join('、')}。请打开历史记录后选择。`;
+    await window.__artCostDeskOpenHistory?.();
+    return `已找到“${keyword}”的历史记录，请在历史记录中点击“查看”。`;
+  }
+  if (/查看历史记录|打开最近一次记录/.test(query)) {
+    await window.__artCostDeskOpenHistory?.();
+    return '已打开历史测算记录。';
+  }
+  if (/复制这个方案/.test(query)) {
+    const latest = await window.__artCostDeskReports?.historyStore?.latest?.();
+    if (!latest) return '没有找到可复制的历史测算记录。';
+    window.__artCostDeskLoadCopy?.(latest.snapshot);
+    return '已复制最近一次方案到当前表单，旧费用结果不会沿用，请确认后重新计算。';
+  }
+  return '';
+}
+
 const chatModel = {
   async run({ messages, abortSignal }) {
     const latestText = [...messages].reverse().find(message => message?.role === 'user')?.content
@@ -100,6 +152,8 @@ const chatModel = {
     const fileName = window.__artCostDeskFileName || '';
     const missingBefore = missingFormFieldKeys(currentFormValues());
     const snapshot = readPageSnapshot();
+    const localCommand = await runLocalAssistantCommand(latestText);
+    if (localCommand) return { content: [{ type: 'text', text: localCommand }] };
     if (/还缺(?:少)?什么|缺什么|需要补充|补充什么/.test(latestText)) {
       return { content: [{ type: 'text', text: missingReply(missingBefore) }] };
     }
@@ -180,13 +234,29 @@ function ConfirmationCard({ data }) {
   </div>;
 }
 
+function ExportChoiceCard() {
+  const exportFormat = async format => {
+    const snapshot = window.__artCostDeskPendingExportSnapshot || undefined;
+    const result = await window.__artCostDeskExport?.(format, snapshot);
+    window.__artCostDeskPendingExportSnapshot = null;
+    if (result?.message) window.alert(result.message);
+  };
+  return <div className="assistant-confirm-card" style={{ width: '100%', padding: 8, border: '1px solid #cbd7e4', borderRadius: 8, background: '#fff' }}>
+    <strong style={{ display: 'block', marginBottom: 6 }}>请选择导出格式：Excel或PDF。</strong>
+    <div style={{ display: 'flex', gap: 6 }}>
+      <button type="button" onClick={() => exportFormat('xlsx')} style={{ minHeight: 26, padding: '0 9px', border: 0, borderRadius: 6, background: '#237a58', color: '#fff', fontSize: 10 }}>导出Excel</button>
+      <button type="button" onClick={() => exportFormat('pdf')} style={{ minHeight: 26, padding: '0 9px', border: '1px solid #cbd7e4', borderRadius: 6, background: '#fff', color: '#334155', fontSize: 10 }}>导出PDF</button>
+    </div>
+  </div>;
+}
+
 function AssistantMessage() {
   const text = useAuiState(state => state.message.content
     ?.filter(part => part?.type === 'text')
     .map(part => part.text)
     .join('') || '');
   const confirmation = parseConfirmation(text);
-  return <MessagePrimitive.Root className="assistant-message-row assistant-message-agent"><div className="assistant-bubble">{confirmation ? <ConfirmationCard data={confirmation} /> : <MessagePrimitive.Parts />}</div></MessagePrimitive.Root>;
+  return <MessagePrimitive.Root className="assistant-message-row assistant-message-agent"><div className="assistant-bubble">{confirmation ? <ConfirmationCard data={confirmation} /> : text === EXPORT_PREFIX ? <ExportChoiceCard /> : <MessagePrimitive.Parts />}</div></MessagePrimitive.Root>;
 }
 
 function ChatThread() {

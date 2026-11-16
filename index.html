@@ -363,6 +363,16 @@
     @media (max-width: 640px) { .fx-section { grid-template-columns: 1fr auto; } .fx-grid { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; width: 100%; } }
     /* Final spacing pass: align the existing panels without adding new content. */
     .topbar { flex-basis: 68px; min-height: 68px; padding: 7px 0; }
+    .results-head-actions { display: flex; align-items: flex-start; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .results-head-actions .derived { flex-basis: 100%; }
+    .history-body { max-height: min(60vh, 520px); overflow-y: auto; padding: 12px 16px 16px; }
+    .history-item { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .history-item:last-child { border-bottom: 0; }
+    .history-item strong { font-size: 12px; }
+    .history-item small { color: var(--muted); font-size: 10px; }
+    .history-item-actions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
+    .history-item-actions .btn { min-height: 26px; padding: 0 8px; font-size: 10px; }
+    .history-empty { color: var(--muted); font-size: 11px; }
     .brand-lockup { align-items: center; }
     h1 { font-size: 21px; }
     .subtitle { margin-top: 2px; }
@@ -452,6 +462,65 @@
     @media (min-width: 981px) and (max-width: 1279px) {
       .country-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(280px, 1fr)); min-height: 560px; }
     }
+    /* Keep the two report actions easy to find without changing the results layout. */
+    .results-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      align-items: start;
+      column-gap: 16px;
+      row-gap: 10px;
+    }
+    .results-title { min-width: 0; }
+    .results-head-actions {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .results-head-actions > .btn {
+      min-height: 32px;
+      border-color: #a9d3c2;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 800;
+    }
+    .results-head-actions > .btn:first-child {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+    .results-head-actions > .btn:hover {
+      border-color: var(--green);
+      background: #d7eee4;
+      color: var(--green);
+    }
+    .results-head-actions > .btn:first-child:hover {
+      background: #066b4c;
+      color: #fff;
+    }
+    .results-head > .derived {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      width: 100%;
+      max-width: none;
+    }
+    .cost-value:not(.pending),
+    .cost-value.pending-calculated,
+    .fx-item b {
+      color: var(--green);
+    }
+    .cost-value.pending-supplement {
+      color: var(--amber);
+    }
+    @media (max-width: 640px) {
+      .results-head { display: block; }
+      .results-head-actions { margin-top: 10px; justify-content: flex-start; }
+      .results-head > .derived { margin-top: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -498,7 +567,7 @@
       </aside>
 
       <section class="panel results" aria-live="polite">
-        <div class="results-head"><div><div class="section-kicker">COST SNAPSHOT</div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="derived"><div class="metric-group product-metrics"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">—</b><small class="season-badge peak" id="seasonBadge">—</small></div></div></div></div>
+        <div class="results-head"><div class="results-title"><div class="section-kicker">COST SNAPSHOT</div><h2>四国费用结果</h2><p id="resultHint">请填写产品参数并选择配送日期。</p></div><div class="results-head-actions"><button class="btn" id="exportReportBtn" type="button">导出报告</button><button class="btn" id="openHistoryBtn" type="button">历史记录</button></div><div class="derived"><div class="metric-group product-metrics"><div class="metric"><span>包装体积</span><b id="volumeValue">—</b></div><div class="metric"><span>空运计费重</span><b id="airWeightValue">—</b></div><div class="metric"><span>当前售价</span><b id="priceValue">—</b></div><div class="metric"><span>配送日期</span><b id="seasonValue">—</b><small class="season-badge peak" id="seasonBadge">—</small></div></div></div></div>
         <div class="country-grid">
           <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇺🇸</span>美国</div><div class="country-meta"><span class="currency">USD</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>亚马逊表列配送费</small></div><strong class="cost-value pending pending-calculated" id="usFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending pending-supplement">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="usSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending pending-calculated" id="usSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>Zone 6 · 两项取高</small><small class="tail-detail" id="usTailDetail"></small></div><strong class="cost-value pending pending-calculated" id="usTailValue">待计算</strong></div></div></article>
           <article class="country-card is-ready"><div class="country-head"><div class="country-name"><span class="flag">🇩🇪</span>德国</div><div class="country-meta"><span class="currency">EUR</span><span class="country-status ready">已接入</span></div></div><div class="country-body"><div class="cost-row"><div class="cost-label">FBA 费用<small>德国仅限德国本地费率</small></div><strong class="cost-value pending pending-calculated" id="deFbaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">空运头程<small>报价待补充</small></div><strong class="cost-value pending pending-supplement">待补充</strong></div><div class="cost-row"><div class="cost-label">海运头程<small id="deSeaNote">单件体积分摊 · 参考价</small></div><strong class="cost-value pending pending-calculated" id="deSeaValue">待计算</strong></div><div class="cost-row"><div class="cost-label">非 FBA 尾程<small>基础价＋按kg计费</small><small class="tail-detail" id="deTailDetail"></small></div><strong class="cost-value pending pending-calculated" id="deTailValue">待计算</strong></div></div></article>
@@ -511,6 +580,9 @@
     </section>
   </main>
   <dialog class="api-dialog" id="apiDialog" aria-labelledby="apiDialogTitle"><div class="api-dialog-head"><h2 id="apiDialogTitle">API 设置</h2><button class="api-dialog-close" id="closeApiSettingsBtn" type="button" aria-label="关闭 API 设置">×</button></div><div class="api-dialog-body"><details class="api-settings" id="apiSettings" open><summary>API 设置<span id="apiConfigStatus">尚未填写</span></summary><div class="api-fields"><div class="field"><label for="apiEndpoint">接口地址（自动保存）</label><input id="apiEndpoint" type="url" value="https://sub.geekper.com/v1" placeholder="https://你的服务商/v1" autocomplete="off" spellcheck="false"></div><div class="field"><label for="apiModel">模型（验证后自动获取，可改选）</label><input id="apiModel" list="apiModelOptions" placeholder="点击下方按钮自动获取，也可手动填写" autocomplete="off" spellcheck="false"><datalist id="apiModelOptions"></datalist></div><div class="field"><label for="apiKey">API Key（保存在当前浏览器）</label><div class="api-key-row"><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴你的 API Key"><button class="btn" id="clearApiKeyBtn" type="button">清除密钥</button></div></div></div><button class="btn" id="verifyApiBtn" type="button">验证连接并获取模型</button><p class="smart-help" id="apiVerificationStatus" role="status"></p><p class="smart-help" id="apiStorageStatus">地址和模型自动保存在当前浏览器；Key 不会上传到本网站。接口需允许跨域访问。</p></details><p class="smart-help" id="managedApiStatus" hidden>服务器已配置 AI 服务，API Key 不会发送到浏览器。</p></div></dialog>
+  <dialog class="api-dialog history-dialog" id="historyDialog" aria-labelledby="historyDialogTitle"><div class="api-dialog-head"><h2 id="historyDialogTitle">历史测算记录</h2><button class="api-dialog-close" id="closeHistoryBtn" type="button" aria-label="关闭历史记录">×</button></div><div class="history-body" id="historyList"><p class="smart-help">暂无历史记录。</p></div></dialog>
+  <dialog class="api-dialog" id="exportDialog" aria-labelledby="exportDialogTitle"><div class="api-dialog-head"><h2 id="exportDialogTitle">请选择导出格式</h2><button class="api-dialog-close" id="closeExportBtn" type="button" aria-label="关闭导出格式">×</button></div><div class="api-dialog-body"><div class="actions"><button class="btn primary" id="exportExcelBtn" type="button">导出 Excel</button><button class="btn" id="exportPdfBtn" type="button">导出 PDF</button></div></div></dialog>
+  <script type="module" src="./report.bundle.js?v=20261116-report"></script>
   <script type="module">
     import { calculateUsFba, calculateCanadaFba, getLocalDateIso, getUsFeeSeason } from './fba-calculator.mjs';
     import { calculateEuropeFba } from './europe-fba.mjs';
@@ -547,14 +619,40 @@
       updateDerived();
       resetResult('参数已修改，请确认后再计算。');
     });
+    let lastSavedFingerprint = '';
+    function currentReportSnapshot() {
+      return window.__artCostDeskReports?.readReportSnapshot?.(document);
+    }
+    async function saveCalculationHistory() {
+      const reports = window.__artCostDeskReports;
+      const snapshot = currentReportSnapshot();
+      if (!reports?.historyStore || !snapshot?.calculated) return null;
+      const fingerprint = reports.snapshotFingerprint(snapshot);
+      if (fingerprint === lastSavedFingerprint) return null;
+      const saved = await reports.historyStore.save(snapshot, { fingerprint });
+      lastSavedFingerprint = fingerprint;
+      return saved;
+    }
+    window.__artCostDeskSaveHistory = saveCalculationHistory;
     form.addEventListener('submit', event => {
       event.preventDefault();
       updateDerived();
       calculateSea();
       calculateTail();
       calculateFba();
+      setTimeout(() => saveCalculationHistory().catch(error => console.error('保存历史测算失败', error)), 0);
     });
     window.__artCostDeskCalculate = () => form.requestSubmit();
+    window.__artCostDeskGetReportSnapshot = currentReportSnapshot;
+    window.__artCostDeskExport = async (format, suppliedSnapshot = null) => {
+      const reports = window.__artCostDeskReports;
+      const snapshot = suppliedSnapshot || currentReportSnapshot();
+      if (!snapshot?.calculated) return { ok: false, message: '当前还没有测算结果，请先确认参数并完成计算。' };
+      if (format === 'xlsx' || format === 'excel') reports.exportExcel(snapshot);
+      else if (format === 'pdf') reports.exportPdf(snapshot);
+      else return { ok: false, message: '请选择导出格式：Excel或PDF。' };
+      return { ok: true };
+    };
     document.querySelector('#clearBtn').addEventListener('click', () => {
       form.reset();
       resetSea();
@@ -815,6 +913,87 @@
       }
     }
     document.querySelector('#refreshRatesBtn').addEventListener('click', loadRates);
+    const exportDialog = document.querySelector('#exportDialog');
+    const historyDialog = document.querySelector('#historyDialog');
+    const reportResultIds = {
+      美国: { 'FBA费用': 'usFbaValue', '海运头程': 'usSeaValue', '非FBA尾程': 'usTailValue' },
+      德国: { 'FBA费用': 'deFbaValue', '海运头程': 'deSeaValue', '非FBA尾程': 'deTailValue' },
+      英国: { 'FBA费用': 'gbFbaValue', '海运头程': 'gbSeaValue' },
+      加拿大: { 'FBA费用': 'caFbaValue', '海运头程': 'caSeaValue' }
+    };
+    function applyHistoricalSnapshot(snapshot) {
+      for (const country of snapshot.countries || []) {
+        const ids = reportResultIds[country.name] || {};
+        for (const component of country.components || []) {
+          const id = ids[component.label];
+          if (!id) continue;
+          const element = document.querySelector(`#${id}`);
+          if (!element) continue;
+          element.textContent = component.display;
+          element.classList.toggle('pending', component.status !== '已计算');
+          element.classList.toggle('pending-calculated', component.status === '已计算');
+          element.classList.toggle('pending-supplement', component.status !== '已计算');
+        }
+      }
+      document.querySelector('#resultHint').textContent = '这是历史测算快照，如需使用最新费率，请重新计算。';
+    }
+    function setFormFromSnapshot(snapshot) {
+      for (const key of ['productName', 'length', 'width', 'height', 'weight', 'price', 'feeDate']) {
+        const element = document.querySelector(`#${key}`);
+        if (element) element.value = snapshot.form?.[key] ?? '';
+      }
+      updateDerived();
+    }
+    window.__artCostDeskLoadCopy = snapshot => { setFormFromSnapshot(snapshot); resetResult('已复制历史参数，请确认后重新计算。'); };
+    function historyRecordSummary(record) {
+      const formValues = record.snapshot?.form || record.form || {};
+      return `${formValues.length || '—'} × ${formValues.width || '—'} × ${formValues.height || '—'} mm · ${formValues.weight || '—'} g · ${record.createdAt ? new Date(record.createdAt).toLocaleString('zh-CN') : '—'}`;
+    }
+    async function renderHistory() {
+      const list = document.querySelector('#historyList');
+      const records = await window.__artCostDeskReports?.historyStore?.list?.() || [];
+      list.textContent = '';
+      if (!records.length) {
+        const empty = document.createElement('p');
+        empty.className = 'history-empty';
+        empty.textContent = '暂无历史记录。';
+        list.append(empty);
+        return;
+      }
+      for (const record of records) {
+        const item = document.createElement('article');
+        item.className = 'history-item';
+        const title = document.createElement('strong');
+        title.textContent = record.productName || '未命名产品';
+        const summary = document.createElement('small');
+        summary.textContent = historyRecordSummary(record);
+        const actions = document.createElement('div');
+        actions.className = 'history-item-actions';
+        const action = (label, handler) => { const button = document.createElement('button'); button.type = 'button'; button.className = 'btn'; button.textContent = label; button.addEventListener('click', handler); actions.append(button); };
+        action('查看', () => {
+          const snapshot = record.snapshot;
+          const lines = [`${snapshot.form?.productName || '未命名产品'} · ${snapshot.form?.feeDate || '待补充'}`, `尺寸：${snapshot.form?.length || '—'} × ${snapshot.form?.width || '—'} × ${snapshot.form?.height || '—'} mm`, `重量：${snapshot.form?.weight || '—'} g`, ...(snapshot.countries || []).map(country => `${country.name}：${country.totalUsd === null ? country.status : `${country.totalUsd.toFixed(2)} USD`}`)];
+          window.alert(lines.join('\n'));
+        });
+        action('加载到当前页面', () => { setFormFromSnapshot(record.snapshot); applyHistoricalSnapshot(record.snapshot); historyDialog.close?.(); });
+        action('复制为新方案', () => { window.__artCostDeskLoadCopy?.(record.snapshot); historyDialog.close?.(); });
+        action('导出报告', () => window.__artCostDeskExport?.('xlsx', record.snapshot));
+        action('删除', async () => { if (!window.confirm('确定删除这条历史测算记录吗？')) return; await window.__artCostDeskReports.historyStore.remove(record.id); await renderHistory(); });
+        item.append(title, summary, actions);
+        list.append(item);
+      }
+    }
+    window.__artCostDeskOpenHistory = async () => { await renderHistory(); historyDialog.showModal?.(); };
+    document.querySelector('#exportReportBtn').addEventListener('click', () => {
+      const snapshot = currentReportSnapshot();
+      if (!snapshot?.calculated) { window.alert('当前还没有测算结果，请先确认参数并完成计算。'); return; }
+      exportDialog.showModal?.();
+    });
+    document.querySelector('#openHistoryBtn').addEventListener('click', async () => { await renderHistory(); historyDialog.showModal?.(); });
+    document.querySelector('#closeHistoryBtn').addEventListener('click', () => historyDialog.close?.());
+    document.querySelector('#closeExportBtn').addEventListener('click', () => exportDialog.close?.());
+    document.querySelector('#exportExcelBtn').addEventListener('click', () => { window.__artCostDeskExport?.('xlsx'); exportDialog.close?.(); });
+    document.querySelector('#exportPdfBtn').addEventListener('click', () => { window.__artCostDeskExport?.('pdf'); exportDialog.close?.(); });
     try {
       initRecognition(form, () => {
         updateDerived();

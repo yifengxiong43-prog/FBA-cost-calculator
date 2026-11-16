@@ -5,13 +5,17 @@
   "scripts": {
     "build:chat": "esbuild src/chatbot.jsx --bundle --format=esm --outfile=chatbot.bundle.js --loader:.jsx=jsx --target=es2020",
     "build:file-reader": "esbuild src/file-reader-entry.mjs --bundle --format=esm --outfile=file-reader.bundle.js --target=es2020",
-    "build": "npm run build:chat && npm run build:file-reader",
+    "build:reports": "esbuild src/report-entry.mjs --bundle --format=iife --global-name=ArtCostReports --outfile=report.bundle.js --loader:.ttf=base64 --target=es2020",
+    "build": "npm run build:chat && npm run build:file-reader && npm run build:reports",
     "test": "node --test tests/*.mjs"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.15.36",
+    "dexie": "^4.4.7",
+    "fake-indexeddb": "^6.2.8",
     "mammoth": "^1.13.0",
     "pdfjs-dist": "^6.5.438",
+    "pdfmake": "^0.3.14",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
