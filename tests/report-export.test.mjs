@@ -41,6 +41,24 @@ test('country rows convert the USD sale price into each local currency', () => {
   assert.equal(values[1][4], 19.99 * 0.92);
 });
 
+test('unavailable air and non-FBA tail cells export as blank', () => {
+  const pendingSnapshot = buildReportSnapshot({
+    form: { productName: '测试产品' },
+    countries: [{ name: '英国', currency: 'GBP', rateKey: 'GBP', components: [
+      { label: '空运头程', display: '待补充' },
+      { label: '非FBA尾程', display: '待补充' }
+    ] }]
+  });
+  const workbookValues = XLSX.utils.sheet_to_json(buildWorkbook(pendingSnapshot).Sheets['四国费用'], { header: 1 });
+  const headers = workbookValues[0];
+  assert.equal(workbookValues[1][headers.indexOf('空运头程 (当地币种/件)')], '');
+  assert.equal(workbookValues[1][headers.indexOf('非FBA尾程 (当地币种/件)')], '');
+  const definition = buildPdfDefinition(pendingSnapshot);
+  const feeTable = definition.content.find(item => item.table?.headerRows === 1)?.table?.body || [];
+  assert.equal(feeTable[1][4].text, '');
+  assert.equal(feeTable[1][6].text, '');
+});
+
 test('excel export applies reference-like colors, units, number formats and freeze pane', () => {
   const files = unzipSync(new Uint8Array(exportExcel(snapshot, { save: false })));
   const styles = strFromU8(files['xl/styles.xml']);

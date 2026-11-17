@@ -74236,7 +74236,7 @@ Row data: ${stringifyNode(rowData)}`);
         exportComponentValue(values, "FBA\u8D39\u7528"),
         exportComponentValue(values, "\u7A7A\u8FD0\u5934\u7A0B", { blankPending: true }),
         exportComponentValue(values, "\u6D77\u8FD0\u5934\u7A0B"),
-        exportComponentValue(values, "\u975EFBA\u5C3E\u7A0B")
+        exportComponentValue(values, "\u975EFBA\u5C3E\u7A0B", { blankPending: true })
       ]);
     }
     const notes = [
@@ -74454,7 +74454,7 @@ Row data: ${stringifyNode(rowData)}`);
   }
   function row(country, snapshot) {
     const values = Object.fromEntries(country.components.map((component2) => [component2.label, component2]));
-    const component = (label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? amountWithUnit(values[label].amount, country.currency) : label === "\u7A7A\u8FD0\u5934\u7A0B" ? "" : values[label]?.status || "\u5F85\u8865\u5145";
+    const component = (label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? amountWithUnit(values[label].amount, country.currency) : ["\u7A7A\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B"].includes(label) ? "" : values[label]?.status || "\u5F85\u8865\u5145";
     const price = localPrice(snapshot, country);
     return [
       country.name,

@@ -86,7 +86,7 @@ export function buildWorkbook(snapshot) {
       exportComponentValue(values, 'FBA费用'),
       exportComponentValue(values, '空运头程', { blankPending: true }),
       exportComponentValue(values, '海运头程'),
-      exportComponentValue(values, '非FBA尾程')
+      exportComponentValue(values, '非FBA尾程', { blankPending: true })
     ]);
   }
   const notes = [
@@ -307,7 +307,7 @@ function row(country, snapshot) {
   const values = Object.fromEntries(country.components.map(component => [component.label, component]));
   const component = label => values[label]?.status === '已计算'
     ? amountWithUnit(values[label].amount, country.currency)
-    : label === '空运头程' ? '' : (values[label]?.status || '待补充');
+    : ['空运头程', '非FBA尾程'].includes(label) ? '' : (values[label]?.status || '待补充');
   const price = localPrice(snapshot, country);
   return [country.name, country.currency, typeof price === 'number' ? amountWithUnit(price, country.currency, '') : price,
     ...['FBA费用', '空运头程', '海运头程', '非FBA尾程'].map(component)];
