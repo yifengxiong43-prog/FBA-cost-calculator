@@ -1,8 +1,8 @@
 const COUNTRY_DEFINITIONS = [
-  { key: 'US', name: '美国', currency: 'USD', rateKey: 'USD', fields: [['FBA费用', 'usFbaValue'], ['空运头程', null], ['海运头程', 'usSeaValue'], ['非FBA尾程', 'usTailValue']] },
-  { key: 'DE', name: '德国', currency: 'EUR', rateKey: 'EUR', fields: [['FBA费用', 'deFbaValue'], ['空运头程', null], ['海运头程', 'deSeaValue'], ['非FBA尾程', 'deTailValue']] },
-  { key: 'GB', name: '英国', currency: 'GBP', rateKey: 'GBP', fields: [['FBA费用', 'gbFbaValue'], ['空运头程', null], ['海运头程', 'gbSeaValue'], ['非FBA尾程', null]] },
-  { key: 'CA', name: '加拿大', currency: 'CAD', rateKey: 'CAD', fields: [['FBA费用', 'caFbaValue'], ['空运头程', null], ['海运头程', 'caSeaValue'], ['非FBA尾程', null]] }
+  { key: 'US', name: '美国', currency: 'USD', rateKey: 'USD', fields: [['FBA费用', 'usFbaValue'], ['空运头程', 'usAirValue'], ['海运头程', 'usSeaValue'], ['非FBA尾程', 'usTailValue']] },
+  { key: 'DE', name: '德国', currency: 'EUR', rateKey: 'EUR', fields: [['FBA费用', 'deFbaValue'], ['空运头程', 'deAirValue'], ['海运头程', 'deSeaValue'], ['非FBA尾程', 'deTailValue']] },
+  { key: 'GB', name: '英国', currency: 'GBP', rateKey: 'GBP', fields: [['FBA费用', 'gbFbaValue'], ['空运头程', 'gbAirValue'], ['海运头程', 'gbSeaValue'], ['非FBA尾程', null]] },
+  { key: 'CA', name: '加拿大', currency: 'CAD', rateKey: 'CAD', fields: [['FBA费用', 'caFbaValue'], ['空运头程', 'caAirValue'], ['海运头程', 'caSeaValue'], ['非FBA尾程', null]] }
 ];
 
 const FORM_KEYS = ['productName', 'length', 'width', 'height', 'weight', 'price', 'feeDate'];

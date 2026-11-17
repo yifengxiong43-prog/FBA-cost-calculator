@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildReportSnapshot, fieldSnapshot, parseDisplayedAmount, snapshotFingerprint } from '../report-data.mjs';
+import { buildReportSnapshot, fieldSnapshot, parseDisplayedAmount, snapshotFingerprint, COUNTRY_DEFINITIONS } from '../report-data.mjs';
+
+test('report mappings read all four air freight result fields', () => {
+  assert.deepEqual(COUNTRY_DEFINITIONS.map(country => country.fields.find(([label]) => label === '空运头程')?.[1]), [
+    'usAirValue', 'deAirValue', 'gbAirValue', 'caAirValue'
+  ]);
+});
 
 test('report data keeps pending values as statuses and converts weight units', () => {
   const snapshot = buildReportSnapshot({

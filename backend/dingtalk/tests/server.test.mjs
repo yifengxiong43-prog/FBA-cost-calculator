@@ -20,6 +20,11 @@ test('calculation uses the supplied date to select peak and returns four countri
   const result = calculateProduct({ productName: '测试', length: 300, width: 200, height: 50, weight: 800, price: 19.99, feeDate: '2027-02-10' });
   assert.equal(result.season.season, '淡季');
   assert.equal(result.countries.US.fba.status, 'ok');
+  assert.equal(result.countries.US.air.status, 'ok');
+  assert.equal(result.countries.US.air.quoteUsdPerKg, 12);
+  assert.equal(result.countries.DE.air.quoteUsdPerKg, 10.08);
+  assert.equal(result.countries.GB.air.quoteUsdPerKg, 10.64);
+  assert.equal(result.countries.CA.air.quoteUsdPerKg, 9.94);
   assert.equal(result.countries.DE.nonFbaTail.total, 9.48);
   assert.equal(result.countries.GB.nonFbaTail, undefined);
   assert.equal(result.countries.CA.nonFbaTail, undefined);

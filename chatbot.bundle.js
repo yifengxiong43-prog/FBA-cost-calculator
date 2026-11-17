@@ -57168,10 +57168,10 @@ function missingReply(missing) {
   return missing.length ? `\u8FD8\u7F3A\u5C11${missingLabels[missing[0]]}\uFF0C\u8BF7\u5148\u8865\u5145\u8FD9\u4E00\u9879\u3002` : "\u53C2\u6570\u5DF2\u5B8C\u6574\u8BC6\u522B\uFF0C\u8BF7\u5728\u786E\u8BA4\u5361\u4E2D\u6838\u5BF9\u540E\u70B9\u51FB\u201C\u786E\u8BA4\u8BA1\u7B97\u201D\u3002";
 }
 var countryResultFields = {
-  \u7F8E\u56FD: { currency: "USD", rateKey: "USD", fields: [["FBA \u8D39\u7528", "usFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "usSeaValue"], ["\u975E FBA \u5C3E\u7A0B", "usTailValue"]] },
-  \u5FB7\u56FD: { currency: "EUR", rateKey: "EUR", fields: [["FBA \u8D39\u7528", "deFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "deSeaValue"], ["\u975E FBA \u5C3E\u7A0B", "deTailValue"]] },
-  \u82F1\u56FD: { currency: "GBP", rateKey: "GBP", fields: [["FBA \u8D39\u7528", "gbFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "gbSeaValue"]] },
-  \u52A0\u62FF\u5927: { currency: "CAD", rateKey: "CAD", fields: [["FBA \u8D39\u7528", "caFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "caSeaValue"]] }
+  \u7F8E\u56FD: { currency: "USD", rateKey: "USD", fields: [["FBA \u8D39\u7528", "usFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "usAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "usSeaValue"], ["\u975E FBA \u5C3E\u7A0B", "usTailValue"]] },
+  \u5FB7\u56FD: { currency: "EUR", rateKey: "EUR", fields: [["FBA \u8D39\u7528", "deFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "deAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "deSeaValue"], ["\u975E FBA \u5C3E\u7A0B", "deTailValue"]] },
+  \u82F1\u56FD: { currency: "GBP", rateKey: "GBP", fields: [["FBA \u8D39\u7528", "gbFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "gbAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "gbSeaValue"]] },
+  \u52A0\u62FF\u5927: { currency: "CAD", rateKey: "CAD", fields: [["FBA \u8D39\u7528", "caFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "caAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "caSeaValue"]] }
 };
 function displayedAmount(id) {
   if (!id) return { display: "\u5F85\u8865\u5145", amount: null };

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { URL, pathToFileURL } from 'node:url';
 import { calculateCanadaFba, calculateUsFba, getUsFeeSeason } from '../../fba-calculator.mjs';
 import { calculateSeaFreight } from '../../sea-freight.mjs';
+import { calculateAirFreight } from '../../air-freight.mjs';
 import { calculateGermanyNonFba, calculateUsNonFba } from '../../non-fba.mjs';
 import { recognizeProduct } from '../../product-recognition.mjs';
 import { DWClient } from 'dingtalk-stream-sdk-nodejs';
@@ -54,16 +55,18 @@ export function calculateProduct(input) {
   const canadaFba = safeCalculate(() => calculateCanadaFba({ dimensionsMm, weightG: product.weight, date: product.feeDate }));
   const sea = Object.fromEntries(['US', 'DE', 'GB', 'CA'].map(country => [country,
     safeCalculate(() => calculateSeaFreight({ country, date: product.feeDate, dimensionsMm }))]));
+  const air = Object.fromEntries(['US', 'DE', 'GB', 'CA'].map(country => [country,
+    safeCalculate(() => calculateAirFreight({ country, date: product.feeDate, weightG: product.weight, dimensionsMm }))]));
   const usTail = safeCalculate(() => calculateUsNonFba({ weightG: product.weight, dimensionsMm }));
   const deTail = safeCalculate(() => calculateGermanyNonFba({ billedWeightG: product.weight }));
   return {
     product,
     season,
     countries: {
-      US: { fba: usFba, air: { status: 'missing_rate', total: null, reason: '空运头程费率待补充。' }, sea: sea.US, nonFbaTail: usTail },
-      DE: { fba: { status: 'missing_rate', total: null, reason: '德国 FBA 费率待补充。' }, air: { status: 'missing_rate', total: null, reason: '空运头程费率待补充。' }, sea: sea.DE, nonFbaTail: deTail },
-      GB: { fba: { status: 'missing_rate', total: null, reason: '英国 FBA 费率待补充。' }, air: { status: 'missing_rate', total: null, reason: '空运头程费率待补充。' }, sea: sea.GB },
-      CA: { fba: canadaFba, air: { status: 'missing_rate', total: null, reason: '空运头程费率待补充。' }, sea: sea.CA }
+      US: { fba: usFba, air: air.US, sea: sea.US, nonFbaTail: usTail },
+      DE: { fba: { status: 'missing_rate', total: null, reason: '德国 FBA 费率待补充。' }, air: air.DE, sea: sea.DE, nonFbaTail: deTail },
+      GB: { fba: { status: 'missing_rate', total: null, reason: '英国 FBA 费率待补充。' }, air: air.GB, sea: sea.GB },
+      CA: { fba: canadaFba, air: air.CA, sea: sea.CA }
     }
   };
 }
@@ -143,7 +146,7 @@ export function formatCalculationReply(result) {
     `已识别：${product.productName || '未提供产品名称'}`,
     `包装：${product.length}×${product.width}×${product.height} mm；重量：${product.weight} g；售价：${product.price.toFixed(2)} USD`,
     `FBA配送日期：${product.feeDate}（${season?.season || '未知季节'}）`,
-    '', '四国费用（空运费率待补充）：'
+    '', '四国费用（空运已按最新头程报价计算）：'
   ];
   const row = (name, data, includeTail = true) => {
     const parts = [`${name}：FBA ${formatMoney(data.fba)}`, `海运 ${formatMoney(data.sea)}`];

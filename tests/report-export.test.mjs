@@ -7,7 +7,7 @@ import { strFromU8, unzipSync } from 'fflate';
 
 const snapshot = buildReportSnapshot({
   form: { productName: '测试产品', length: '300', width: '200', height: '50', weight: '800', price: '19.99', feeDate: '2027-02-10' },
-  season: '淡季', rateUpdated: '2026-11-16',
+  season: '淡季', rateUpdated: '2026-11-16', generatedAt: '2026-11-16T00:00:00.000Z',
   rates: { EUR: 0.92, GBP: 0.79, CAD: 1.38 },
   countries: [{ name: '美国', currency: 'USD', rateKey: 'USD', components: [
     { label: 'FBA费用', display: '$7.23 USD' }, { label: '空运头程', display: '待补充' }, { label: '海运头程', display: '0.50 USD' }, { label: '非FBA尾程', display: '8.54 USD' }

@@ -51220,10 +51220,10 @@ Row data: ${stringifyNode(rowData)}`);
 
   // report-data.mjs
   var COUNTRY_DEFINITIONS = [
-    { key: "US", name: "\u7F8E\u56FD", currency: "USD", rateKey: "USD", fields: [["FBA\u8D39\u7528", "usFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "usSeaValue"], ["\u975EFBA\u5C3E\u7A0B", "usTailValue"]] },
-    { key: "DE", name: "\u5FB7\u56FD", currency: "EUR", rateKey: "EUR", fields: [["FBA\u8D39\u7528", "deFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "deSeaValue"], ["\u975EFBA\u5C3E\u7A0B", "deTailValue"]] },
-    { key: "GB", name: "\u82F1\u56FD", currency: "GBP", rateKey: "GBP", fields: [["FBA\u8D39\u7528", "gbFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "gbSeaValue"], ["\u975EFBA\u5C3E\u7A0B", null]] },
-    { key: "CA", name: "\u52A0\u62FF\u5927", currency: "CAD", rateKey: "CAD", fields: [["FBA\u8D39\u7528", "caFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", null], ["\u6D77\u8FD0\u5934\u7A0B", "caSeaValue"], ["\u975EFBA\u5C3E\u7A0B", null]] }
+    { key: "US", name: "\u7F8E\u56FD", currency: "USD", rateKey: "USD", fields: [["FBA\u8D39\u7528", "usFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "usAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "usSeaValue"], ["\u975EFBA\u5C3E\u7A0B", "usTailValue"]] },
+    { key: "DE", name: "\u5FB7\u56FD", currency: "EUR", rateKey: "EUR", fields: [["FBA\u8D39\u7528", "deFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "deAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "deSeaValue"], ["\u975EFBA\u5C3E\u7A0B", "deTailValue"]] },
+    { key: "GB", name: "\u82F1\u56FD", currency: "GBP", rateKey: "GBP", fields: [["FBA\u8D39\u7528", "gbFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "gbAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "gbSeaValue"], ["\u975EFBA\u5C3E\u7A0B", null]] },
+    { key: "CA", name: "\u52A0\u62FF\u5927", currency: "CAD", rateKey: "CAD", fields: [["FBA\u8D39\u7528", "caFbaValue"], ["\u7A7A\u8FD0\u5934\u7A0B", "caAirValue"], ["\u6D77\u8FD0\u5934\u7A0B", "caSeaValue"], ["\u975EFBA\u5C3E\u7A0B", null]] }
   ];
   var FORM_KEYS = ["productName", "length", "width", "height", "weight", "price", "feeDate"];
   function parseDisplayedAmount(display) {

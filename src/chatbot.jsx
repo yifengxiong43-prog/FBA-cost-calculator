@@ -30,10 +30,10 @@ function missingReply(missing) {
 }
 
 const countryResultFields = {
-  美国: { currency: 'USD', rateKey: 'USD', fields: [['FBA 费用', 'usFbaValue'], ['空运头程', null], ['海运头程', 'usSeaValue'], ['非 FBA 尾程', 'usTailValue']] },
-  德国: { currency: 'EUR', rateKey: 'EUR', fields: [['FBA 费用', 'deFbaValue'], ['空运头程', null], ['海运头程', 'deSeaValue'], ['非 FBA 尾程', 'deTailValue']] },
-  英国: { currency: 'GBP', rateKey: 'GBP', fields: [['FBA 费用', 'gbFbaValue'], ['空运头程', null], ['海运头程', 'gbSeaValue']] },
-  加拿大: { currency: 'CAD', rateKey: 'CAD', fields: [['FBA 费用', 'caFbaValue'], ['空运头程', null], ['海运头程', 'caSeaValue']] }
+  美国: { currency: 'USD', rateKey: 'USD', fields: [['FBA 费用', 'usFbaValue'], ['空运头程', 'usAirValue'], ['海运头程', 'usSeaValue'], ['非 FBA 尾程', 'usTailValue']] },
+  德国: { currency: 'EUR', rateKey: 'EUR', fields: [['FBA 费用', 'deFbaValue'], ['空运头程', 'deAirValue'], ['海运头程', 'deSeaValue'], ['非 FBA 尾程', 'deTailValue']] },
+  英国: { currency: 'GBP', rateKey: 'GBP', fields: [['FBA 费用', 'gbFbaValue'], ['空运头程', 'gbAirValue'], ['海运头程', 'gbSeaValue']] },
+  加拿大: { currency: 'CAD', rateKey: 'CAD', fields: [['FBA 费用', 'caFbaValue'], ['空运头程', 'caAirValue'], ['海运头程', 'caSeaValue']] }
 };
 
 function displayedAmount(id) {
