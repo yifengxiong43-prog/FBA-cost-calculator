@@ -12,6 +12,14 @@ const number = (value, digits = 3) => value === null || value === undefined || !
 const amountWithUnit = (value, currency, suffix = '/件') => value === null || value === undefined
   ? '待补充'
   : `${money(value)} ${currency}${suffix}`;
+const localPrice = (snapshot, country) => !Number.isFinite(Number(snapshot.priceUsd)) || !Number.isFinite(Number(country.rate))
+  ? '待补充'
+  : Number(snapshot.priceUsd) * Number(country.rate);
+const exportComponentValue = (values, label, { blankPending = false } = {}) => {
+  const item = values[label];
+  if (item?.status === '已计算') return item.amount;
+  return blankPending ? '' : item?.status || '待补充';
+};
 const datePart = value => String(value || new Date().toISOString()).slice(0, 10).replaceAll('-', '');
 const safeName = value => String(value || '未命名产品').replace(/[\\/:*?"<>|]/g, '_').trim() || '未命名产品';
 
@@ -54,10 +62,9 @@ export function buildWorkbook(snapshot) {
     ['空运计费重 (g)', snapshot.airChargeableWeightG ?? '待补充']
   ];
   const rows = [[
-    '产品名称', '国家', 'FBA配送日期', '季节', '售价 (USD)', '包装重量 (g)', '包装重量 (kg)', '包装重量 (lb)',
+    '产品名称', '国家', 'FBA配送日期', '季节', '售价 (当地币种)', '包装重量 (g)', '包装重量 (kg)', '包装重量 (lb)',
     '包装长 (mm)', '包装宽 (mm)', '包装高 (mm)', '包装体积 (mm³)', '空运计费重 (g)', '当地币种',
-    'FBA费用 (当地币种/件)', '空运头程 (当地币种/件)', '海运头程 (当地币种/件)', '非FBA尾程 (当地币种/件)',
-    '当前可计算费用合计 (当地币种/件)', '折算USD (USD/件)', '数据状态'
+    'FBA费用 (当地币种/件)', '空运头程 (当地币种/件)', '海运头程 (当地币种/件)', '非FBA尾程 (当地币种/件)'
   ]];
   for (const country of snapshot.countries) {
     const values = Object.fromEntries(country.components.map(component => [component.label, component]));
@@ -66,7 +73,7 @@ export function buildWorkbook(snapshot) {
       country.name,
       snapshot.form.feeDate || '待补充',
       snapshot.seasonLabel || '待补充',
-      snapshot.priceUsd === null ? '待补充' : snapshot.priceUsd,
+      localPrice(snapshot, country),
       snapshot.form.weight === '' ? '待补充' : Number(snapshot.form.weight),
       snapshot.weightKg === null ? '待补充' : snapshot.weightKg,
       snapshot.weightLb === null ? '待补充' : snapshot.weightLb,
@@ -76,13 +83,10 @@ export function buildWorkbook(snapshot) {
       snapshot.volumeMm3 ?? '待补充',
       snapshot.airChargeableWeightG ?? '待补充',
       country.currency,
-      values.FBA费用?.status === '已计算' ? values.FBA费用.amount : values.FBA费用?.status || '待补充',
-      values.空运头程?.status === '已计算' ? values.空运头程.amount : values.空运头程?.status || '待补充',
-      values.海运头程?.status === '已计算' ? values.海运头程.amount : values.海运头程?.status || '待补充',
-      values.非FBA尾程?.status === '已计算' ? values.非FBA尾程.amount : values.非FBA尾程?.status || '待补充',
-      country.total === null ? country.status : country.total,
-      country.totalUsd === null ? country.status : country.totalUsd,
-      country.status
+      exportComponentValue(values, 'FBA费用'),
+      exportComponentValue(values, '空运头程', { blankPending: true }),
+      exportComponentValue(values, '海运头程'),
+      exportComponentValue(values, '非FBA尾程')
     ]);
   }
   const notes = [
@@ -103,10 +107,10 @@ export function buildWorkbook(snapshot) {
   feesSheet['!cols'] = [
     { wch: 22 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 13 }, { wch: 14 }, { wch: 15 }, { wch: 15 },
     { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 17 }, { wch: 12 }, { wch: 23 }, { wch: 25 },
-    { wch: 25 }, { wch: 27 }, { wch: 31 }, { wch: 20 }, { wch: 12 }
+    { wch: 25 }, { wch: 27 }
   ];
   feesSheet['!rows'] = [{ hpt: 42 }, ...snapshot.countries.map(() => ({ hpt: 30 }))];
-  feesSheet['!autofilter'] = { ref: `A1:U${rows.length}` };
+  feesSheet['!autofilter'] = { ref: `A1:R${rows.length}` };
   feesSheet['!freeze'] = { xSplit: 2, ySplit: 1 };
   const notesSheet = XLSX.utils.aoa_to_sheet(notes);
   notesSheet['!cols'] = [{ wch: 22 }, { wch: 90 }];
@@ -251,11 +255,10 @@ function patchCellStyles(xml, sheetNumber, countryCount) {
       else if (row >= 2 && row <= countryCount + 1) {
         const base = EXCEL_STYLE.countries[['美国', '德国', '英国', '加拿大'][row - 2]] ?? EXCEL_STYLE.countries.美国;
         if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
-        else if ([5, 15, 20].includes(columnNumber)) style = base + 5;
+        else if ([5, 15, 16, 17, 18].includes(columnNumber)) style = base + 4;
         else if ([6, 12, 13].includes(columnNumber)) style = base + 1;
         else if ([7, 8].includes(columnNumber)) style = base + 2;
         else if ([9, 10, 11].includes(columnNumber)) style = base + 3;
-        else if ([15, 16, 17, 18, 19].includes(columnNumber)) style = base + 4;
         else style = base;
       }
     } else if (sheetNumber === 3) {
@@ -300,12 +303,14 @@ export function exportExcel(snapshot, { save = true } = {}) {
   return data;
 }
 
-function row(country) {
+function row(country, snapshot) {
   const values = Object.fromEntries(country.components.map(component => [component.label, component]));
   const component = label => values[label]?.status === '已计算'
     ? amountWithUnit(values[label].amount, country.currency)
-    : (values[label]?.status || '待补充');
-  return [country.name, country.currency, ...['FBA费用', '空运头程', '海运头程', '非FBA尾程'].map(component), country.total === null ? country.status : amountWithUnit(country.total, country.currency), country.totalUsd === null ? country.status : amountWithUnit(country.totalUsd, 'USD'), country.status];
+    : label === '空运头程' ? '' : (values[label]?.status || '待补充');
+  const price = localPrice(snapshot, country);
+  return [country.name, country.currency, typeof price === 'number' ? amountWithUnit(price, country.currency, '') : price,
+    ...['FBA费用', '空运头程', '海运头程', '非FBA尾程'].map(component)];
 }
 
 export function buildPdfDefinition(snapshot) {
@@ -325,7 +330,7 @@ export function buildPdfDefinition(snapshot) {
     ['包装体积', snapshot.volumeMm3 === null ? '待补充' : `${number(snapshot.volumeMm3, 0)} mm³`],
     ['空运计费重', snapshot.airChargeableWeightG === null ? '待补充' : `${number(snapshot.airChargeableWeightG, 2)} g`]
   ];
-  const table = [['国家', '币种', 'FBA (币/件)', '空运 (币/件)', '海运 (币/件)', '尾程 (币/件)', '合计 (币/件)', 'USD/件', '状态'], ...snapshot.countries.map(row)];
+  const table = [['国家', '币种', '售价 (当地币种)', 'FBA (币/件)', '空运 (币/件)', '海运 (币/件)', '尾程 (币/件)'], ...snapshot.countries.map(country => row(country, snapshot))];
   const tableRows = table.map((cells, index) => index === 0
     ? cells.map(text => ({ text, style: 'tableHeader' }))
     : cells.map((text, column) => ({ text, style: column === 0 ? 'countryName' : 'tableCell' })));
@@ -337,7 +342,7 @@ export function buildPdfDefinition(snapshot) {
       { text: '基本信息与产品参数', style: 'heading' },
       { table: { widths: [115, '*'], body: productRows }, layout: 'lightHorizontalLines' },
       { text: '四国费用结果', style: 'heading' },
-      { table: { headerRows: 1, widths: [40, 29, 53, 53, 53, 53, 57, 50, '*'], body: tableRows }, layout: 'lightHorizontalLines' },
+      { table: { headerRows: 1, widths: [40, 29, 68, 53, 53, 53, 53], body: tableRows }, layout: 'lightHorizontalLines' },
       { text: '汇率与计算说明', style: 'heading' },
       { ul: [
         `1 USD = ${snapshot.rates.EUR ?? '待补充'} EUR；1 USD = ${snapshot.rates.GBP ?? '待补充'} GBP；1 USD = ${snapshot.rates.CAD ?? '待补充'} CAD`,

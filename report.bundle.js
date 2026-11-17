@@ -74153,6 +74153,12 @@ Row data: ${stringifyNode(rowData)}`);
   var money = (value) => value === null || value === void 0 ? "\u5F85\u8865\u5145" : Number(value).toFixed(2);
   var number = (value, digits = 3) => value === null || value === void 0 || !Number.isFinite(Number(value)) ? "\u5F85\u8865\u5145" : Number(value).toLocaleString("en-US", { maximumFractionDigits: digits });
   var amountWithUnit = (value, currency, suffix = "/\u4EF6") => value === null || value === void 0 ? "\u5F85\u8865\u5145" : `${money(value)} ${currency}${suffix}`;
+  var localPrice = (snapshot, country) => !Number.isFinite(Number(snapshot.priceUsd)) || !Number.isFinite(Number(country.rate)) ? "\u5F85\u8865\u5145" : Number(snapshot.priceUsd) * Number(country.rate);
+  var exportComponentValue = (values, label, { blankPending = false } = {}) => {
+    const item = values[label];
+    if (item?.status === "\u5DF2\u8BA1\u7B97") return item.amount;
+    return blankPending ? "" : item?.status || "\u5F85\u8865\u5145";
+  };
   var datePart = (value) => String(value || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10).replaceAll("-", "");
   var safeName = (value) => String(value || "\u672A\u547D\u540D\u4EA7\u54C1").replace(/[\\/:*?"<>|]/g, "_").trim() || "\u672A\u547D\u540D\u4EA7\u54C1";
   function downloadBlob(blob, filename) {
@@ -74195,7 +74201,7 @@ Row data: ${stringifyNode(rowData)}`);
       "\u56FD\u5BB6",
       "FBA\u914D\u9001\u65E5\u671F",
       "\u5B63\u8282",
-      "\u552E\u4EF7 (USD)",
+      "\u552E\u4EF7 (\u5F53\u5730\u5E01\u79CD)",
       "\u5305\u88C5\u91CD\u91CF (g)",
       "\u5305\u88C5\u91CD\u91CF (kg)",
       "\u5305\u88C5\u91CD\u91CF (lb)",
@@ -74208,10 +74214,7 @@ Row data: ${stringifyNode(rowData)}`);
       "FBA\u8D39\u7528 (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
       "\u7A7A\u8FD0\u5934\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
       "\u6D77\u8FD0\u5934\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
-      "\u975EFBA\u5C3E\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
-      "\u5F53\u524D\u53EF\u8BA1\u7B97\u8D39\u7528\u5408\u8BA1 (\u5F53\u5730\u5E01\u79CD/\u4EF6)",
-      "\u6298\u7B97USD (USD/\u4EF6)",
-      "\u6570\u636E\u72B6\u6001"
+      "\u975EFBA\u5C3E\u7A0B (\u5F53\u5730\u5E01\u79CD/\u4EF6)"
     ]];
     for (const country of snapshot.countries) {
       const values = Object.fromEntries(country.components.map((component) => [component.label, component]));
@@ -74220,7 +74223,7 @@ Row data: ${stringifyNode(rowData)}`);
         country.name,
         snapshot.form.feeDate || "\u5F85\u8865\u5145",
         snapshot.seasonLabel || "\u5F85\u8865\u5145",
-        snapshot.priceUsd === null ? "\u5F85\u8865\u5145" : snapshot.priceUsd,
+        localPrice(snapshot, country),
         snapshot.form.weight === "" ? "\u5F85\u8865\u5145" : Number(snapshot.form.weight),
         snapshot.weightKg === null ? "\u5F85\u8865\u5145" : snapshot.weightKg,
         snapshot.weightLb === null ? "\u5F85\u8865\u5145" : snapshot.weightLb,
@@ -74230,13 +74233,10 @@ Row data: ${stringifyNode(rowData)}`);
         snapshot.volumeMm3 ?? "\u5F85\u8865\u5145",
         snapshot.airChargeableWeightG ?? "\u5F85\u8865\u5145",
         country.currency,
-        values.FBA\u8D39\u7528?.status === "\u5DF2\u8BA1\u7B97" ? values.FBA\u8D39\u7528.amount : values.FBA\u8D39\u7528?.status || "\u5F85\u8865\u5145",
-        values.\u7A7A\u8FD0\u5934\u7A0B?.status === "\u5DF2\u8BA1\u7B97" ? values.\u7A7A\u8FD0\u5934\u7A0B.amount : values.\u7A7A\u8FD0\u5934\u7A0B?.status || "\u5F85\u8865\u5145",
-        values.\u6D77\u8FD0\u5934\u7A0B?.status === "\u5DF2\u8BA1\u7B97" ? values.\u6D77\u8FD0\u5934\u7A0B.amount : values.\u6D77\u8FD0\u5934\u7A0B?.status || "\u5F85\u8865\u5145",
-        values.\u975EFBA\u5C3E\u7A0B?.status === "\u5DF2\u8BA1\u7B97" ? values.\u975EFBA\u5C3E\u7A0B.amount : values.\u975EFBA\u5C3E\u7A0B?.status || "\u5F85\u8865\u5145",
-        country.total === null ? country.status : country.total,
-        country.totalUsd === null ? country.status : country.totalUsd,
-        country.status
+        exportComponentValue(values, "FBA\u8D39\u7528"),
+        exportComponentValue(values, "\u7A7A\u8FD0\u5934\u7A0B", { blankPending: true }),
+        exportComponentValue(values, "\u6D77\u8FD0\u5934\u7A0B"),
+        exportComponentValue(values, "\u975EFBA\u5C3E\u7A0B")
       ]);
     }
     const notes = [
@@ -74272,13 +74272,10 @@ Row data: ${stringifyNode(rowData)}`);
       { wch: 23 },
       { wch: 25 },
       { wch: 25 },
-      { wch: 27 },
-      { wch: 31 },
-      { wch: 20 },
-      { wch: 12 }
+      { wch: 27 }
     ];
     feesSheet["!rows"] = [{ hpt: 42 }, ...snapshot.countries.map(() => ({ hpt: 30 }))];
-    feesSheet["!autofilter"] = { ref: `A1:U${rows.length}` };
+    feesSheet["!autofilter"] = { ref: `A1:R${rows.length}` };
     feesSheet["!freeze"] = { xSplit: 2, ySplit: 1 };
     const notesSheet = utils.aoa_to_sheet(notes);
     notesSheet["!cols"] = [{ wch: 22 }, { wch: 90 }];
@@ -74411,11 +74408,10 @@ Row data: ${stringifyNode(rowData)}`);
         else if (row2 >= 2 && row2 <= countryCount + 1) {
           const base = EXCEL_STYLE.countries[["\u7F8E\u56FD", "\u5FB7\u56FD", "\u82F1\u56FD", "\u52A0\u62FF\u5927"][row2 - 2]] ?? EXCEL_STYLE.countries.\u7F8E\u56FD;
           if (isPendingCell(cellContent)) style = EXCEL_STYLE.pending;
-          else if ([5, 15, 20].includes(columnNumber)) style = base + 5;
+          else if ([5, 15, 16, 17, 18].includes(columnNumber)) style = base + 4;
           else if ([6, 12, 13].includes(columnNumber)) style = base + 1;
           else if ([7, 8].includes(columnNumber)) style = base + 2;
           else if ([9, 10, 11].includes(columnNumber)) style = base + 3;
-          else if ([15, 16, 17, 18, 19].includes(columnNumber)) style = base + 4;
           else style = base;
         }
       } else if (sheetNumber === 3) {
@@ -74456,10 +74452,16 @@ Row data: ${stringifyNode(rowData)}`);
     if (save && typeof document !== "undefined") downloadBlob(new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), reportFilename(snapshot, "xlsx"));
     return data;
   }
-  function row(country) {
+  function row(country, snapshot) {
     const values = Object.fromEntries(country.components.map((component2) => [component2.label, component2]));
-    const component = (label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? amountWithUnit(values[label].amount, country.currency) : values[label]?.status || "\u5F85\u8865\u5145";
-    return [country.name, country.currency, ...["FBA\u8D39\u7528", "\u7A7A\u8FD0\u5934\u7A0B", "\u6D77\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B"].map(component), country.total === null ? country.status : amountWithUnit(country.total, country.currency), country.totalUsd === null ? country.status : amountWithUnit(country.totalUsd, "USD"), country.status];
+    const component = (label) => values[label]?.status === "\u5DF2\u8BA1\u7B97" ? amountWithUnit(values[label].amount, country.currency) : label === "\u7A7A\u8FD0\u5934\u7A0B" ? "" : values[label]?.status || "\u5F85\u8865\u5145";
+    const price = localPrice(snapshot, country);
+    return [
+      country.name,
+      country.currency,
+      typeof price === "number" ? amountWithUnit(price, country.currency, "") : price,
+      ...["FBA\u8D39\u7528", "\u7A7A\u8FD0\u5934\u7A0B", "\u6D77\u8FD0\u5934\u7A0B", "\u975EFBA\u5C3E\u7A0B"].map(component)
+    ];
   }
   function buildPdfDefinition(snapshot) {
     if (import_vfs_fonts.default?.pdfMake?.vfs) import_pdfmake.default.vfs = import_vfs_fonts.default.pdfMake.vfs;
@@ -74478,7 +74480,7 @@ Row data: ${stringifyNode(rowData)}`);
       ["\u5305\u88C5\u4F53\u79EF", snapshot.volumeMm3 === null ? "\u5F85\u8865\u5145" : `${number(snapshot.volumeMm3, 0)} mm\xB3`],
       ["\u7A7A\u8FD0\u8BA1\u8D39\u91CD", snapshot.airChargeableWeightG === null ? "\u5F85\u8865\u5145" : `${number(snapshot.airChargeableWeightG, 2)} g`]
     ];
-    const table = [["\u56FD\u5BB6", "\u5E01\u79CD", "FBA (\u5E01/\u4EF6)", "\u7A7A\u8FD0 (\u5E01/\u4EF6)", "\u6D77\u8FD0 (\u5E01/\u4EF6)", "\u5C3E\u7A0B (\u5E01/\u4EF6)", "\u5408\u8BA1 (\u5E01/\u4EF6)", "USD/\u4EF6", "\u72B6\u6001"], ...snapshot.countries.map(row)];
+    const table = [["\u56FD\u5BB6", "\u5E01\u79CD", "\u552E\u4EF7 (\u5F53\u5730\u5E01\u79CD)", "FBA (\u5E01/\u4EF6)", "\u7A7A\u8FD0 (\u5E01/\u4EF6)", "\u6D77\u8FD0 (\u5E01/\u4EF6)", "\u5C3E\u7A0B (\u5E01/\u4EF6)"], ...snapshot.countries.map((country) => row(country, snapshot))];
     const tableRows = table.map((cells, index) => index === 0 ? cells.map((text) => ({ text, style: "tableHeader" })) : cells.map((text, column) => ({ text, style: column === 0 ? "countryName" : "tableCell" })));
     return {
       pageSize: "A4",
@@ -74490,7 +74492,7 @@ Row data: ${stringifyNode(rowData)}`);
         { text: "\u57FA\u672C\u4FE1\u606F\u4E0E\u4EA7\u54C1\u53C2\u6570", style: "heading" },
         { table: { widths: [115, "*"], body: productRows }, layout: "lightHorizontalLines" },
         { text: "\u56DB\u56FD\u8D39\u7528\u7ED3\u679C", style: "heading" },
-        { table: { headerRows: 1, widths: [40, 29, 53, 53, 53, 53, 57, 50, "*"], body: tableRows }, layout: "lightHorizontalLines" },
+        { table: { headerRows: 1, widths: [40, 29, 68, 53, 53, 53, 53], body: tableRows }, layout: "lightHorizontalLines" },
         { text: "\u6C47\u7387\u4E0E\u8BA1\u7B97\u8BF4\u660E", style: "heading" },
         { ul: [
           `1 USD = ${snapshot.rates.EUR ?? "\u5F85\u8865\u5145"} EUR\uFF1B1 USD = ${snapshot.rates.GBP ?? "\u5F85\u8865\u5145"} GBP\uFF1B1 USD = ${snapshot.rates.CAD ?? "\u5F85\u8865\u5145"} CAD`,

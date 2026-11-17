@@ -19,11 +19,26 @@ test('workbook has required sheets and does not turn pending into zero', () => {
   assert.deepEqual(workbook.SheetNames, ['产品参数', '四国费用', '计算说明']);
   const values = XLSX.utils.sheet_to_json(workbook.Sheets['四国费用'], { header: 1 });
   const headers = values[0];
-  assert.equal(values[1][headers.indexOf('空运头程 (当地币种/件)')], '待补充');
+  assert.equal(values[1][headers.indexOf('空运头程 (当地币种/件)')], '');
   assert.equal(headers[14], 'FBA费用 (当地币种/件)');
-  assert.equal(headers[19], '折算USD (USD/件)');
+  assert.equal(headers.length, 18);
+  assert.equal(headers.includes('当前可计算费用合计 (当地币种/件)'), false);
+  assert.equal(headers.includes('折算USD (USD/件)'), false);
+  assert.equal(headers.includes('数据状态'), false);
   assert.equal(XLSX.utils.sheet_to_json(workbook.Sheets['产品参数'], { header: 1 })[5][0], '包装长 (mm)');
   assert.match(reportFilename(snapshot, 'xlsx'), /测试产品_跨境费用测算_20261116\.xlsx/);
+});
+
+test('country rows convert the USD sale price into each local currency', () => {
+  const localizedSnapshot = buildReportSnapshot({
+    form: { productName: '测试产品', price: '19.99' },
+    rates: { EUR: 0.92 },
+    countries: [{ name: '德国', currency: 'EUR', rateKey: 'EUR', components: [] }]
+  });
+  const values = XLSX.utils.sheet_to_json(buildWorkbook(localizedSnapshot).Sheets['四国费用'], { header: 1 });
+  const headers = values[0];
+  assert.equal(headers[4], '售价 (当地币种)');
+  assert.equal(values[1][4], 19.99 * 0.92);
 });
 
 test('excel export applies reference-like colors, units, number formats and freeze pane', () => {
@@ -34,7 +49,7 @@ test('excel export applies reference-like colors, units, number formats and free
   assert.match(styles, /087F5B/);
   assert.match(styles, /numFmtId="164"/);
   assert.match(fees, /<c r="A1"[^>]*s="4"/);
-  assert.match(fees, /<c r="P2"[^>]*s="5"/);
+  assert.match(fees, /<c r="P2"[^>]*s="17"/);
   assert.match(fees, /<c r="Q2"[^>]*s="17"/);
   assert.match(fees, /state="frozen"/);
 });
@@ -46,6 +61,8 @@ test('pdf definition is A4 portrait with a table and pagination-safe content', (
   assert.ok(definition.content.some(item => item.table));
   const parameterTable = definition.content.find(item => item.table)?.table?.body || [];
   assert.match(String(parameterTable[4]?.[1]), /mm/);
-  assert.match(JSON.stringify(definition), /USD\/件/);
+  assert.match(JSON.stringify(definition), /售价 \(当地币种\)/);
+  const feeTable = definition.content.find(item => item.table?.headerRows === 1)?.table?.body || [];
+  assert.deepEqual(feeTable[0].map(cell => cell.text), ['国家', '币种', '售价 (当地币种)', 'FBA (币/件)', '空运 (币/件)', '海运 (币/件)', '尾程 (币/件)']);
   assert.match(reportFilename(snapshot, 'pdf'), /\.pdf$/);
 });
